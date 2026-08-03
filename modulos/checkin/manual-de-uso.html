@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manual de uso | Solanas Reservas y Registro de Hu&eacute;spedes</title>
+    <link rel="icon" type="image/png" href="favicon-solanas.png" />
+    <style>
+      @font-face {
+        font-family: "Libre Baskerville Solanas";
+        src: url("./fonts/libre-baskerville-bold.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --ink: #1f2e31;
+        --muted: #5d6f73;
+        --line: #d8ddd8;
+        --paper: #fffdf8;
+        --accent: #0d7c79;
+        --accent-soft: #eef8f7;
+        --warm: #fff4ef;
+        --ok: #f2faf7;
+        --title-font: "Libre Baskerville Solanas", Georgia, "Times New Roman", serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background: #f2efe8;
+      }
+
+      .page {
+        width: min(980px, calc(100vw - 32px));
+        margin: 24px auto;
+        background: var(--paper);
+        border: 1px solid #ece7dc;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.08);
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 253, 248, 0.96);
+      }
+
+      .toolbar button {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .toolbar .ghost {
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .content {
+        padding: 42px 56px 56px;
+      }
+
+      .cover {
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .cover-top {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: 24px;
+        background: var(--accent-soft);
+        padding: 14px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-family: var(--title-font);
+        font-weight: 700;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        line-height: 1;
+      }
+
+      h2 {
+        margin: 42px 0 14px;
+        font-size: 1.65rem;
+      }
+
+      h3 {
+        margin: 28px 0 10px;
+        font-size: 1.15rem;
+      }
+
+      p {
+        margin: 0 0 12px;
+        line-height: 1.72;
+      }
+
+      ul,
+      ol {
+        margin: 0 0 18px 20px;
+        line-height: 1.72;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .lead {
+        margin: 18px 0 0;
+        max-width: 67ch;
+        font-size: 1.08rem;
+        line-height: 1.7;
+        color: #344447;
+      }
+
+      .callout {
+        margin: 18px 0;
+        padding: 16px 18px;
+        border: 1px solid #f0d2c5;
+        background: var(--warm);
+      }
+
+      .ok {
+        border-color: #cfe4db;
+        background: var(--ok);
+      }
+
+      .steps {
+        counter-reset: step;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .steps li {
+        position: relative;
+        margin: 0 0 14px;
+        padding: 14px 14px 14px 58px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .steps li::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--accent);
+        color: #fff;
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+
+      code {
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: #f4f4f1;
+        font-family: "Courier New", monospace;
+        font-size: 0.92em;
+      }
+
+      .mini-index {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 16px;
+        margin: 18px 0 0;
+        padding: 16px 18px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .mini-index a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      @media (max-width: 760px) {
+        .page {
+          width: calc(100vw - 12px);
+          margin: 6px auto;
+        }
+
+        .content {
+          padding: 24px 18px 28px;
+        }
+
+        .cover-top {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .logo {
+          width: 88px;
+          height: 88px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .mini-index {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="toolbar">
+        <button type="button" class="ghost" onclick="window.location.href='index.html'">
+          Ir a la app
+        </button>
+        <button type="button" onclick="window.print()">Exportar a PDF</button>
+      </div>
+
+      <div class="content">
+        <section class="cover">
+          <div class="cover-top">
+            <img class="logo" src="../logo-solanas.png" alt="Solanas" />
+            <div>
+              <p class="eyebrow">Manual operativo</p>
+              <h1>Solanas Reservas y Registro de Hu&eacute;spedes</h1>
+              <p class="lead">
+                Esta app est&aacute; pensada para recepci&oacute;n y reservas del hotel. Permite
+                revisar el movimiento del d&iacute;a, cargar reservas particulares, cargar grupos,
+                leer DNI argentinos con la pistolita QR, controlar disponibilidad, imprimir el
+                formulario legal y mantener un respaldo local del trabajo.
+              </p>
+            </div>
+          </div>
+          <nav class="mini-index" aria-label="Indice del manual">
+            <a href="#abrir">1. C&oacute;mo abrirla</a>
+            <a href="#panel">2. Panel general</a>
+            <a href="#menu">3. Men&uacute; flotante</a>
+            <a href="#particular">4. Reserva particular</a>
+            <a href="#grupo">5. Carga de grupo</a>
+            <a href="#tarifas">6. Tarifas y pagos</a>
+            <a href="#habitaciones">7. Habitaciones</a>
+            <a href="#dni">8. Hu&eacute;spedes y DNI</a>
+            <a href="#confirmacion">9. Confirmaci&oacute;n</a>
+            <a href="#pdf">10. Formulario legal</a>
+            <a href="#historial">11. Historial</a>
+            <a href="#respaldo">12. Respaldo</a>
+          </nav>
+        </section>
+
+        <section id="abrir">
+          <h2>1. C&oacute;mo abrirla</h2>
+          <ol class="steps">
+            <li>Haz doble clic en <code>abrir-solanas.cmd</code>.</li>
+            <li>Desde el men&uacute; principal, entra a <strong>Check-in y reservas</strong>.</li>
+            <li>La app trabaja de forma local y se integra al JSON central del sistema.</li>
+            <li>Conviene usar siempre la misma PC y abrir desde el acceso principal para evitar estados separados.</li>
+          </ol>
+        </section>
+
+        <section id="panel">
+          <h2>2. Qu&eacute; ves al entrar</h2>
+          <ul>
+            <li><strong>Panel general:</strong> muestra reservas pendientes, habitaciones, l&iacute;nea del tiempo, resumen de comidas e historial inferior.</li>
+            <li><strong>Cargar nueva reserva:</strong> abre el m&oacute;dulo para crear o corregir una reserva particular.</li>
+            <li><strong>Carga de grupo:</strong> abre una ventana emergente para tomar varias habitaciones a nombre de una empresa o contingente.</li>
+            <li><strong>Tarifario particulares:</strong> edita las tarifas generales para reservas particulares.</li>
+            <li><strong>Reservas y habitaciones:</strong> permite cargar legajos, imprimir formularios, editar o eliminar reservas pendientes.</li>
+            <li><strong>L&oacute;gica operativa:</strong> si el ingreso es hoy, la reserva se comporta como ingreso del d&iacute;a; si el ingreso es futuro, queda como reserva futura.</li>
+          </ul>
+
+          <div class="callout ok">
+            <strong>Importante:</strong> cuando no hay una reserva en carga, el mapa de habitaciones
+            funciona como tablero de consulta. Cuando hay una reserva abierta, el mapa pasa a ser
+            selector de habitaci&oacute;n para esa estad&iacute;a.
+          </div>
+        </section>
+
+        <section id="menu">
+          <h2>3. Men&uacute; flotante</h2>
+          <p>
+            Al bajar por la pantalla aparece un men&uacute; flotante igual al del comandero de bebidas.
+            Sirve para moverse r&aacute;pido sin volver a la cabecera.
+          </p>
+          <ul>
+            <li>En el panel general muestra: <strong>Historial</strong>, <strong>Habitaciones</strong> y <strong>L&iacute;nea del tiempo</strong>.</li>
+            <li>Durante la carga de una reserva muestra: <strong>Carga</strong>, <strong>Habitaciones</strong>, <strong>Historial</strong> y <strong>Vista del registro</strong>.</li>
+            <li>El bot&oacute;n <strong>Inicio</strong> y el logo vuelven a la cabecera.</li>
+            <li>En pantallas chicas el men&uacute; se desplaza horizontalmente para mantener todos los accesos.</li>
+          </ul>
+        </section>
+
+        <section id="particular">
+          <h2>4. C&oacute;mo cargar una reserva particular</h2>
+          <ol class="steps">
+            <li>Pulsa <strong>Cargar nueva reserva</strong>.</li>
+            <li>Completa fecha de ingreso, fecha de egreso, noches, r&eacute;gimen, contacto, patente si corresponde y monto total.</li>
+            <li>El nombre y apellido del titular son obligatorios para confirmar.</li>
+            <li>El monto <strong>Total</strong> tambi&eacute;n es obligatorio para confirmar una reserva particular.</li>
+            <li>Elige la habitaci&oacute;n escribiendo el n&uacute;mero o toc&aacute;ndola desde el mapa visual.</li>
+            <li>Si la habitaci&oacute;n est&aacute; ocupada o en mantenimiento, la app no permite concretar esa asignaci&oacute;n.</li>
+            <li>Al guardar, la reserva no queda lista por completar campos: debe confirmarse con el bot&oacute;n <strong>Confirmar reserva</strong>.</li>
+          </ol>
+        </section>
+
+        <section id="grupo">
+          <h2>5. Carga de grupo</h2>
+          <p>
+            La carga grupal sirve cuando una empresa o contingente toma varias habitaciones, pero
+            todav&iacute;a no se sabe qui&eacute;n ser&aacute; titular de cada habitaci&oacute;n.
+          </p>
+          <ol class="steps">
+            <li>Pulsa <strong>Carga de grupo</strong> desde la cabecera.</li>
+            <li>Escribe el nombre de la empresa o grupo, procedencia declarada, cantidad total de personas, monto pactado por pasajero si existe, r&eacute;gimen general, ingreso y egreso.</li>
+            <li>Elige un color para el grupo. Ese color aparecer&aacute; en la l&iacute;nea del tiempo con la inicial de la empresa.</li>
+            <li>Selecciona habitaciones manualmente o usa <strong>Sugerir habitaciones</strong>.</li>
+            <li>La app controla disponibilidad, mantenimiento y capacidad m&aacute;xima.</li>
+            <li>Si seleccionas muchas habitaciones, la ventana conserva el scroll para que no tengas que volver a buscar cada habitaci&oacute;n.</li>
+            <li>Al crear el grupo, la app genera una reserva por habitaci&oacute;n y vuelve al panel general.</li>
+            <li>La carga recuerda datos habituales de cada empresa: procedencia, choferes, coordinadores y monto pactado. Si se corrigen, esa memoria se actualiza.</li>
+          </ol>
+
+          <div class="callout">
+            <strong>Dato operativo:</strong> los titulares reales de cada habitaci&oacute;n pueden
+            cargarse despu&eacute;s, el d&iacute;a de llegada. La empresa queda como referencia superior
+            del grupo.
+          </div>
+        </section>
+
+        <section id="tarifas">
+          <h2>6. Tarifas, pagos y total pactado</h2>
+          <h3>Reservas particulares</h3>
+          <ul>
+            <li>El bot&oacute;n <strong>Tarifario particulares</strong> edita las tarifas generales de reservas individuales.</li>
+            <li>La app calcula una tarifa sugerida seg&uacute;n noches, pasajeros y base comercial de la habitaci&oacute;n.</li>
+            <li>Si dos personas toman una triple o cu&aacute;druple, la sugerencia cobra la base comercial de esa habitaci&oacute;n.</li>
+            <li>Si el total cargado no coincide con la sugerencia, la app muestra bonificaci&oacute;n o ajuste en porcentaje.</li>
+            <li>Cuando hay diferencia, se habilita un campo para explicar el motivo.</li>
+            <li>En reservas particulares se carga el total. El pago se registra al ingreso con <strong>Abonar estad&iacute;a</strong>.</li>
+          </ul>
+
+          <h3>Grupos y empresas</h3>
+          <ul>
+            <li>En la ventana de <strong>Carga de grupo</strong> existe el bot&oacute;n <strong>Tarifas pre acordadas</strong>.</li>
+            <li>Ese panel tiene las mismas cuatro bases: Single, doble, triple y cu&aacute;druple.</li>
+            <li>Arranca copiando como sugerencia el tarifario de particulares, pero los valores se pueden cambiar solo para ese grupo.</li>
+            <li>El total pactado se calcula con habitaciones elegidas, plazas facturadas, noches y tarifas pre acordadas.</li>
+            <li>Si se carga <strong>Monto acordado por pasajero</strong>, ese valor reemplaza el c&aacute;lculo por habitaci&oacute;n.</li>
+            <li>El total pactado queda visible en la carga grupal y luego en las reservas del grupo.</li>
+            <li>El pago de grupos queda fuera del sistema por ahora: la app no carga efectivo, transferencia ni saldo grupal.</li>
+          </ul>
+        </section>
+
+        <section id="habitaciones">
+          <h2>7. Habitaciones, disponibilidad y mantenimiento</h2>
+          <ul>
+            <li>El hotel tiene 32 habitaciones cargadas.</li>
+            <li>Cada habitaci&oacute;n tiene una capacidad base y una capacidad m&aacute;xima con cama extra excepcional.</li>
+            <li>El mapa permite escribir manualmente una habitaci&oacute;n del 1 al 32 o elegirla visualmente.</li>
+            <li>Si una habitaci&oacute;n ya est&aacute; ocupada para la estad&iacute;a elegida, no se puede confirmar esa reserva.</li>
+            <li>El mantenimiento se aplica por habitaci&oacute;n individual desde el bot&oacute;n <strong>Mantenimiento por hab.</strong> dentro del mapa de habitaciones.</li>
+            <li>Una habitaci&oacute;n en mantenimiento queda gris y no puede elegirse hasta quitar el mantenimiento.</li>
+          </ul>
+
+          <h3>Colores del mapa y l&iacute;nea del tiempo</h3>
+          <ul>
+            <li><strong>Verde:</strong> disponible.</li>
+            <li><strong>Gris:</strong> mantenimiento.</li>
+            <li><strong>Colores sin inicial:</strong> reservas particulares. Cada reserva recibe un color autom&aacute;tico y tambi&eacute;n puede cambiarse manualmente.</li>
+            <li><strong>Colores con inicial:</strong> grupos o empresas.</li>
+            <li><strong>Medio cuadrado derecho:</strong> ingreso.</li>
+            <li><strong>Medio cuadrado izquierdo:</strong> egreso.</li>
+            <li><strong>L&iacute;nea violeta:</strong> corte de mediod&iacute;a para leer ingresos, egresos y recambios.</li>
+            <li><strong>Hoy:</strong> queda marcado con un color propio aunque est&eacute;s viendo otra fecha.</li>
+            <li><strong>Pasado:</strong> aparece deste&ntilde;ido y no permite abrir nuevas reservas.</li>
+            <li>Si una celda libre o medio libre es de hoy o futuro, se puede abrir desde all&iacute; la misma ventana de atajo para cargar una reserva.</li>
+          </ul>
+        </section>
+
+        <section id="dni">
+          <h2>8. Carga de hu&eacute;spedes y lector de DNI</h2>
+          <ol class="steps">
+            <li>El titular o responsable se carga en el bloque superior de la reserva.</li>
+            <li>El titular debe ser mayor de edad. Si figura como menor, no puede oficiar de titular.</li>
+            <li>En el m&oacute;dulo de <strong>Hu&eacute;spedes</strong>, el Hu&eacute;sped 1 tiene un bot&oacute;n para replicar opcionalmente los datos del titular.</li>
+            <li>Para escanear un DNI individual, usa el bot&oacute;n de escaneo dentro de la tarjeta del hu&eacute;sped.</li>
+            <li>Para cargar varios DNI, usa <strong>Escanear varios DNI</strong>. La ventana permite pegar o escanear varias lecturas, una por l&iacute;nea.</li>
+            <li>La app intenta reconocer DNI cl&aacute;sico, formatos viejos y lecturas heur&iacute;sticas.</li>
+            <li>Si falta algo, puedes corregirlo a mano en la misma tarjeta.</li>
+            <li>Los hu&eacute;spedes no necesitan tel&eacute;fono propio, pero s&iacute; deben tener datos personales completos para poder ingresar.</li>
+            <li>La fecha de nacimiento permite detectar autom&aacute;ticamente menores de 18 a&ntilde;os.</li>
+          </ol>
+
+          <div class="callout">
+            <strong>Consejo:</strong> revisa siempre la lectura cuando la app marque observaciones o
+            muestre un diagn&oacute;stico de confianza media o baja.
+          </div>
+        </section>
+
+        <section id="confirmacion">
+          <h2>9. Confirmaci&oacute;n final</h2>
+          <ol class="steps">
+            <li>Cuando la reserva ya est&aacute; armada, pulsa <strong>Confirmar reserva</strong>.</li>
+            <li>La app abre una ventana de revisi&oacute;n final.</li>
+            <li>Si falta informaci&oacute;n obligatoria, la app lo avisa e impide confirmar.</li>
+            <li>Para reservas particulares, debe existir al menos nombre y apellido del titular y un monto total.</li>
+            <li>El r&eacute;gimen alimentario es obligatorio para confirmar reservas individuales y grupales.</li>
+            <li>Al confirmar, la app vuelve autom&aacute;ticamente al panel general.</li>
+          </ol>
+        </section>
+
+        <section id="pdf">
+          <h2>10. Formulario legal y reglas del hotel</h2>
+          <ul>
+            <li>El formulario legal se imprime cuando corresponde al ingreso del hu&eacute;sped.</li>
+            <li>Si la reserva es futura, no hace falta imprimir todav&iacute;a.</li>
+            <li>Cuando llega el d&iacute;a de ingreso, el bot&oacute;n de impresi&oacute;n aparece en el historial para las reservas de ese d&iacute;a.</li>
+            <li>El PDF combina registro y constancia de reglas del hotel en una hoja A4 compacta.</li>
+            <li>Solo firma el titular, responsable o representante de la reserva.</li>
+            <li>Para imprimir, deben estar cargados los datos necesarios de titular y hu&eacute;spedes.</li>
+            <li>Las observaciones est&aacute;n limitadas a 50 caracteres para no romper el dise&ntilde;o del documento.</li>
+          </ul>
+        </section>
+
+        <section id="historial">
+          <h2>11. Reservas, historial, edici&oacute;n y borrado</h2>
+          <ul>
+            <li>El m&oacute;dulo <strong>Reservas y habitaciones</strong> muestra solo lo pendiente o lo que requiere operaci&oacute;n.</li>
+            <li>Si falta DNI o documentaci&oacute;n, el bot&oacute;n dice <strong>Cargar legajo</strong>.</li>
+            <li>Cuando ya hay formulario impreso, estad&iacute;a abonada o resuelta, y hu&eacute;spedes ingresados, la tarjeta baja al historial inferior.</li>
+            <li>Desde el historial inferior se conserva <strong>Editar habitaci&oacute;n</strong> para correcciones.</li>
+            <li>Al abrirla, la pantalla sube autom&aacute;ticamente al m&oacute;dulo de carga.</li>
+            <li>Desde el historial tambi&eacute;n se puede imprimir el formulario legal cuando la reserva est&aacute; lista para ingreso.</li>
+            <li>Eliminar una reserva pide advertencia fuerte antes de borrarla definitivamente.</li>
+          </ul>
+        </section>
+
+        <section id="comidas">
+          <h2>12. Resumen de comidas del d&iacute;a</h2>
+          <p>
+            En el panel general, la app muestra cu&aacute;ntas personas deben comer hoy.
+          </p>
+          <ul>
+            <li><strong>Almuerzo:</strong> cuenta solo reservas con <strong>Pensi&oacute;n Completa</strong>.</li>
+            <li><strong>Cena:</strong> cuenta <strong>Media Pensi&oacute;n</strong> y <strong>Pensi&oacute;n Completa</strong>.</li>
+            <li>El d&iacute;a de egreso no cuenta para comidas porque la salida es por la ma&ntilde;ana.</li>
+            <li>La app se actualiza al cambiar el d&iacute;a operativo en horario de Buenos Aires.</li>
+          </ul>
+        </section>
+
+        <section id="respaldo">
+          <h2>13. Respaldo central</h2>
+          <ul>
+            <li>El respaldo operativo se hace desde el menu principal del sistema.</li>
+            <li>No se recomienda exportar Check-in por separado: debe viajar junto con Bebidas, Cajas y Check-out.</li>
+            <li>El navegador conserva espejos tecnicos, pero el archivo importante es el JSON central.</li>
+            <li>Conviene exportar un JSON central antes de cambios grandes o al cierre de una prueba importante.</li>
+          </ul>
+        </section>
+
+        <section id="practicas">
+          <h2>14. Buenas pr&aacute;cticas</h2>
+          <ul>
+            <li>Trabajar siempre desde la misma PC y el mismo navegador.</li>
+            <li>Confirmar la reserva reci&eacute;n cuando la informaci&oacute;n principal est&eacute; ordenada.</li>
+            <li>Usar el lector emergente con el cursor activo dentro del cuadro.</li>
+            <li>Revisar el mapa de habitaciones antes de confirmar reservas futuras.</li>
+            <li>Usar colores de grupo para reconocer empresas r&aacute;pidamente en la l&iacute;nea del tiempo.</li>
+            <li>Guardar respaldo JSON central antes de cerrar una prueba grande o antes de mover el sistema a otra PC.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

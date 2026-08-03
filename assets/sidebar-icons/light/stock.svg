@@ -1,0 +1,8 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Stock e inventario">
+  <rect width="64" height="64" rx="18" fill="#102033"/>
+  <path d="M16 24 32 15l16 9-16 9-16-9Z" fill="#5fe9d3"/>
+  <path d="M16 30 32 39l16-9v14L32 53 16 44V30Z" fill="#2f8cff"/>
+  <path d="M32 33v20" stroke="#eafcff" stroke-width="3" stroke-linecap="round"/>
+  <path d="M21 39 16 36m27 3 5-3" stroke="#eafcff" stroke-width="3" stroke-linecap="round"/>
+</svg>
+

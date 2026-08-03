@@ -1,0 +1,401 @@
+body.has-shell-layout {
+  --hotel-danger-solid: #c5445d;
+  --hotel-danger-solid-hover: #b63c54;
+}
+
+body.has-shell-layout .scanner-modal,
+body.has-shell-layout .private-reservation-modal-body #reservation-active-panel,
+body.has-shell-layout .scanner-modal .panel,
+body.has-shell-layout .scanner-modal .group-summary-card,
+body.has-shell-layout .scanner-modal .group-form-section,
+body.has-shell-layout .scanner-modal .group-room-card,
+body.has-shell-layout .scanner-modal .group-color-panel,
+body.has-shell-layout .scanner-modal .guest-card,
+body.has-shell-layout .scanner-modal .pricing-box,
+body.has-shell-layout .scanner-modal .booking-contact-box,
+body.has-shell-layout .scanner-modal .booking-deposit-box,
+body.has-shell-layout .scanner-modal .confirmation-box,
+body.has-shell-layout .scanner-modal .tip-box,
+body.has-shell-layout .scanner-modal .warning-box,
+body.has-shell-layout .scanner-modal .responsible-box,
+body.has-shell-layout .scanner-modal .room-capacity-box,
+body.has-shell-layout .scanner-modal .scanner-box,
+body.has-shell-layout .scanner-modal .room-picker-summary,
+body.has-shell-layout .scanner-modal .room-picker-status,
+body.has-shell-layout .scanner-modal .room-picker-shell,
+body.has-shell-layout .scanner-modal .reservation-heading-meta,
+body.has-shell-layout .scanner-modal .reservation-color-picker,
+body.has-shell-layout .scanner-modal .stay-payment-choice,
+body.has-shell-layout .scanner-modal .stay-payment-summary span {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(136, 165, 194, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(35, 120, 255, 0.12), transparent 30%),
+    radial-gradient(circle at top left, rgba(37, 199, 167, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(18, 33, 49, 0.98), rgba(11, 23, 35, 0.98));
+  box-shadow: none;
+}
+
+body.has-shell-layout .scanner-modal,
+body.has-shell-layout .private-reservation-modal-body #reservation-active-panel,
+body.has-shell-layout .scanner-modal .panel,
+body.has-shell-layout .scanner-modal .group-summary-card,
+body.has-shell-layout .scanner-modal .group-form-section,
+body.has-shell-layout .scanner-modal .group-room-card,
+body.has-shell-layout .scanner-modal .pricing-box,
+body.has-shell-layout .scanner-modal .booking-deposit-box,
+body.has-shell-layout .scanner-modal .booking-contact-box,
+body.has-shell-layout .scanner-modal .responsible-box,
+body.has-shell-layout .scanner-modal .room-capacity-box,
+body.has-shell-layout .scanner-modal .guest-card {
+  border-radius: 26px;
+}
+
+body.has-shell-layout .scanner-modal::before,
+body.has-shell-layout .private-reservation-modal-body #reservation-active-panel::before,
+body.has-shell-layout .scanner-modal .group-summary-card::before,
+body.has-shell-layout .scanner-modal .group-form-section::before,
+body.has-shell-layout .scanner-modal .group-room-card::before,
+body.has-shell-layout .scanner-modal .pricing-box::before,
+body.has-shell-layout .scanner-modal .booking-deposit-box::before,
+body.has-shell-layout .scanner-modal .booking-contact-box::before,
+body.has-shell-layout .scanner-modal .responsible-box::before,
+body.has-shell-layout .scanner-modal .room-capacity-box::before,
+body.has-shell-layout .scanner-modal .guest-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(118, 177, 255, 0.5), transparent);
+  pointer-events: none;
+}
+
+body.has-shell-layout .scanner-modal .panel-title-row h2,
+body.has-shell-layout .scanner-modal .panel-title-row h3,
+body.has-shell-layout .scanner-modal .cashbox-head h3,
+body.has-shell-layout .scanner-modal .room-picker-copy strong,
+body.has-shell-layout .scanner-modal .reservation-heading-meta strong,
+body.has-shell-layout .scanner-modal .pricing-copy strong,
+body.has-shell-layout .scanner-modal .room-capacity-copy strong,
+body.has-shell-layout .scanner-modal .guest-name {
+  color: #f7fbff;
+}
+
+body.has-shell-layout .scanner-modal .panel-title-row p,
+body.has-shell-layout .scanner-modal .room-picker-copy span,
+body.has-shell-layout .scanner-modal .reservation-heading-meta span,
+body.has-shell-layout .scanner-modal .pricing-copy p,
+body.has-shell-layout .scanner-modal .room-capacity-copy p,
+body.has-shell-layout .scanner-modal .guest-meta,
+body.has-shell-layout .scanner-modal .scanner-helper,
+body.has-shell-layout .scanner-modal .field small,
+body.has-shell-layout .scanner-modal .reservation-color-preview small,
+body.has-shell-layout .scanner-modal .stay-payment-choice span,
+body.has-shell-layout .scanner-modal .stay-payment-summary span {
+  color: #aebfd0;
+}
+
+body.has-shell-layout .scanner-modal .field-grid,
+body.has-shell-layout .scanner-modal .room-picker-field-grid,
+body.has-shell-layout .scanner-modal .group-operational-grid {
+  align-items: start;
+  grid-auto-flow: row dense;
+  gap: 20px;
+}
+
+body.has-shell-layout .scanner-modal .field,
+body.has-shell-layout .scanner-modal .cash-audit-field {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+}
+
+body.has-shell-layout .scanner-modal .field > span,
+body.has-shell-layout .scanner-modal .cash-audit-field > span {
+  color: #dce8f5;
+  font-weight: 700;
+}
+
+body.has-shell-layout .scanner-modal .field input,
+body.has-shell-layout .scanner-modal .field select,
+body.has-shell-layout .scanner-modal .field textarea,
+body.has-shell-layout .scanner-modal .money-field-shell,
+body.has-shell-layout .scanner-modal .scanner-input,
+body.has-shell-layout .scanner-modal .room-picker-shell,
+body.has-shell-layout .scanner-modal .room-picker-summary,
+body.has-shell-layout .scanner-modal .room-picker-status,
+body.has-shell-layout .scanner-modal .group-operational-grid .field input,
+body.has-shell-layout .scanner-modal .group-operational-grid .field select,
+body.has-shell-layout .scanner-modal .group-operational-grid .money-field-shell {
+  min-height: 58px;
+  border-radius: 18px;
+  border: 1px solid rgba(136, 165, 194, 0.24);
+  background: rgba(8, 17, 27, 0.78);
+  color: #f7fbff;
+  box-shadow: none;
+}
+
+body.has-shell-layout .scanner-modal .field input,
+body.has-shell-layout .scanner-modal .field select,
+body.has-shell-layout .scanner-modal .group-operational-grid .field input,
+body.has-shell-layout .scanner-modal .group-operational-grid .field select {
+  padding: 0 16px;
+}
+
+body.has-shell-layout .scanner-modal .field textarea {
+  min-height: 122px;
+  padding: 14px 16px;
+  resize: vertical;
+}
+
+body.has-shell-layout .scanner-modal .money-field-shell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+body.has-shell-layout .scanner-modal .money-prefix {
+  color: #dce8f5;
+  font-weight: 800;
+}
+
+body.has-shell-layout .scanner-modal .money-field-shell input,
+body.has-shell-layout .scanner-modal .money-field-shell input:focus,
+body.has-shell-layout .scanner-modal .money-field-shell input:focus-visible {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #f7fbff;
+}
+
+body.has-shell-layout .scanner-modal .field input::placeholder,
+body.has-shell-layout .scanner-modal .field textarea::placeholder,
+body.has-shell-layout .scanner-modal .money-field-shell input::placeholder {
+  color: #72869b;
+}
+
+body.has-shell-layout .scanner-modal .field input:focus,
+body.has-shell-layout .scanner-modal .field select:focus,
+body.has-shell-layout .scanner-modal .field textarea:focus,
+body.has-shell-layout .scanner-modal .money-field-shell:focus-within,
+body.has-shell-layout .scanner-modal .scanner-input:focus,
+body.has-shell-layout .scanner-modal .room-picker-shell:focus-within {
+  border-color: rgba(95, 233, 211, 0.42);
+  box-shadow: 0 0 0 3px rgba(37, 199, 167, 0.12);
+  outline: none;
+}
+
+body.has-shell-layout .scanner-modal .field input.required-empty,
+body.has-shell-layout .scanner-modal .field select.required-empty,
+body.has-shell-layout .scanner-modal .field textarea.required-empty,
+body.has-shell-layout .scanner-modal .money-field-shell.required-empty,
+body.has-shell-layout .scanner-modal .room-picker-shell.required-empty,
+body.has-shell-layout .scanner-modal .room-picker-shell.is-invalid {
+  border-color: rgba(255, 138, 151, 0.34);
+  background: rgba(74, 32, 44, 0.48);
+}
+
+body.has-shell-layout .scanner-modal .field input.required-filled,
+body.has-shell-layout .scanner-modal .field select.required-filled,
+body.has-shell-layout .scanner-modal .field textarea.required-filled,
+body.has-shell-layout .scanner-modal .money-field-shell.required-filled,
+body.has-shell-layout .scanner-modal .room-picker-shell.required-filled,
+body.has-shell-layout .scanner-modal .room-picker-summary.is-ready,
+body.has-shell-layout .scanner-modal .room-picker-status.is-ready,
+body.has-shell-layout .scanner-modal .reservation-heading-meta.is-ready {
+  border-color: rgba(101, 227, 206, 0.32);
+  background:
+    radial-gradient(circle at top right, rgba(37, 199, 167, 0.16), transparent 32%),
+    linear-gradient(180deg, rgba(20, 61, 67, 0.98), rgba(12, 35, 40, 0.98));
+}
+
+body.has-shell-layout .scanner-modal .field input:disabled,
+body.has-shell-layout .scanner-modal .field select:disabled,
+body.has-shell-layout .scanner-modal .field textarea:disabled {
+  color: #92a5b8;
+  background: rgba(21, 34, 47, 0.8);
+}
+
+body.has-shell-layout .scanner-modal .guest-card.is-warning,
+body.has-shell-layout .scanner-modal .warning-box,
+body.has-shell-layout .scanner-modal .room-picker-status.is-warning,
+body.has-shell-layout .scanner-modal .booking-deposit-box {
+  border-color: rgba(255, 193, 112, 0.28);
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 40, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(39, 31, 18, 0.98), rgba(29, 23, 14, 0.98));
+}
+
+body.has-shell-layout .scanner-modal .group-color-grid,
+body.has-shell-layout .scanner-modal .reservation-color-grid {
+  border-color: rgba(136, 165, 194, 0.24);
+  background: rgba(8, 17, 27, 0.9);
+}
+
+body.has-shell-layout .scanner-modal .group-color-swatch {
+  border-color: rgba(247, 251, 255, 0.18);
+  box-shadow: none;
+}
+
+body.has-shell-layout .scanner-modal .group-color-swatch.is-selected {
+  border-color: rgba(143, 185, 255, 0.8);
+  box-shadow: 0 0 0 1px rgba(143, 185, 255, 0.22);
+}
+
+body.has-shell-layout .scanner-modal .reservation-color-picker,
+body.has-shell-layout .scanner-modal .room-picker-shell,
+body.has-shell-layout .scanner-modal .reservation-heading-meta,
+body.has-shell-layout .scanner-modal .room-picker-summary,
+body.has-shell-layout .scanner-modal .room-picker-status,
+body.has-shell-layout .scanner-modal .scanner-box {
+  background:
+    radial-gradient(circle at top right, rgba(35, 120, 255, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(18, 33, 49, 0.98), rgba(11, 23, 35, 0.98));
+}
+
+body.has-shell-layout .scanner-modal .reservation-color-picker {
+  padding: 18px 20px;
+}
+
+body.has-shell-layout .scanner-modal .reservation-color-preview span:not(.reservation-color-sample) {
+  color: #e8f1fb;
+}
+
+body.has-shell-layout .scanner-modal .reservation-color-sample,
+body.has-shell-layout .scanner-modal .group-color-initial {
+  box-shadow: none;
+}
+
+body.has-shell-layout .scanner-modal .group-room-button {
+  border-color: rgba(136, 165, 194, 0.24);
+  background:
+    radial-gradient(circle at top right, rgba(35, 120, 255, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(18, 33, 49, 0.98), rgba(11, 23, 35, 0.98));
+  color: #f7fbff;
+  box-shadow: none;
+}
+
+body.has-shell-layout .scanner-modal .group-room-button:hover,
+body.has-shell-layout .scanner-modal .group-room-button:focus-visible {
+  border-color: rgba(154, 184, 214, 0.34);
+  background:
+    radial-gradient(circle at top right, rgba(37, 199, 167, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(22, 39, 57, 0.98), rgba(13, 27, 42, 0.98));
+  transform: translateY(-1px);
+}
+
+body.has-shell-layout .scanner-modal .group-room-button.is-selected {
+  border-color: rgba(101, 227, 206, 0.32);
+  background:
+    radial-gradient(circle at top right, rgba(37, 199, 167, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(20, 61, 67, 0.98), rgba(12, 35, 40, 0.98));
+}
+
+body.has-shell-layout .scanner-modal .group-room-button.is-complimentary,
+body.has-shell-layout .scanner-modal .group-room-button.is-coordinators {
+  background:
+    radial-gradient(circle at top right, rgba(35, 120, 255, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(18, 46, 66, 0.98), rgba(12, 29, 42, 0.98));
+}
+
+body.has-shell-layout .scanner-modal .empty-state {
+  border: 1px dashed rgba(136, 165, 194, 0.24);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at center, rgba(35, 120, 255, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(12, 24, 36, 0.96), rgba(8, 18, 28, 0.96));
+  color: #dce8f5;
+}
+
+body.has-shell-layout .scanner-modal .empty-state strong,
+body.has-shell-layout .scanner-modal .empty-state svg,
+body.has-shell-layout .scanner-modal .empty-state img {
+  color: #f7fbff;
+}
+
+body.has-shell-layout .scanner-modal .chip,
+body.has-shell-layout .scanner-modal .status-badge,
+body.has-shell-layout .scanner-modal .ghost-button,
+body.has-shell-layout .scanner-modal .timeline-date-field {
+  box-shadow: none;
+}
+
+body.has-shell-layout .scanner-modal .danger-button,
+body.has-shell-layout .scanner-modal .ghost-button.is-danger,
+body.has-shell-layout .scanner-modal [data-action="remove-guest"],
+body.has-shell-layout .scanner-modal [data-action="delete-reservation"],
+body.has-shell-layout .scanner-modal [data-action="archive-reservation"] {
+  border-color: rgba(255, 170, 184, 0.26);
+  background: var(--hotel-danger-solid);
+  color: #fff5f7;
+}
+
+body.has-shell-layout .scanner-modal .danger-button:hover,
+body.has-shell-layout .scanner-modal .danger-button:focus-visible,
+body.has-shell-layout .scanner-modal .ghost-button.is-danger:hover,
+body.has-shell-layout .scanner-modal .ghost-button.is-danger:focus-visible,
+body.has-shell-layout .scanner-modal [data-action="remove-guest"]:hover,
+body.has-shell-layout .scanner-modal [data-action="remove-guest"]:focus-visible,
+body.has-shell-layout .scanner-modal [data-action="delete-reservation"]:hover,
+body.has-shell-layout .scanner-modal [data-action="delete-reservation"]:focus-visible,
+body.has-shell-layout .scanner-modal [data-action="archive-reservation"]:hover,
+body.has-shell-layout .scanner-modal [data-action="archive-reservation"]:focus-visible {
+  border-color: rgba(255, 170, 184, 0.38);
+  background: var(--hotel-danger-solid-hover);
+}
+
+body.has-shell-layout .scanner-modal .history-actions,
+body.has-shell-layout .scanner-modal .pricing-actions,
+body.has-shell-layout .scanner-modal .room-capacity-actions {
+  align-items: start;
+}
+
+body.has-shell-layout .scanner-modal .field.field-span-4.pricing-box,
+body.has-shell-layout .scanner-modal .booking-deposit-box,
+body.has-shell-layout .scanner-modal .responsible-box,
+body.has-shell-layout .scanner-modal .booking-contact-box,
+body.has-shell-layout .scanner-modal .room-capacity-box {
+  padding: 22px;
+}
+
+body.has-shell-layout .scanner-modal .room-picker-shell {
+  gap: 16px;
+  padding: 14px;
+}
+
+body.has-shell-layout .scanner-modal .room-picker-copy,
+body.has-shell-layout .scanner-modal .reservation-color-preview {
+  min-width: 0;
+}
+
+body.has-shell-layout .scanner-modal .field small.is-danger {
+  color: #ffccd4;
+}
+
+@media (max-width: 980px) {
+  body.has-shell-layout .scanner-modal .field-grid,
+  body.has-shell-layout .scanner-modal .room-picker-field-grid,
+  body.has-shell-layout .scanner-modal .group-operational-grid {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  body.has-shell-layout .scanner-modal .room-picker-shell {
+    grid-template-columns: 1fr;
+  }
+
+  body.has-shell-layout .scanner-modal .field input,
+  body.has-shell-layout .scanner-modal .field select,
+  body.has-shell-layout .scanner-modal .money-field-shell,
+  body.has-shell-layout .scanner-modal .room-picker-summary,
+  body.has-shell-layout .scanner-modal .room-picker-status,
+  body.has-shell-layout .scanner-modal .room-picker-shell {
+    min-height: 54px;
+  }
+}

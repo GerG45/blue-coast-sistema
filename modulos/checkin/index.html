@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blue Coast | Check-in</title>
+    <link rel="icon" type="image/png" href="favicon-solanas.png" />
+    <link rel="apple-touch-icon" href="favicon-solanas.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      (() => {
+        try {
+          if (localStorage.getItem("bluecoast-theme-v1") === "light") {
+            document.documentElement.classList.add("theme-light-root");
+            document.documentElement.dataset.theme = "light";
+          }
+        } catch (error) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="styles.css?v=20260515-3" />
+    <link rel="stylesheet" href="timeline-dashboard-parity.css?v=20260515-1" />
+    <link rel="stylesheet" href="reservation-modal.css?v=20260515-1" />
+    <link rel="stylesheet" href="shell-visual-polish.css?v=20260515-2" />
+    <link rel="stylesheet" href="../../theme.css?v=20260529-4" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="app.js?v=20260515-3"></script>
+  </body>
+</html>

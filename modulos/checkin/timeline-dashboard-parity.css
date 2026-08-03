@@ -1,0 +1,108 @@
+body.has-shell-layout .timeline-panel .chip,
+body.has-shell-layout .timeline-panel .status-badge,
+body.has-shell-layout .timeline-panel .ghost-button.is-compact,
+body.has-shell-layout .timeline-panel .timeline-date-field {
+  border-color: rgba(154, 184, 214, 0.34) !important;
+  background: #18283a !important;
+  color: #e8f1fb !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .timeline-panel .status-badge.is-ready {
+  border-color: rgba(101, 227, 206, 0.32) !important;
+  background: #143d43 !important;
+  color: #b9fff3 !important;
+}
+
+body.has-shell-layout .timeline-panel .status-badge.is-blocked {
+  border-color: rgba(255, 138, 151, 0.34) !important;
+  background: #4a202c !important;
+  color: #ffd8de !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-date-field {
+  color: #dce7f3 !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-date-field input {
+  color: #f7fbff !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-wrap {
+  border-color: rgba(136, 165, 194, 0.24) !important;
+  background: rgba(12, 24, 37, 0.98) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-table thead th,
+body.has-shell-layout .timeline-panel .timeline-room-col {
+  background: rgba(15, 28, 41, 0.98) !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-day-col.is-selected-day,
+body.has-shell-layout .timeline-panel .timeline-cell.is-selected-day {
+  background: rgba(37, 199, 167, 0.08) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-day-col.is-today,
+body.has-shell-layout .timeline-panel .timeline-cell.is-today {
+  background: rgba(35, 120, 255, 0.08) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-day-button.is-selected {
+  color: #dbe9ff !important;
+  background: rgba(35, 120, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-day-button.is-today {
+  color: #b9d7ff !important;
+  background: rgba(35, 120, 255, 0.12) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-day-col.is-past,
+body.has-shell-layout .timeline-panel .timeline-cell.is-past {
+  background: rgba(18, 31, 45, 0.92) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-day-button.is-past:not(.is-selected):not(.is-today) {
+  color: #90a7bd !important;
+  background: rgba(18, 31, 45, 0.82) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-cell {
+  background: rgba(15, 28, 41, 0.84) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-status {
+  border: 1px solid rgba(143, 165, 190, 0.18) !important;
+  background: #24374a !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-status.is-occupied:not(.is-color-coded) {
+  border-color: rgba(255, 138, 151, 0.28) !important;
+  background: #94404b !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-status.is-color-coded,
+body.has-shell-layout .timeline-panel .timeline-status.is-occupied.is-color-coded {
+  background: var(--timeline-color) !important;
+  color: var(--timeline-ink) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-status.is-maintenance {
+  border-color: rgba(188, 210, 231, 0.46) !important;
+  background: linear-gradient(180deg, #687d90, #536779) !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-status.is-half-day {
+  background: #24374a !important;
+}
+
+body.has-shell-layout .timeline-panel .timeline-half.has-reservation,
+body.has-shell-layout .timeline-panel .timeline-status.is-selected-day {
+  box-shadow: none !important;
+}

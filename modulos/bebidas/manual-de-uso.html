@@ -1,0 +1,969 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manual de Uso | Solanas App</title>
+    <link rel="icon" type="image/png" href="favicon-solanas.png" />
+    <link rel="apple-touch-icon" href="favicon-solanas.png" />
+    <style>
+      @font-face {
+        font-family: "Libre Baskerville Solanas";
+        src: url("./fonts/libre-baskerville-bold.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --ink: #1f2e31;
+        --muted: #5d6f73;
+        --line: #d8ddd8;
+        --paper: #fffdf8;
+        --accent: #0d7c79;
+        --accent-soft: #eef8f7;
+        --accent-2: #ef8354;
+        --warm: #fff4ef;
+        --ok: #f2faf7;
+        --title-font: "Libre Baskerville Solanas", Georgia, "Times New Roman", serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background: #f2efe8;
+      }
+
+      .page {
+        width: min(980px, calc(100vw - 32px));
+        margin: 24px auto;
+        background: var(--paper);
+        border: 1px solid #ece7dc;
+        box-shadow: 0 18px 60px rgba(0, 0, 0, 0.08);
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 253, 248, 0.96);
+        backdrop-filter: blur(10px);
+      }
+
+      .toolbar button {
+        padding: 10px 14px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .toolbar .ghost {
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .content {
+        padding: 42px 56px 56px;
+      }
+
+      .cover {
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .cover-top {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+
+      .logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: 24px;
+        background: var(--accent-soft);
+        padding: 14px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: var(--title-font);
+        font-weight: 700;
+        font-size: 2.5rem;
+        line-height: 1;
+      }
+
+      .lead {
+        margin: 18px 0 0;
+        max-width: 62ch;
+        font-size: 1.08rem;
+        line-height: 1.7;
+        color: #344447;
+      }
+
+      .meta {
+        margin-top: 22px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .summary-box {
+        margin-top: 28px;
+        padding: 20px 22px;
+        border-left: 5px solid var(--accent);
+        background: var(--accent-soft);
+      }
+
+      h2 {
+        margin: 42px 0 14px;
+        font-family: var(--title-font);
+        font-weight: 700;
+        font-size: 1.65rem;
+      }
+
+      h3 {
+        margin: 28px 0 10px;
+        font-family: var(--title-font);
+        font-weight: 700;
+        font-size: 1.15rem;
+      }
+
+      p {
+        margin: 0 0 12px;
+        line-height: 1.72;
+      }
+
+      ul,
+      ol {
+        margin: 0 0 18px 20px;
+        line-height: 1.72;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .callout {
+        margin: 18px 0;
+        padding: 16px 18px;
+        border: 1px solid #f0d2c5;
+        background: var(--warm);
+      }
+
+      .ok {
+        border-color: #cfe4db;
+        background: var(--ok);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        padding: 18px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .card h3 {
+        margin-top: 0;
+      }
+
+      .steps {
+        counter-reset: step;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .steps li {
+        position: relative;
+        margin: 0 0 14px;
+        padding: 14px 14px 14px 58px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .steps li::before {
+        counter-increment: step;
+        content: counter(step);
+        position: absolute;
+        left: 14px;
+        top: 14px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--accent);
+        color: #fff;
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+
+      .mini-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+
+      .mini-table th,
+      .mini-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .mini-table th {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      code {
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: #f4f4f1;
+        font-family: "Courier New", monospace;
+        font-size: 0.92em;
+      }
+
+      .footer {
+        margin-top: 44px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .footer-signature {
+        margin-top: 16px;
+        line-height: 1.7;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--ink);
+      }
+
+      .footer-signature-kicker {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      @page {
+        size: A4;
+        margin: 14mm;
+      }
+
+      @media (max-width: 760px) {
+        .page {
+          width: calc(100vw - 12px);
+          margin: 6px auto;
+        }
+
+        .content {
+          padding: 24px 18px 28px;
+        }
+
+        .cover-top,
+        .grid {
+          grid-template-columns: 1fr;
+          display: grid;
+        }
+
+        .logo {
+          width: 88px;
+          height: 88px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+      }
+
+      @media print {
+        body {
+          background: #fff;
+        }
+
+        .page {
+          width: 100%;
+          margin: 0;
+          border: 0;
+          box-shadow: none;
+        }
+
+        .toolbar {
+          display: none;
+        }
+
+        .content {
+          padding: 0;
+        }
+
+        h2,
+        h3,
+        .card,
+        .callout,
+        .steps li {
+          break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="toolbar">
+        <button type="button" class="ghost" onclick="window.location.href='index.html'">
+          Ir a la app
+        </button>
+        <button type="button" onclick="window.print()">Exportar a PDF</button>
+      </div>
+
+      <div class="content">
+        <section class="cover">
+          <div class="cover-top">
+            <img class="logo" src="../logo-solanas.png" alt="Solanas" />
+            <div>
+              <p class="eyebrow">Manual operativo</p>
+              <h1>Solanas App</h1>
+              <p class="lead">
+                Hola! Mi nombre es Germán, diseñador de este sistema. Esta es una guía práctica
+                para usar el comandero de bebidas, registrar ventas, controlar stock, trabajar con
+                costos, bebidas elaboradas, imprimir tickets y resguardar la información sin
+                depender de planillas frágiles.
+              </p>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span class="pill">32 habitaciones fijas</span>
+            <span class="pill">Catálogo editable</span>
+            <span class="pill">Precio, costo y stock</span>
+            <span class="pill">Bebidas elaboradas</span>
+            <span class="pill">JSON central</span>
+          </div>
+
+          <div class="summary-box">
+            <strong>Objetivo del sistema:</strong>
+            registrar consumos de bebidas de forma simple y segura, reducir errores operativos,
+            alimentar Check-out y mantener una base fija de productos, costos y stock.
+          </div>
+        </section>
+
+        <section>
+          <h2>1. Cómo abrir el sistema</h2>
+          <ol class="steps">
+            <li>
+              Para uso general, abrir el sistema desde <code>abrir-solanas.cmd</code>.
+            </li>
+            <li>
+              Entrar al módulo <strong>Estación de bebidas</strong> desde el menú principal.
+            </li>
+            <li>
+              Si se abre en una pestaña nueva, debe mantenerse dentro del mismo servidor local del sistema.
+            </li>
+            <li>
+              La app funciona localmente y sus datos se guardan dentro del JSON central del sistema.
+            </li>
+          </ol>
+
+          <div class="callout ok">
+            <strong>Recomendación:</strong> usar siempre el mismo navegador en la misma
+            computadora y el acceso principal para que Check-in, Bebidas y Check-out trabajen con la misma información.
+          </div>
+        </section>
+
+        <section>
+          <h2>2. Qué se ve en la pantalla principal</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Resumen superior</h3>
+              <p>
+                Muestra cuántas habitaciones están activas, cuánto hay pendiente, cuánto se cerró
+                en el turno, la caja directa y cuántos productos tienen stock bajo.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Grilla de habitaciones</h3>
+              <p>
+                Hay 32 habitaciones fijas. Cada tarjeta indica si tiene consumo cargado, si tiene
+                ticket impreso y cuál es el total actual.
+              </p>
+              <p>
+                Color blanco: libre. Color verde: activa con consumo. Color naranja:
+                ticket ya impreso y pendiente de cierre.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Detalle de habitación</h3>
+              <p>
+                Al seleccionar una habitación, se ve su consumo y se pueden agregar productos,
+                imprimir y cerrar.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Panel lateral</h3>
+              <p>
+                Resume el turno activo, la rentabilidad estimada, los consumos del personal, la
+                cuenta de choferes/coordinadores y las alertas de stock bajo.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section>
+          <h2>3. Flujo recomendado de trabajo</h2>
+          <ol class="steps">
+            <li>Revisar al comienzo del turno que catálogo, costos, stock y precios estén correctos.</li>
+            <li>En la cabecera, revisar el <strong>Servicio del turno</strong>. La app lo sugiere por horario, pero puedes cambiarlo manualmente entre <strong>ALMUERZO</strong> y <strong>CENA</strong> si ese turno quedó ambiguo.</li>
+            <li>Seleccionar una habitación cuando llega un pedido.</li>
+            <li>Agregar los productos consumidos desde el buscador de esa habitación.</li>
+            <li>Imprimir el ticket cuando corresponda.</li>
+            <li>Cerrar la habitación una vez terminado ese consumo.</li>
+            <li>Al final del turno, revisar caja directa, consumos del personal, choferes/coordinadores y resumen de cierre.</li>
+            <li>Emitir el ticket de turno y el informe gerencial solo cuando no queden habitaciones abiertas.</li>
+            <li>Hacer el cierre global y respaldar el JSON central desde el menú principal si corresponde.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>4. Cómo cargar consumos en una habitación</h2>
+          <ol class="steps">
+            <li>Hacer clic sobre la habitación correspondiente.</li>
+            <li>
+              En el sector <strong>Agregar productos</strong>, buscar por nombre o filtrar por
+              categoría.
+            </li>
+            <li>Presionar <strong>Agregar</strong> en cada producto que corresponda.</li>
+            <li>
+              Si un producto se repite, usar <code>+</code> y <code>-</code> para ajustar la
+              cantidad.
+            </li>
+            <li>Si necesitas regalar o compensar solo una unidad, usar <strong>Bonif.</strong> en esa fila. La app separa esa unidad como bonificada sin regalar las dem&aacute;s.</li>
+            <li>Si una carga fue errónea, usar el botón <code>x</code> para quitarla.</li>
+          </ol>
+
+          <div class="callout">
+            <strong>Importante:</strong> si el producto controla stock, cada agregado descuenta
+            stock automáticamente. Si no hay stock suficiente, la app avisa y no permite cargarlo.
+          </div>
+        </section>
+
+        <section>
+          <h2>5. Cómo imprimir un ticket</h2>
+          <ol class="steps">
+            <li>Entrar en la habitación correspondiente.</li>
+            <li>Revisar que los productos y cantidades sean correctos.</li>
+            <li>Si hubo un regalo o resarcimiento, revisar que la fila aparezca como <strong>Bonificada</strong>.</li>
+            <li>Presionar <strong>Imprimir ticket</strong>.</li>
+            <li>
+              En modo normal, el navegador mostrará su flujo habitual de impresión. En modo de
+              impresión directa, el proceso queda preparado para ser más automático.
+            </li>
+          </ol>
+
+          <div class="callout ok">
+            <strong>Nota:</strong> cuando la Epson TM-T20II tenga drivers instalados y quede
+            configurada como impresora predeterminada, el flujo normal del navegador ya queda listo
+            para imprimir tickets desde el sistema.
+          </div>
+        </section>
+
+        <section>
+          <h2>6. Cómo cerrar una habitación</h2>
+          <ol class="steps">
+            <li>Verificar que el ticket ya esté listo o impreso.</li>
+            <li>Comprobar que el consumo cargado sea correcto.</li>
+            <li>Presionar <strong>Cerrar habitación</strong>.</li>
+            <li>Elegir si el huésped abonó en <strong>Efectivo</strong> o <strong>Transferencia</strong>.</li>
+            <li>
+              La habitación vuelve a quedar libre y el consumo pasa al bloque de habitaciones
+              cerradas del turno.
+            </li>
+          </ol>
+
+          <div class="callout ok">
+            <strong>Bonificaciones:</strong> si una habitaci&oacute;n tuvo productos regalados, quedan identificados en el resumen de cierre y en el informe gerencial con su monto bonificado.
+          </div>
+
+          <div class="callout">
+            <strong>Recordatorio:</strong> cerrar una habitación no borra el consumo del turno.
+            Solo saca esa habitación del trabajo activo y lo deja registrado para el cierre global.
+          </div>
+
+          <div class="callout ok">
+            <strong>Correcciones:</strong> si hubo un error humano, en
+            <strong>Habitaciones cerradas</strong> puedes usar
+            <strong>Reabrir para corregir</strong>. La habitación vuelve al trabajo activo, el
+            ticket queda pendiente de impresión y luego debes cerrarla otra vez con el medio de
+            pago correcto. Esto se hace antes del cierre global del turno.
+          </div>
+        </section>
+
+        <section>
+          <h2>7. Caja directa</h2>
+          <p>
+            La sección <strong>Caja directa</strong> sirve para productos que se cobran sin
+            asociarlos a una habitación.
+          </p>
+          <ol class="steps">
+            <li>Ir a la sección <strong>Caja directa</strong>.</li>
+            <li>Buscar el producto.</li>
+            <li>Presionar <strong>Agregar</strong>.</li>
+            <li>Elegir si el cobro entró por <strong>Efectivo</strong> o <strong>Transferencia</strong>.</li>
+            <li>Ajustar cantidad si hace falta.</li>
+          </ol>
+
+          <div class="callout ok">
+            <strong>Detalle útil:</strong> si vendes el mismo producto por ambos medios de pago,
+            la app lo separa en filas distintas. Los botones <code>+</code>, <code>-</code> y
+            <code>x</code> respetan el medio de pago de esa fila.
+          </div>
+        </section>
+
+        <section>
+          <h2>8. Consumos del personal</h2>
+          <p>
+            La sección <strong>Consumos del personal</strong> sirve para registrar productos
+            consumidos por personal interno.
+          </p>
+          <ol class="steps">
+            <li>Primero revisar o cargar los nombres en <strong>Personal cargado</strong>.</li>
+            <li>Ir a <strong>Consumos del personal</strong>.</li>
+            <li>Agregar el producto correspondiente.</li>
+            <li>La app abre una ventana para elegir <strong>quién</strong> está consumiendo ese producto.</li>
+            <li>La app toma automáticamente el <strong>precio de costo</strong>, no el precio de venta.</li>
+            <li>La app descuenta stock si ese producto controla stock.</li>
+          </ol>
+          <p>
+            Estos consumos <strong>no se suman al total vendido</strong>, pero sí quedan reflejados
+            en el cierre del turno y en el histórico como consumo del personal a costo.
+          </p>
+
+          <div class="callout ok">
+            <strong>Seguimiento:</strong> la app separa el consumo por integrante, muestra quién
+            consumió qué y cuánto debe a costo. Ese detalle se ve en el balance por integrante,
+            en el resumen del turno y en el histórico.
+          </div>
+
+          <div class="callout">
+            <strong>Personal cargado:</strong> desde esa misma sección puedes agregar nombres
+            nuevos, archivar integrantes y reactivarlos más adelante. Los archivados no salen en la
+            selección de consumos, pero siguen visibles en el histórico anterior y quedan dentro
+            del bloque desplegable <strong>Personal archivado</strong>.
+          </div>
+        </section>
+
+        <section>
+          <h2>8.1. Choferes y coordinadores</h2>
+          <p>
+            La sección <strong>Choferes y coordinadores</strong> sirve para registrar consumiciones
+            que <strong>no se cobran en el momento</strong>, sino al final de la estadía.
+          </p>
+          <ol class="steps">
+            <li>Primero usar <strong>Cargar grupo</strong>. La app abre una ventana para cargar el nombre del grupo y sus choferes/coordinadores.</li>
+            <li>Si hay dos grupos conviviendo, elegir en el desplegable cuál está comiendo en ese momento.</li>
+            <li>Si solo hay un grupo activo, la app lo toma sola y no muestra el desplegable.</li>
+            <li>Si luego faltó alguien o necesitas corregir nombres, usar <strong>Editar grupo</strong>. Ese editor no permite cambiar el nombre del grupo para evitar inconsistencias entre turnos.</li>
+            <li>Ir a <strong>Choferes y coordinadores</strong>.</li>
+            <li>Agregar el producto correspondiente.</li>
+            <li>La app abre una ventana para elegir <strong>quién</strong> está consumiendo ese producto dentro del grupo activo.</li>
+            <li>Si la persona todavía no usó su beneficio en esa comida, la primera bebida <strong>sin alcohol de 500ml o 600ml</strong> queda <strong>bonificada</strong>.</li>
+            <li>Las demás consumiciones se cargan con <strong>30% de descuento</strong>.</li>
+            <li>La app descuenta stock igual que en el resto de los flujos.</li>
+          </ol>
+          <p>
+            Estos movimientos <strong>no entran a caja directa ni piden medio de pago</strong>.
+            Quedan como <strong>cuenta pendiente</strong> para cobrar al final de la estadía.
+          </p>
+
+          <div class="callout ok">
+            <strong>Seguimiento:</strong> la app muestra el resumen de esta comida por persona,
+            indica que parte fue bonificada y mantiene una <strong>cuenta acumulada pendiente por grupo</strong>
+            aunque cierres el turno.
+          </div>
+
+          <div class="callout">
+            <strong>Regla automática:</strong> la bonificacion se aplica solo a productos
+            <strong>sin alcohol de 500ml o 600ml</strong>. Si una persona consume varios elegibles en la
+            misma comida, la app deja bonificado uno solo, toma automáticamente el de mayor valor
+            y el resto pasa a 30% de descuento.
+          </div>
+
+          <div class="callout">
+            <strong>Editar grupo:</strong> al quitar un nombre desde esa ventana, deja de aparecer
+            para asignar consumos. Si luego lo vuelves a escribir, la app lo reactiva dentro del mismo grupo.
+          </div>
+
+          <div class="callout ok">
+            <strong>Cierres:</strong> el <strong>Ticket del turno</strong>, el <strong>Ticket final</strong>,
+            el <strong>Informe de grupo</strong> y el botón <strong>Cerrar grupo</strong> se gestionan desde
+            el módulo <strong>Cierres</strong>, no desde la carga diaria de consumos.
+          </div>
+
+          <div class="callout ok">
+            <strong>Ticket del turno:</strong> ese ticket térmico sale con el detalle de todos los consumos
+            del grupo en esa comida y deja un espacio para la <strong>firma del representante</strong>,
+            como constancia antes del cierre final del viaje.
+          </div>
+        </section>
+
+        <section>
+          <h2>9. Catálogo, stock, precios y costos</h2>
+          <p>
+            La sección <strong>Catálogo y stock</strong> es el corazón de la configuración fija del
+            sistema.
+          </p>
+
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Campo</th>
+                <th>Uso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Nombre</td>
+                <td>Nombre visible del producto en habitaciones, caja y tickets.</td>
+              </tr>
+              <tr>
+                <td>Categoría</td>
+                <td>Ordena y filtra el catálogo para trabajar más rápido.</td>
+              </tr>
+              <tr>
+                <td>Tipo</td>
+                <td>Define si el producto es <strong>Fijo</strong> o <strong>Elaborado</strong>.</td>
+              </tr>
+              <tr>
+                <td>Precio de venta</td>
+                <td>Valor que se cobra al cliente.</td>
+              </tr>
+              <tr>
+                <td>Precio de costo</td>
+                <td>
+                  Valor al que se compra el producto cuando es fijo o insumo. En bebidas
+                  elaboradas, el costo se calcula desde la receta.
+                </td>
+              </tr>
+              <tr>
+                <td>Stock</td>
+                <td>Cantidad disponible del producto cuando controla stock.</td>
+              </tr>
+              <tr>
+                <td>Umbral de alerta</td>
+                <td>Nivel a partir del cual el stock se considera bajo. En esta versión, el mínimo práctico es <strong>10</strong>.</td>
+              </tr>
+              <tr>
+                <td>Se vende al cliente</td>
+                <td>
+                  Si está activo, el producto aparece en habitaciones y caja. Si se desactiva,
+                  queda como <strong>Solo insumo</strong>.
+                </td>
+              </tr>
+              <tr>
+                <td>Estado</td>
+                <td>
+                  Un producto puede estar <strong>Activo</strong> o <strong>Archivado</strong>. Si
+                  está archivado, sigue visible en la tabla y se puede reactivar.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout ok">
+            <strong>Consejo práctico:</strong> usa <strong>Solo insumo</strong> para botellas o
+            componentes que no se venden solos, pero sí forman parte de recetas.
+          </div>
+
+          <div class="callout">
+            <strong>Edición diaria:</strong> desde la misma tabla de abajo puedes
+            <strong>Editar</strong>, <strong>Archivar</strong>, <strong>Reactivar</strong> o
+            <strong>Borrar</strong> productos. El borrado conviene solo para productos cargados por
+            error: la app lo bloquea si ese producto está participando del turno actual o de una
+            receta. Los archivados quedan con la fila más opaca para identificarlos rápido y el
+            stock se resalta con tono rojizo cuando llega a <strong>10 o menos</strong>.
+          </div>
+
+          <div class="callout ok">
+            <strong>PDF de stock:</strong> al final de la app hay un botón discreto para descargar
+            un PDF con el stock actual del catálogo activo.
+          </div>
+        </section>
+
+        <section>
+          <h2>10. Diferencia entre bebida fija y bebida elaborada</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Bebida fija</h3>
+              <p>
+                Es un producto comprado y vendido como una unidad directa. Ejemplos: agua,
+                gaseosa, cerveza, vino.
+              </p>
+              <ul>
+                <li>Se carga precio de venta.</li>
+                <li>Se carga precio de costo.</li>
+                <li>Se puede controlar stock directo.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Bebida elaborada</h3>
+              <p>
+                Es una bebida armada por el bartender a partir de uno o más insumos. Ejemplos:
+                limonada, fernet, gancia, whisky servido por medida.
+              </p>
+              <ul>
+                <li>Se carga precio de venta.</li>
+                <li>El costo se calcula desde la receta.</li>
+                <li>El stock se descuenta desde los insumos.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section>
+          <h2>11. Cómo usar el recetario</h2>
+          <ol class="steps">
+            <li>Crear o editar un producto.</li>
+            <li>En <strong>Tipo</strong>, elegir <strong>Elaborada</strong>.</li>
+            <li>Agregar los insumos en el bloque <strong>Recetario</strong>.</li>
+            <li>Definir la cantidad de cada insumo por bebida.</li>
+            <li>Guardar el producto.</li>
+          </ol>
+
+          <div class="callout">
+            <strong>Ejemplo:</strong> si una bebida usa <code>0.080</code> de una botella o
+            <code>0.250</code> de una soda, esa medida se descuenta cada vez que se vende esa
+            bebida elaborada.
+          </div>
+        </section>
+
+        <section>
+          <h2>12. Rentabilidad y márgenes</h2>
+          <p>
+            La app muestra rentabilidad estimada en tres lugares:
+          </p>
+          <ul>
+            <li>En el catálogo, por producto: costo, ganancia y margen.</li>
+            <li>En el panel lateral del turno activo: vendible, costo estimado y margen del turno.</li>
+            <li>En el resumen de cierre del turno: vendido, costo, utilidad y margen total.</li>
+          </ul>
+
+          <div class="callout ok">
+            <strong>Interpretación simple:</strong> la ganancia es precio de venta menos costo. El
+            margen es esa ganancia expresada como porcentaje sobre la venta.
+          </div>
+        </section>
+
+        <section>
+          <h2>13. Cierre global de turno</h2>
+          <ol class="steps">
+            <li>Verificar que no queden habitaciones con consumo pendiente.</li>
+            <li>Revisar caja directa, consumos del personal y choferes/coordinadores.</li>
+            <li>Revisar el corte entre <strong>Efectivo</strong> y <strong>Transferencia</strong>.</li>
+            <li>Si hubo regalos o resarcimientos en habitaciones, revisar tambi&eacute;n su detalle bonificado.</li>
+            <li>Si quieres, presionar <strong>Emitir ticket de turno</strong>.</li>
+            <li>Si quieres, presionar <strong>Informe gerencial</strong> para abrir una vista larga tipo landing, pensada para tablet, con guardado directo del informe y una secci&oacute;n especial para los grupos de choferes/coordinadores.</li>
+            <li>Presionar <strong>Cerrar turno global</strong>.</li>
+            <li>La app guarda ese turno en el histórico y abre un turno nuevo.</li>
+          </ol>
+
+          <div class="callout">
+            <strong>Seguridad:</strong> la app bloquea <strong>Emitir ticket de turno</strong>,
+            <strong>Informe gerencial</strong> y <strong>Cerrar turno global</strong> si todavía hay
+            habitaciones o mesas abiertas. Primero se deben cerrar todas las comandas.
+          </div>
+
+          <div class="callout ok">
+            <strong>Qué queda guardado:</strong> el histórico conserva habitaciones cerradas, caja
+            directa, consumos del personal, choferes/coordinadores, utilidad estimada y el
+            desglose por medio de pago del turno.
+          </div>
+          <div class="callout">
+            <strong>Informe gerencial:</strong> abre una vista ampliada, larga y navegable, pensada
+            para revisarse en pantalla. Desde ah&iacute; puedes usar <strong>Guardar informe</strong> para
+            descargar un HTML autocontenido, portable para PC, tablet o celular. Incluye tambi&eacute;n
+            las bonificaciones hechas en habitaciones y el seguimiento de grupos de
+            choferes/coordinadores: si se crearon en ese turno, qu&eacute; consumieron, si siguen
+            abiertos y si all&iacute; mismo quedaron cerrados.
+          </div>
+          <div class="callout ok">
+            <strong>Formato recomendado:</strong> <strong>Guardar informe</strong> descarga un HTML
+            autocontenido y conserva la vista larga tal como se ve, pensado para compartirlo y revisarlo
+            desde PC, tablet o celular.
+          </div>
+        </section>
+
+        <section>
+          <h2>13.1. Cierre de grupo</h2>
+          <p>
+            El <strong>cierre de grupo</strong> es independiente del cierre global del turno. Sirve para
+            terminar la cuenta completa de un viaje, aunque haya pasado por varios almuerzos y cenas.
+          </p>
+          <ol class="steps">
+            <li>Ir al módulo <strong>Cierres</strong>.</li>
+            <li>Buscar la tarjeta del grupo que quieres gestionar.</li>
+            <li>Si necesitas una constancia de esa comida, usar <strong>Ticket del turno</strong>.</li>
+            <li>Si quieres la cuenta térmica acumulada del viaje, usar <strong>Ticket final</strong>.</li>
+            <li>Si quieres guardar el detalle largo del viaje, presionar <strong>Informe de grupo</strong>.</li>
+            <li>Presionar <strong>Cerrar grupo</strong> cuando ese viaje ya quedó saldado.</li>
+          </ol>
+
+          <div class="callout">
+            <strong>Qué hace el cierre de grupo:</strong> pone en cero la cuenta acumulada de ese viaje,
+            quita sus nombres del módulo y deja libre el sistema para cargar grupos nuevos.
+          </div>
+
+          <div class="callout ok">
+            <strong>Importante:</strong> el cierre de grupo <strong>no borra</strong> lo que ya quedó registrado
+            en los cierres globales del turno. Solo cierra la cuenta transversal de choferes/coordinadores.
+          </div>
+          <div class="callout">
+            <strong>Informe de grupo:</strong> muestra un resumen agrupado de todo lo consumido por el grupo
+            completo y tambi&eacute;n el detalle por integrante, separado por fecha y servicio, para poder
+            reconstruir el viaje sin revisar turno por turno.
+          </div>
+        </section>
+
+        <section>
+          <h2>14. Respaldo y seguridad</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Snapshots internos</h3>
+              <p>
+                La app conserva trazabilidad interna cada vez que haces cambios importantes. Esa
+                informacion viaja dentro del estado central del sistema.
+              </p>
+              <p>Ya no aparece una lista operativa de Restaurar dentro de Bebidas.</p>
+            </article>
+            <article class="card">
+              <h3>Respaldo JSON central</h3>
+              <p>
+                Los respaldos externos se hacen desde el menu principal del sistema, no desde la
+                Estacion de bebidas.
+              </p>
+              <p>Esto evita que existan respaldos separados de Check-in y Bebidas.</p>
+            </article>
+          </div>
+
+          <ol class="steps" style="margin-top: 18px;">
+            <li>Para una copia externa, usar el <strong>JSON central</strong> desde el menu principal.</li>
+            <li>No exportar ni importar datos parciales de Bebidas por separado.</li>
+            <li>Antes de una prueba grande o traslado a otra PC, respaldar el sistema completo.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>15. Impresión con la Epson TM-T20II</h2>
+          <ol class="steps">
+            <li>Instalar los drivers de la impresora.</li>
+            <li>Configurar la Epson como impresora predeterminada.</li>
+            <li>Abrir el sistema con <code>abrir-solanas.cmd</code>.</li>
+            <li>Probar el botón <strong>Imprimir ticket</strong>.</li>
+          </ol>
+          <p>
+            Si todavía no está instalada la impresora, se puede seguir usando la app normalmente y
+            dejar la parte de impresión directa para una segunda etapa.
+          </p>
+        </section>
+
+        <section>
+          <h2>16. Qué hacer si algo no cierra</h2>
+          <ol class="steps">
+            <li>No seguir cargando datos con apuro.</li>
+            <li>Revisar si el problema está en una habitación, en caja directa, en personal o en choferes/coordinadores.</li>
+            <li>Verificar stock, precio de venta, costo y tipo de producto.</li>
+            <li>Si fue un error de carga, corregir con <code>-</code> o <code>x</code>.</li>
+            <li>Si el error fue después de cerrar una habitación, usar <strong>Reabrir para corregir</strong>.</li>
+            <li>Si el problema es mayor, restaurar desde un respaldo central hecho desde el menu principal.</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>17. Buenas prácticas</h2>
+          <ul>
+            <li>Usar siempre la misma computadora y el mismo navegador.</li>
+            <li>Revisar stock, precios y costos al inicio de cada turno.</li>
+            <li>No cerrar una habitación sin revisar el ticket.</li>
+            <li>Si una habitación cerrada tiene un error, corregirla antes del cierre global.</li>
+            <li>No cerrar el turno global hasta que todas las habitaciones estén cerradas.</li>
+            <li>Hacer respaldo central desde el menu principal si hubo mucho movimiento real.</li>
+            <li>Mantener bien definidos los insumos antes de armar bebidas elaboradas.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>18. Resumen corto del turno</h2>
+          <ol class="steps">
+            <li>Revisar catálogo y stock.</li>
+            <li>Cargar consumos por habitación.</li>
+            <li>Imprimir ticket.</li>
+            <li>Cerrar habitación y elegir el medio de pago.</li>
+            <li>Cargar caja directa si hubo ventas sin habitación y elegir el medio de pago.</li>
+            <li>Cargar consumos del personal si existieron.</li>
+            <li>Cargar choferes/coordinadores dentro del grupo correcto si hubo consumos diferidos.</li>
+            <li>Si un viaje terminó, imprimir ticket de grupo, revisar su informe y hacer el cierre de grupo.</li>
+            <li>Emitir ticket de turno solo cuando no queden habitaciones abiertas.</li>
+            <li>Cerrar turno global.</li>
+            <li>Respaldar JSON central desde el menu principal si corresponde.</li>
+          </ol>
+        </section>
+
+        <div class="footer">
+          Manual actualizado para la versión local actual de Solanas App. Si cambian flujos,
+          nombres de botones o la lógica de stock/recetas, conviene actualizar este documento para
+          que siga siendo la guía operativa del equipo.
+          <div class="footer-signature">
+            <span class="footer-signature-kicker">Diseño y desarrollo del sistema</span>
+            <strong>Germán F. Gamón Lozano</strong><br />
+            Contacto: german.lozano45@gmail.com<br />
+            WhatsApp: 3516692361
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+
