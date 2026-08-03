@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Solanas | Foja cero</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e2c2f;
+      --muted: #5f7074;
+      --teal: #0d7c79;
+      --paper: #fff8ee;
+      --line: rgba(30, 44, 47, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #eee8dc;
+    }
+
+    main {
+      width: min(720px, 100%);
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 248, 238, 0.94);
+      box-shadow: 0 22px 52px rgba(31, 40, 42, 0.12);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      line-height: 1;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(13, 124, 121, 0.16);
+      background: rgba(232, 247, 244, 0.9);
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .details {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    a {
+      color: var(--teal);
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Foja cero</h1>
+    <p>
+      Esta pantalla limpia reservas, huespedes, cierres, cajas y turnos historicos del sistema
+      del sistema. Conserva el catalogo de bebidas y deja en 30 unidades los productos activos con
+      stock propio.
+    </p>
+    <div id="status" class="status">Preparando limpieza...</div>
+    <div id="details" class="details"></div>
+  </main>
+
+  <script>
+    const REQUIRED_TOKEN = "foja-cero-2026-05-08";
+    const CHECKIN_KEY = "solanas-checkin-state-v2";
+    const BEVERAGE_KEY = "solanas-comandero-state-v5";
+    const UNIFIED_KEY = "solanas-unificado-state-v2";
+    const UNIFIED_BACKUP_FORMAT = "solanas-unified-backup-v1";
+    const CENTRAL_STATE_URL = "/api/state";
+    const CHECKIN_CLEAN_MARKER = "solanas-checkin-clean-slate-2026-05-06-v2";
+    const BEVERAGE_MARKERS = [
+      "solanas-comandero-reset-2026-04-03-catalogo-base-nuevo",
+      "solanas-comandero-stock-sync-2026-04-05-stock-30-general",
+      "solanas-comandero-test-cleanup-2026-04-05-checkpoint-real",
+      "solanas-comandero-driver-coordinator-pilot-reset-2026-04-05",
+      "solanas-comandero-driver-coordinator-rebalance-2026-04-04-ajuste-1",
+      "solanas-comandero-movement-cleanup-2026-05-06-v1",
+    ];
+    const DEFAULT_TARIFFS = {
+      single: "40000",
+      double: "30000",
+      triple: "27000",
+      quadruple: "25000",
+      halfBoardSupplement: "0",
+      fullBoardSupplement: "0",
+    };
+
+    function readJson(key) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        console.error("No se pudo leer", key, error);
+        return null;
+      }
+    }
+
+    function todayInputDate() {
+      const now = new Date();
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0"),
+      ].join("-");
+    }
+
+    function addDays(inputDate, days) {
+      const [year, month, day] = String(inputDate).split("-").map(Number);
+      const date = new Date(year, month - 1, day + days);
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+    }
+
+    function uid(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function createEmptyGuest(isPrimary) {
+      return {
+        id: uid(isPrimary ? "titular" : "huesped"),
+        isPrimary: Boolean(isPrimary),
+        firstName: "",
+        lastName: "",
+        document: "",
+        birthDate: "",
+        gender: "",
+        nationality: "Argentina",
+        specialRegime: "",
+        rawScan: "",
+        parseMeta: null,
+      };
+    }
+
+    function createEmptyReservation() {
+      const checkInDate = todayInputDate();
+      const id = uid("reservation");
+      const now = new Date().toISOString();
+      return {
+        id,
+        createdAt: now,
+        updatedAt: now,
+        archived: false,
+        roomNumber: "",
+        checkInDate,
+        checkOutDate: addDays(checkInDate, 1),
+        nights: "1",
+        regime: "",
+        licensePlate: "",
+        total: "",
+        cash: "",
+        transfer: "",
+        pending: "",
+        stayPaymentMode: "",
+        stayPaymentRecordedAt: null,
+        email: "",
+        phone: "",
+        notes: "",
+        discountNote: "",
+        reservationColor: "hsl(354 70% 38%)",
+        confirmedAt: null,
+        allowExtraBed: false,
+        groupId: "",
+        groupCompany: "",
+        groupColor: "",
+        groupInitial: "",
+        groupCompRoomType: "",
+        groupCompRoomLabel: "",
+        groupCompMaxGuests: "",
+        groupTotalGuests: "",
+        groupRoomIndex: 0,
+        groupRoomCount: 0,
+        groupAgreedTariffs: null,
+        groupAgreedPassengerRate: "",
+        groupAgreedPricingMode: "",
+        groupAgreedTotal: "",
+        groupRoomSubtotal: "",
+        responsible: {
+          firstName: "",
+          lastName: "",
+          document: "",
+          birthDate: "",
+          gender: "",
+          nationality: "Argentina",
+        },
+        guests: [createEmptyGuest(true)],
+        lastScanAt: null,
+        lastExportedAt: null,
+        lastPrintedAt: null,
+        legalUpdatedAt: null,
+      };
+    }
+
+    function sanitizeMoney(value, fallback) {
+      const digits = String(value ?? "").replace(/[^\d]/g, "");
+      return digits || fallback || "0";
+    }
+
+    function createCleanCheckinState(oldCheckin) {
+      const reservation = createEmptyReservation();
+      const oldTariffs = oldCheckin && oldCheckin.tariffs ? oldCheckin.tariffs : {};
+      const tariffs = Object.keys(DEFAULT_TARIFFS).reduce((next, key) => {
+        next[key] = sanitizeMoney(oldTariffs[key], DEFAULT_TARIFFS[key]);
+        return next;
+      }, {});
+      return {
+        version: 4,
+        reservations: [reservation],
+        tariffs,
+        roomMaintenance:
+          oldCheckin && oldCheckin.roomMaintenance && typeof oldCheckin.roomMaintenance === "object"
+            ? oldCheckin.roomMaintenance
+            : {},
+        groupMemory:
+          oldCheckin && oldCheckin.groupMemory && typeof oldCheckin.groupMemory === "object"
+            ? oldCheckin.groupMemory
+            : {},
+        activeReservationId: reservation.id,
+        lastSavedAt: new Date().toISOString(),
+      };
+    }
+
+    function createRoom(index) {
+      return {
+        id: `room-${index}`,
+        label: `Hab ${index}`,
+        note: "",
+        items: [],
+        printedAt: null,
+        deferredTicketPrintedAt: null,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    function inferServiceLabel(date) {
+      const hour = date.getHours();
+      return hour >= 17 ? "CENA" : "ALMUERZO";
+    }
+
+    function createFreshShift() {
+      const now = new Date();
+      return {
+        id: uid("shift"),
+        openedAt: now.toISOString(),
+        serviceLabel: inferServiceLabel(now),
+        rooms: Array.from({ length: 32 }, (_, index) => createRoom(index + 1)),
+        cashierSales: [],
+        staffConsumption: [],
+        driverCoordinatorConsumption: [],
+        closedRooms: [],
+      };
+    }
+
+    function resetCatalogStock(catalog) {
+      if (!Array.isArray(catalog)) return [];
+      return catalog.map((product) => {
+        if (!product || product.archived === true || product.productKind === "manufactured") {
+          return product;
+        }
+        return {
+          ...product,
+          stock: 30,
+          trackStock: true,
+        };
+      });
+    }
+
+    function createCleanBeverageState(oldBeverages) {
+      const source = oldBeverages && typeof oldBeverages === "object" ? oldBeverages : {};
+      return {
+        version: 5,
+        hotelName: source.hotelName || "Solanas",
+        stationName: source.stationName || "Estacion de Bebidas",
+        layoutLocked: source.layoutLocked !== false,
+        currency: source.currency || "ARS",
+        catalog: resetCatalogStock(source.catalog),
+        staffMembers: Array.isArray(source.staffMembers) ? source.staffMembers : [],
+        driverCoordinatorGroups: [],
+        driverCoordinatorMembers: [],
+        driverCoordinatorAccounts: [],
+        driverCoordinatorGroupHistory: [],
+        activeShift: createFreshShift(),
+        shiftHistory: [],
+        safety: {
+          snapshots: [],
+          lastSavedAt: new Date().toISOString(),
+        },
+      };
+    }
+
+    function currentMonthKey() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    }
+
+    function createCleanUnifiedState(checkin, beverages) {
+      const now = new Date().toISOString();
+      return {
+        version: 2,
+        sources: {
+          checkin,
+          beverages,
+        },
+        sourceMeta: {
+          checkin: { importedAt: now, sourceName: CHECKIN_KEY, mode: "foja-cero" },
+          beverages: { importedAt: now, sourceName: BEVERAGE_KEY, mode: "foja-cero" },
+        },
+        settlements: {},
+        cashTransfers: [],
+        cashWithdrawals: [],
+        selectedMonth: currentMonthKey(),
+        lastSavedAt: now,
+      };
+    }
+
+    function buildCentralPayload(cleanUnified, cleanCheckin, cleanBeverages) {
+      const exportedAt = new Date().toISOString();
+      return {
+        format: UNIFIED_BACKUP_FORMAT,
+        exportedAt,
+        version: 1,
+        storageKeys: {
+          unified: UNIFIED_KEY,
+          checkin: CHECKIN_KEY,
+          beverages: BEVERAGE_KEY,
+        },
+        systems: {
+          unified: cleanUnified,
+          checkin: cleanCheckin,
+          beverages: cleanBeverages,
+        },
+        meta: {
+          checkin: {
+            origin: "foja-cero",
+            ready: true,
+            reservations: cleanCheckin.reservations.length,
+          },
+          beverages: {
+            origin: "foja-cero",
+            ready: true,
+            activeRooms: 0,
+          },
+        },
+      };
+    }
+
+    async function saveCentralPayload(payload) {
+      if (window.location.protocol !== "http:" && window.location.protocol !== "https:") {
+        return false;
+      }
+      const response = await fetch(CENTRAL_STATE_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      return response.ok;
+    }
+
+    async function runReset() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("token") !== REQUIRED_TOKEN) {
+        document.getElementById("status").textContent =
+          "Token invalido. No se modifico ningun dato.";
+        return;
+      }
+
+      const oldUnified = readJson(UNIFIED_KEY) || {};
+      const oldCheckin = readJson(CHECKIN_KEY) || (oldUnified.sources && oldUnified.sources.checkin) || null;
+      const oldBeverages =
+        readJson(BEVERAGE_KEY) || (oldUnified.sources && oldUnified.sources.beverages) || null;
+      const cleanCheckin = createCleanCheckinState(oldCheckin);
+      const cleanBeverages = createCleanBeverageState(oldBeverages);
+      const cleanUnified = createCleanUnifiedState(cleanCheckin, cleanBeverages);
+
+      localStorage.setItem(CHECKIN_KEY, JSON.stringify(cleanCheckin));
+      localStorage.setItem(BEVERAGE_KEY, JSON.stringify(cleanBeverages));
+      localStorage.setItem(UNIFIED_KEY, JSON.stringify(cleanUnified));
+      localStorage.setItem(CHECKIN_CLEAN_MARKER, "done");
+      BEVERAGE_MARKERS.forEach((key) => localStorage.setItem(key, "done"));
+      const centralPayload = buildCentralPayload(cleanUnified, cleanCheckin, cleanBeverages);
+      let centralSaved = false;
+      try {
+        centralSaved = await saveCentralPayload(centralPayload);
+      } catch (error) {
+        console.error("No se pudo guardar la foja cero en el JSON central.", error);
+      }
+
+      const activeProducts = cleanBeverages.catalog.filter(
+        (product) => product && product.archived !== true && product.productKind !== "manufactured"
+      ).length;
+      const archivedProducts = cleanBeverages.catalog.filter(
+        (product) => product && product.archived === true
+      ).length;
+
+      document.getElementById("status").textContent =
+        "Foja cero aplicada. Volviendo al sistema...";
+      document.getElementById("details").innerHTML = `
+        <span>Reservas activas: 0.</span>
+        <span>Turnos historicos: 0.</span>
+        <span>Productos activos con stock en 30: ${activeProducts}.</span>
+        <span>Productos archivados preservados: ${archivedProducts}.</span>
+        <span>JSON central: ${centralSaved ? "actualizado" : "sin servidor local"}.</span>
+        <span><a href="./index.html">Abrir sistema</a></span>
+      `;
+
+      setTimeout(() => {
+        window.location.href = "./index.html";
+      }, 1400);
+    }
+
+    runReset();
+  </script>
+</body>
+</html>
