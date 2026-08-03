@@ -252,6 +252,9 @@ const REPORT_TYPES = {
 };
 
 function getInitialSidebarCollapsed() {
+  if (window.matchMedia("(max-width: 820px)").matches) {
+    return true;
+  }
   try {
     const stored = window.localStorage.getItem(SIDEBAR_PREF_KEY);
     if (stored === "1") return true;
@@ -6044,6 +6047,9 @@ document.addEventListener(
 
 window.addEventListener("hashchange", () => {
   ui.systemMenuOpen = false;
+  if (window.matchMedia("(max-width: 820px)").matches) {
+    ui.sidebarCollapsed = true;
+  }
   render();
 });
 
