@@ -1,0 +1,916 @@
+/* Blue Coast brand system v1.0. Loaded last to normalize legacy module styles. */
+:root {
+  color-scheme: dark;
+  --bc-bg: #06111f;
+  --bc-app: #081827;
+  --bc-surface: #102136;
+  --bc-surface-2: #17304a;
+  --bc-surface-soft: #0c1c2c;
+  --bc-border: #28415c;
+  --bc-border-soft: rgba(116, 148, 181, 0.3);
+  --bc-text: #f5f8fc;
+  --bc-muted: #a9b7c8;
+  --bc-subtle: #8191a4;
+  --bc-primary: #1f78ff;
+  --bc-primary-hover: #1769e6;
+  --bc-cyan: #17c9ea;
+  --bc-success: #12bfa6;
+  --bc-success-hover: #0eaa93;
+  --bc-mint: #6bd6c3;
+  --bc-warning: #f5b73c;
+  --bc-orange: #f08a24;
+  --bc-danger: #ff6072;
+  --bc-danger-deep: #c83f57;
+  --bc-purple: #8c70f5;
+  --bc-maintenance: #72849a;
+  --bc-radius-sm: 8px;
+  --bc-radius-md: 12px;
+  --bc-radius-lg: 18px;
+  --bc-focus: 0 0 0 3px rgba(23, 201, 234, 0.22);
+  --bc-font-display: "Manrope", sans-serif;
+  --bc-font-body: "Inter", sans-serif;
+}
+
+html.theme-light-root,
+body.theme-light {
+  color-scheme: light;
+}
+
+html.theme-light-root body,
+body.theme-light {
+  --bc-bg: #f6f9fc;
+  --bc-app: #eef4f8;
+  --bc-surface: #ffffff;
+  --bc-surface-2: #f1f5f9;
+  --bc-surface-soft: #f8fbfd;
+  --bc-border: #dce5ef;
+  --bc-border-soft: rgba(111, 132, 154, 0.24);
+  --bc-text: #0e1e33;
+  --bc-muted: #5f7084;
+  --bc-subtle: #74859a;
+  --bc-focus: 0 0 0 3px rgba(31, 120, 255, 0.16);
+}
+
+/* Foundations */
+body,
+body.has-shell-layout {
+  background: var(--bc-bg) !important;
+  color: var(--bc-text) !important;
+  font-family: var(--bc-font-body) !important;
+}
+
+.app-layout,
+.app-main,
+.module-layout,
+.module-main,
+.module-main-scroll {
+  background: var(--bc-bg) !important;
+  color: var(--bc-text) !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+.page-title,
+.section-title {
+  color: var(--bc-text);
+  font-family: var(--bc-font-display) !important;
+}
+
+p,
+.muted,
+.panel-title-row p,
+.summary-foot,
+.stat-foot,
+.history-meta,
+.room-meta,
+.field small {
+  color: var(--bc-muted);
+}
+
+.eyebrow,
+.kicker,
+.summary-label,
+.stat-label,
+.pill-label {
+  color: var(--bc-cyan);
+}
+
+/* Navigation */
+.app-sidebar,
+body.has-shell-layout .module-sidebar {
+  background: var(--bc-app) !important;
+  border-color: var(--bc-border) !important;
+  box-shadow: none !important;
+}
+
+.app-sidebar__brand,
+.module-sidebar__brand {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app-sidebar__link,
+.module-sidebar__link {
+  border-radius: var(--bc-radius-md) !important;
+  color: var(--bc-muted) !important;
+}
+
+.app-sidebar__link:hover,
+.module-sidebar__link:hover {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface) !important;
+  color: var(--bc-text) !important;
+}
+
+.app-sidebar__link.is-active,
+.module-sidebar__link.is-active {
+  border-color: #2c86ff !important;
+  background: var(--bc-primary) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.app-sidebar__link.is-active .app-sidebar__icon,
+.module-sidebar__link.is-active .module-sidebar__icon {
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #ffffff !important;
+}
+
+.app-sidebar__toggle,
+.module-sidebar__toggle {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+/* Primary surfaces */
+.bluecoast-shell-hero,
+.embedded-module-shell__header,
+.hero,
+.panel,
+.dashboard-panel,
+.cashbox-panel,
+.checkout-toolbar,
+.inventory-section,
+.inventory-overview-panel,
+.employee-card,
+.modal,
+.modal-card,
+.scanner-modal,
+.payment-modal,
+.construction-card,
+.backup-bridge-panel,
+.footer-note {
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-lg) !important;
+  background: var(--bc-surface) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+.panel::before,
+.dashboard-panel::before,
+.summary-card::before,
+.cashbox-panel::before,
+.cashbox-card::before,
+.checkout-toolbar .status-panel::before,
+.modal-card::before,
+.construction-card::before,
+.backup-bridge-panel::before {
+  display: none !important;
+}
+
+/* Secondary cards and operational summaries */
+.stat-card,
+.summary-card,
+.data-card,
+.source-card,
+.status-panel,
+.cashbox-card,
+.history-card,
+.member-card,
+.disclosure-card,
+.group-setup-card,
+.report-option,
+.checkout-card,
+.inventory-area-card,
+.catalog-card,
+.product-card,
+.room-detail-card,
+.checkin-room-pill,
+.empty-state {
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-md) !important;
+  background: var(--bc-surface-soft) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+.stat-card strong,
+.summary-card strong,
+.status-panel strong,
+.cashbox-card strong,
+.history-card strong,
+.inventory-value-strip strong,
+.inventory-kpi-row strong,
+.empty-state strong {
+  color: var(--bc-text) !important;
+}
+
+.stat-card span,
+.summary-card span,
+.status-panel span,
+.cashbox-card span,
+.cashbox-card small,
+.history-card .muted,
+.inventory-value-strip span,
+.empty-state p,
+.empty-state small {
+  color: var(--bc-muted) !important;
+}
+
+.empty-state {
+  border-style: dashed !important;
+}
+
+.room-card-kicker {
+  color: var(--bc-muted) !important;
+}
+
+.history-card.is-stock-alert .rank-list li {
+  color: var(--bc-warning) !important;
+}
+
+/* Actions are solid and clearly different from cards. */
+.button,
+.hero-action-button,
+.scanner-action-button,
+.checkout-state-button {
+  min-height: 44px;
+  border: 1px solid transparent !important;
+  border-radius: var(--bc-radius-md) !important;
+  background: var(--bc-primary) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+/* Legacy module selectors are intentionally more specific than the base layer. */
+body.has-shell-layout .button,
+body.has-shell-layout .hero-action-button,
+body.has-shell-layout .scanner-action-button,
+body.has-shell-layout .checkout-state-button,
+html.theme-light-root body .button,
+html.theme-light-root body .hero-action-button,
+html.theme-light-root body .scanner-action-button,
+html.theme-light-root body .checkout-state-button,
+body.theme-light .button,
+body.theme-light .hero-action-button,
+body.theme-light .scanner-action-button,
+body.theme-light .checkout-state-button {
+  background: var(--bc-primary) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+body.has-shell-layout .button.is-blue,
+body.has-shell-layout .hero-action-button.is-private-reservation,
+body.has-shell-layout .scanner-action-button.is-blue,
+html.theme-light-root body .button.is-blue,
+html.theme-light-root body .hero-action-button.is-private-reservation,
+body.theme-light .button.is-blue,
+body.theme-light .hero-action-button.is-private-reservation {
+  border-color: var(--bc-primary) !important;
+  background: var(--bc-primary) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+.button:hover,
+.hero-action-button:hover,
+.scanner-action-button:hover,
+.checkout-state-button:hover {
+  background: var(--bc-primary-hover) !important;
+}
+
+.button.is-green,
+.button.is-success,
+.scanner-action-button.is-success {
+  background: var(--bc-success) !important;
+  color: #06111f !important;
+}
+
+.button.is-rust,
+.button.is-warning,
+.hero-action-button.is-group-reservation {
+  border-color: #e5a62c !important;
+  background: var(--bc-warning) !important;
+  color: #2a1a00 !important;
+}
+
+body.has-shell-layout .button.is-rust,
+body.has-shell-layout .button.is-warning,
+body.has-shell-layout .hero-action-button.is-group-reservation,
+html.theme-light-root body .button.is-rust,
+html.theme-light-root body .button.is-warning,
+html.theme-light-root body .hero-action-button.is-group-reservation,
+body.theme-light .button.is-rust,
+body.theme-light .button.is-warning,
+body.theme-light .hero-action-button.is-group-reservation {
+  border-color: #e5a62c !important;
+  background: var(--bc-warning) !important;
+  background-image: none !important;
+  color: #2a1a00 !important;
+}
+
+.danger-button,
+.button.is-danger {
+  border-color: var(--bc-danger-deep) !important;
+  background: var(--bc-danger-deep) !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .danger-button,
+body.has-shell-layout .button.is-danger,
+html.theme-light-root body .danger-button,
+html.theme-light-root body .button.is-danger,
+body.theme-light .danger-button,
+body.theme-light .button.is-danger {
+  border-color: var(--bc-danger-deep) !important;
+  background: var(--bc-danger-deep) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+.ghost-button,
+.mini-button,
+.unified-return-button {
+  min-height: 42px;
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-md) !important;
+  background: var(--bc-surface-2) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+.ghost-button:hover,
+.mini-button:hover,
+.unified-return-button:hover {
+  border-color: var(--bc-cyan) !important;
+  background: color-mix(in srgb, var(--bc-surface-2) 88%, var(--bc-cyan)) !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--bc-cyan) !important;
+  outline-offset: 2px !important;
+  box-shadow: var(--bc-focus) !important;
+}
+
+button:disabled,
+.button:disabled,
+.ghost-button:disabled {
+  border-color: var(--bc-border) !important;
+  background: color-mix(in srgb, var(--bc-surface-2) 86%, var(--bc-maintenance)) !important;
+  color: var(--bc-subtle) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Compact information components */
+.chip,
+.pill,
+.status-badge,
+.result-pill,
+.app-topbar__pill,
+.checkout-state {
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-sm) !important;
+  background: var(--bc-surface-2) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+.chip.is-blue,
+.checkout-state.is-paid,
+.status-badge.is-special-room,
+.status-badge.is-info {
+  border-color: rgba(31, 120, 255, 0.46) !important;
+  background: color-mix(in srgb, var(--bc-primary) 18%, var(--bc-surface)) !important;
+  color: color-mix(in srgb, var(--bc-primary) 54%, var(--bc-text)) !important;
+}
+
+.chip.is-green,
+.status-badge.is-ok,
+.status-badge.is-ready,
+.status-badge.is-checked-in,
+.status-badge.is-printed,
+.status-badge.is-stay-paid,
+.checkout-state.is-ok {
+  border-color: rgba(18, 191, 166, 0.46) !important;
+  background: color-mix(in srgb, var(--bc-success) 17%, var(--bc-surface)) !important;
+  color: color-mix(in srgb, var(--bc-success) 54%, var(--bc-text)) !important;
+}
+
+.chip.is-rust,
+.status-badge.is-warning,
+.status-badge.is-progress,
+.status-badge.is-awaiting,
+.status-badge.is-stay-deferred,
+.checkout-state.is-due {
+  border-color: rgba(245, 183, 60, 0.5) !important;
+  background: color-mix(in srgb, var(--bc-warning) 18%, var(--bc-surface)) !important;
+  color: color-mix(in srgb, var(--bc-warning) 60%, var(--bc-text)) !important;
+}
+
+.status-badge.is-danger,
+.status-badge.is-blocked,
+.status-badge.is-archived,
+.checkout-state.is-danger {
+  border-color: rgba(255, 96, 114, 0.5) !important;
+  background: color-mix(in srgb, var(--bc-danger) 17%, var(--bc-surface)) !important;
+  color: color-mix(in srgb, var(--bc-danger) 62%, var(--bc-text)) !important;
+}
+
+.chip.is-slate,
+.status-badge.is-maintenance {
+  border-color: rgba(114, 132, 154, 0.5) !important;
+  background: color-mix(in srgb, var(--bc-maintenance) 20%, var(--bc-surface)) !important;
+  color: var(--bc-text) !important;
+}
+
+/* Forms */
+input,
+select,
+textarea,
+.money-field-shell,
+.scanner-input,
+.timeline-date-field {
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-sm) !important;
+  background: var(--bc-app) !important;
+  color: var(--bc-text) !important;
+  -webkit-text-fill-color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout input,
+body.has-shell-layout select,
+body.has-shell-layout textarea,
+body.has-shell-layout .money-field-shell,
+body.has-shell-layout .scanner-input,
+body.has-shell-layout .timeline-date-field {
+  background: var(--bc-app) !important;
+  background-image: none !important;
+  color: var(--bc-text) !important;
+  -webkit-text-fill-color: var(--bc-text) !important;
+}
+
+label,
+.field-label,
+.field > span,
+.cash-audit-field > span {
+  color: var(--bc-muted) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--bc-subtle) !important;
+  opacity: 1;
+}
+
+select option {
+  background: var(--bc-surface) !important;
+  color: var(--bc-text) !important;
+}
+
+.field input.required-empty,
+.field select.required-empty,
+.field textarea.required-empty,
+.money-field-shell.required-empty,
+.room-picker-shell.required-empty {
+  border-color: rgba(255, 96, 114, 0.72) !important;
+  background: color-mix(in srgb, var(--bc-danger) 10%, var(--bc-surface)) !important;
+}
+
+body.has-shell-layout .field input.required-empty,
+body.has-shell-layout .field select.required-empty,
+body.has-shell-layout .field textarea.required-empty,
+body.has-shell-layout .money-field-shell.required-empty,
+body.has-shell-layout .room-picker-shell.required-empty {
+  border-color: rgba(255, 96, 114, 0.72) !important;
+  background: color-mix(in srgb, var(--bc-danger) 10%, var(--bc-surface)) !important;
+  background-image: none !important;
+}
+
+.field input.required-filled,
+.field select.required-filled,
+.field textarea.required-filled,
+.money-field-shell.required-filled,
+.room-picker-shell.required-filled {
+  border-color: rgba(18, 191, 166, 0.64) !important;
+  background: color-mix(in srgb, var(--bc-success) 9%, var(--bc-surface)) !important;
+}
+
+body.has-shell-layout .field input.required-filled,
+body.has-shell-layout .field select.required-filled,
+body.has-shell-layout .field textarea.required-filled,
+body.has-shell-layout .money-field-shell.required-filled,
+body.has-shell-layout .room-picker-shell.required-filled {
+  border-color: rgba(18, 191, 166, 0.64) !important;
+  background: color-mix(in srgb, var(--bc-success) 9%, var(--bc-surface)) !important;
+  background-image: none !important;
+}
+
+/* Tables */
+.table-wrap,
+.register-table-wrap,
+.timeline-wrap,
+.employee-payroll-wrap,
+.checkout-history-scroll {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface) !important;
+  box-shadow: none !important;
+}
+
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  border-color: var(--bc-border) !important;
+}
+
+thead th {
+  background: var(--bc-surface-2) !important;
+  color: var(--bc-text) !important;
+}
+
+tbody tr,
+tbody td {
+  background: var(--bc-surface) !important;
+  color: var(--bc-text) !important;
+}
+
+tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--bc-surface) 94%, var(--bc-surface-2)) !important;
+}
+
+tbody tr:hover td {
+  background: color-mix(in srgb, var(--bc-surface) 90%, var(--bc-primary)) !important;
+}
+
+.register-table tr.is-incomplete td,
+tr.is-warning td {
+  background: color-mix(in srgb, var(--bc-warning) 12%, var(--bc-surface)) !important;
+}
+
+.register-table {
+  min-width: 1480px !important;
+  table-layout: auto !important;
+}
+
+.register-table th,
+.register-table td {
+  min-width: 104px;
+  max-width: 220px !important;
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+}
+
+.register-table th:first-child,
+.register-table td:first-child,
+.register-table th:nth-child(2),
+.register-table td:nth-child(2) {
+  min-width: 54px;
+  width: 54px;
+}
+
+.register-table th:nth-child(3),
+.register-table td:nth-child(3),
+.register-table th:nth-child(11),
+.register-table td:nth-child(11),
+.register-table th:nth-child(12),
+.register-table td:nth-child(12) {
+  min-width: 150px;
+}
+
+/* Timeline keeps reservation colors but uses branded neutral cells. */
+.timeline-panel,
+.menu-timeline-panel.timeline-panel,
+.timeline-panel .timeline-wrap,
+.timeline-panel .timeline-table {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface) !important;
+  box-shadow: none !important;
+}
+
+.timeline-panel .timeline-table thead th,
+.timeline-panel .timeline-room-col {
+  background: var(--bc-app) !important;
+  color: var(--bc-text) !important;
+}
+
+.timeline-panel .timeline-cell,
+.timeline-panel .timeline-status {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface-2) !important;
+}
+
+.timeline-panel .timeline-status.is-occupied:not(.is-color-coded) {
+  border-color: var(--bc-danger-deep) !important;
+  background: var(--bc-danger-deep) !important;
+  color: #ffffff !important;
+}
+
+.timeline-panel .timeline-status.is-maintenance {
+  border-color: var(--bc-maintenance) !important;
+  background: var(--bc-maintenance) !important;
+  color: #ffffff !important;
+}
+
+.timeline-panel .timeline-status.is-color-coded,
+.timeline-panel .timeline-status.is-occupied.is-color-coded {
+  background: var(--timeline-color) !important;
+  color: var(--timeline-ink) !important;
+}
+
+/* Hotel-specific groups */
+.summary-split span,
+.inventory-kpi-row span,
+.inventory-value-strip div,
+.settlement-summary span,
+.cash-withdrawal-summary span,
+.payment-choice,
+.settlement-choice,
+.hero-service-control,
+.cashbox-note,
+.cash-audit-panel,
+.cash-withdrawal-actions {
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-md) !important;
+  background: var(--bc-surface-2) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+.summary-split small,
+.inventory-kpi-row span,
+.inventory-value-strip span,
+.settlement-summary small,
+.cash-withdrawal-summary small,
+.payment-choice span,
+.settlement-choice span,
+.hero-service-control p,
+.cashbox-note,
+.cash-withdrawal-actions p {
+  color: var(--bc-muted) !important;
+}
+
+.summary-split strong,
+.inventory-kpi-row strong,
+.inventory-value-strip strong,
+.settlement-summary strong,
+.cash-withdrawal-summary strong,
+.payment-choice strong,
+.settlement-choice strong {
+  color: var(--bc-text) !important;
+}
+
+.inventory-group-card {
+  border: 1px solid var(--bc-border) !important;
+  border-radius: var(--bc-radius-lg) !important;
+  background: var(--bc-surface-soft) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+.inventory-group-card strong,
+.inventory-group-card h3 {
+  color: var(--bc-text) !important;
+}
+
+.inventory-group-card p,
+.inventory-group-card small {
+  color: var(--bc-muted) !important;
+}
+
+.inventory-group-card.is-gold {
+  border-color: rgba(245, 183, 60, 0.44) !important;
+  background: color-mix(in srgb, var(--bc-warning) 12%, var(--bc-surface)) !important;
+}
+
+.inventory-group-card.is-violet {
+  border-color: rgba(140, 112, 245, 0.44) !important;
+  background: color-mix(in srgb, var(--bc-purple) 12%, var(--bc-surface)) !important;
+}
+
+.dashboard-footnote,
+.legal-note,
+.warning-note,
+.group-editor-note {
+  border: 1px solid rgba(245, 183, 60, 0.5) !important;
+  background: color-mix(in srgb, var(--bc-warning) 13%, var(--bc-surface)) !important;
+  color: color-mix(in srgb, var(--bc-warning) 58%, var(--bc-text)) !important;
+  box-shadow: none !important;
+}
+
+.dashboard-alert.is-urgent {
+  border-color: rgba(240, 138, 36, 0.5) !important;
+  background: color-mix(in srgb, var(--bc-orange) 11%, var(--bc-surface)) !important;
+}
+
+.scanner-modal-backdrop,
+.modal-backdrop {
+  background: rgba(2, 9, 16, 0.72) !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Light mode: every operational surface becomes genuinely light. */
+html.theme-light-root body .stat-card:nth-child(4n + 1),
+body.theme-light .stat-card:nth-child(4n + 1) {
+  border-color: #b9e8de !important;
+  background: #eaf8f5 !important;
+}
+
+html.theme-light-root body .stat-card:nth-child(4n + 2),
+body.theme-light .stat-card:nth-child(4n + 2) {
+  border-color: #c7daf7 !important;
+  background: #edf4ff !important;
+}
+
+html.theme-light-root body .stat-card:nth-child(4n + 3),
+body.theme-light .stat-card:nth-child(4n + 3) {
+  border-color: #d9d0fb !important;
+  background: #f3f0ff !important;
+}
+
+html.theme-light-root body .stat-card:nth-child(4n),
+body.theme-light .stat-card:nth-child(4n) {
+  border-color: #f0d9a5 !important;
+  background: #fff8e8 !important;
+}
+
+html.theme-light-root body .status-panel,
+body.theme-light .status-panel {
+  border-color: #c7daf7 !important;
+  background: #edf4ff !important;
+}
+
+html.theme-light-root body .eyebrow,
+body.theme-light .eyebrow,
+html.theme-light-root body .kicker,
+body.theme-light .kicker,
+html.theme-light-root body .summary-label,
+body.theme-light .summary-label,
+html.theme-light-root body .stat-label,
+body.theme-light .stat-label,
+html.theme-light-root body .pill-label,
+body.theme-light .pill-label,
+html.theme-light-root body .hero-service-label,
+body.theme-light .hero-service-label {
+  color: #2b7180 !important;
+}
+
+html.theme-light-root body label,
+body.theme-light label,
+html.theme-light-root body .field-label,
+body.theme-light .field-label,
+html.theme-light-root body .field > span,
+body.theme-light .field > span,
+html.theme-light-root body .cash-audit-field > span,
+body.theme-light .cash-audit-field > span {
+  color: #51657a !important;
+}
+
+html.theme-light-root body .summary-split span,
+body.theme-light .summary-split span,
+html.theme-light-root body .history-card,
+body.theme-light .history-card,
+html.theme-light-root body .empty-state,
+body.theme-light .empty-state,
+html.theme-light-root body .cash-audit-panel,
+body.theme-light .cash-audit-panel,
+html.theme-light-root body .cash-withdrawal-actions,
+body.theme-light .cash-withdrawal-actions,
+html.theme-light-root body .hero-service-control,
+body.theme-light .hero-service-control {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface-soft) !important;
+  color: var(--bc-text) !important;
+}
+
+html.theme-light-root body.has-shell-layout .hero.is-shell-layout .hero-service-control,
+body.theme-light.has-shell-layout .hero.is-shell-layout .hero-service-control {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface-soft) !important;
+  background-image: none !important;
+  color: var(--bc-text) !important;
+}
+
+html:not(.theme-light-root) body.has-shell-layout .hero.is-shell-layout .hero-service-control,
+body:not(.theme-light).has-shell-layout .hero.is-shell-layout .hero-service-control {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface-2) !important;
+  background-image: none !important;
+  color: var(--bc-text) !important;
+}
+
+html:not(.theme-light-root) body .room-card.is-checkin-active .room-guest-name,
+html:not(.theme-light-root) body .room-card.is-checkin-active .room-group-name {
+  color: var(--bc-mint) !important;
+}
+
+html.theme-light-root body .room-card.is-checkin-active .room-guest-name,
+html.theme-light-root body .room-card.is-checkin-active .room-group-name,
+body.theme-light .room-card.is-checkin-active .room-guest-name,
+body.theme-light .room-card.is-checkin-active .room-group-name {
+  color: #245f73 !important;
+}
+
+html.theme-light-root body .room-card-kicker,
+body.theme-light .room-card-kicker {
+  color: #51657a !important;
+}
+
+html.theme-light-root body .history-card.is-stock-alert .rank-list li,
+body.theme-light .history-card.is-stock-alert .rank-list li {
+  color: #855300 !important;
+}
+
+html.theme-light-root body .inventory-kpi-row span,
+body.theme-light .inventory-kpi-row span,
+html.theme-light-root body .inventory-value-strip div,
+body.theme-light .inventory-value-strip div {
+  border-color: var(--bc-border) !important;
+  background: #f1f5f9 !important;
+  color: var(--bc-muted) !important;
+}
+
+html.theme-light-root body .module-hero-mark,
+body.theme-light .module-hero-mark {
+  border-color: #c7daf7 !important;
+  background: #edf4ff !important;
+  box-shadow: none !important;
+}
+
+html.theme-light-root body .theme-toggle,
+body.theme-light .theme-toggle {
+  border-color: var(--bc-border) !important;
+  background: #ffffff !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+html.theme-light-root body .timeline-panel .timeline-cell,
+body.theme-light .timeline-panel .timeline-cell,
+html.theme-light-root body .timeline-panel .timeline-status,
+body.theme-light .timeline-panel .timeline-status {
+  border-color: #d5e7de !important;
+  background: #edf8f2 !important;
+}
+
+html.theme-light-root body .timeline-panel .timeline-day-col.is-today,
+body.theme-light .timeline-panel .timeline-day-col.is-today,
+html.theme-light-root body .timeline-panel .timeline-cell.is-today,
+body.theme-light .timeline-panel .timeline-cell.is-today {
+  background: #e4f1ff !important;
+}
+
+html.theme-light-root body .timeline-panel .timeline-day-col.is-selected-day,
+body.theme-light .timeline-panel .timeline-day-col.is-selected-day,
+html.theme-light-root body .timeline-panel .timeline-cell.is-selected-day,
+body.theme-light .timeline-panel .timeline-cell.is-selected-day {
+  background: #dff7f2 !important;
+}
+
+@media (min-width: 1100px) {
+  body.has-shell-layout .scanner-modal.group-modal .group-form-grid-main {
+    grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr) !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-operational-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

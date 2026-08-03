@@ -91,8 +91,7 @@ const APP_MODE_META = Object.freeze({
       "Carga el legajo completo, salda la estad\u00eda y reci\u00e9n entonces imprime el formulario legal de ingreso.",
   },
 });
-const SHELL_HERO_ICON_URL =
-  APP_MODE === "reservas" ? SIDEBAR_ICON_URLS.reservas : SIDEBAR_ICON_URLS.checkin;
+const SHELL_HERO_ICON_KEY = APP_MODE === "reservas" ? "reservas" : "checkin";
 
 function getInitialSidebarCollapsed() {
   try {
@@ -7638,7 +7637,9 @@ function renderHero(reservation, isWorkspaceOpen = false) {
           <div class="brand-row">
             ${
               SYSTEM_CHROME
-                ? `<img class="brand-logo brand-logo--shell" src="${SHELL_HERO_ICON_URL}" alt="" />`
+                ? `<img class="brand-logo brand-logo--shell" src="${getSidebarIconUrl(
+                    SHELL_HERO_ICON_KEY
+                  )}" data-sidebar-icon-key="${SHELL_HERO_ICON_KEY}" alt="" />`
                 : `<img class="brand-logo" src="${LOGO_URL}" alt="Solanas" />`
             }
             <div>

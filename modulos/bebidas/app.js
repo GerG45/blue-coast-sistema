@@ -57,7 +57,7 @@ const SHELL_SIDEBAR_ITEMS = Object.freeze([
   { key: "empleados", label: "Empleados", fallback: "EM" },
 ]);
 const BLUE_COAST_LOGO_URL = new URL("../../assets/blue-coast-logo.svg", window.location.href).href;
-const SHELL_HERO_ICON_URL = SIDEBAR_ICON_URLS.bebidas;
+const SHELL_HERO_ICON_KEY = "bebidas";
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
 const THEME_PREF_KEY = "bluecoast-theme-v1";
 const TITLE_FONT_URL = new URL("./fonts/libre-baskerville-bold.ttf", window.location.href).href;
@@ -9040,7 +9040,9 @@ function renderHero() {
           <div class="brand-row">
             ${
               SYSTEM_CHROME
-                ? `<img class="brand-logo brand-logo--shell" src="${SHELL_HERO_ICON_URL}" alt="" />`
+                ? `<img class="brand-logo brand-logo--shell" src="${getSidebarIconUrl(
+                    SHELL_HERO_ICON_KEY
+                  )}" data-sidebar-icon-key="${SHELL_HERO_ICON_KEY}" alt="" />`
                 : `<img class="brand-logo" src="${LOGO_URL}" alt="Solanas" />`
             }
             <div>
