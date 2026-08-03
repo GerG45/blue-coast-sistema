@@ -13,6 +13,8 @@
   --bc-subtle: #8191a4;
   --bc-primary: #1f78ff;
   --bc-primary-hover: #1769e6;
+  --bc-primary-action: #1769e6;
+  --bc-primary-action-hover: #0f5ccc;
   --bc-cyan: #17c9ea;
   --bc-success: #12bfa6;
   --bc-success-hover: #0eaa93;
@@ -103,6 +105,30 @@ body.has-shell-layout .module-sidebar {
   background: var(--bc-app) !important;
   border-color: var(--bc-border) !important;
   box-shadow: none !important;
+}
+
+body.has-shell-layout .hero,
+body.has-shell-layout .panel,
+body.has-shell-layout .workspace-panel,
+body.has-shell-layout .summary-card,
+body.has-shell-layout .history-card,
+body.has-shell-layout .empty-state,
+body.has-shell-layout .scanner-modal,
+body.has-shell-layout .modal-card,
+body.has-shell-layout .group-form-section {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface) !important;
+  background-image: none !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .summary-card,
+body.has-shell-layout .history-card,
+body.has-shell-layout .empty-state,
+body.has-shell-layout .group-form-section {
+  background: var(--bc-surface-soft) !important;
+  background-image: none !important;
 }
 
 .app-sidebar__brand,
@@ -253,7 +279,7 @@ body.has-shell-layout .module-sidebar {
   min-height: 44px;
   border: 1px solid transparent !important;
   border-radius: var(--bc-radius-md) !important;
-  background: var(--bc-primary) !important;
+  background: var(--bc-primary-action) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
   box-shadow: none !important;
@@ -272,7 +298,7 @@ body.theme-light .button,
 body.theme-light .hero-action-button,
 body.theme-light .scanner-action-button,
 body.theme-light .checkout-state-button {
-  background: var(--bc-primary) !important;
+  background: var(--bc-primary-action) !important;
   background-image: none !important;
   color: #ffffff !important;
 }
@@ -284,8 +310,8 @@ html.theme-light-root body .button.is-blue,
 html.theme-light-root body .hero-action-button.is-private-reservation,
 body.theme-light .button.is-blue,
 body.theme-light .hero-action-button.is-private-reservation {
-  border-color: var(--bc-primary) !important;
-  background: var(--bc-primary) !important;
+  border-color: var(--bc-primary-action) !important;
+  background: var(--bc-primary-action) !important;
   background-image: none !important;
   color: #ffffff !important;
 }
@@ -294,7 +320,7 @@ body.theme-light .hero-action-button.is-private-reservation {
 .hero-action-button:hover,
 .scanner-action-button:hover,
 .checkout-state-button:hover {
-  background: var(--bc-primary-hover) !important;
+  background: var(--bc-primary-action-hover) !important;
 }
 
 .button.is-green,
@@ -392,10 +418,22 @@ button:disabled,
 .status-badge,
 .result-pill,
 .app-topbar__pill,
-.checkout-state {
+.checkout-state,
+.status-pill {
   border: 1px solid var(--bc-border) !important;
   border-radius: var(--bc-radius-sm) !important;
   background: var(--bc-surface-2) !important;
+  color: var(--bc-text) !important;
+  box-shadow: none !important;
+}
+
+body.has-shell-layout .ghost-button,
+body.has-shell-layout .mini-button,
+body.has-shell-layout .unified-return-button,
+body.has-shell-layout .status-pill {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface-2) !important;
+  background-image: none !important;
   color: var(--bc-text) !important;
   box-shadow: none !important;
 }
@@ -782,6 +820,106 @@ body.theme-light .hero-service-label {
   color: #2b7180 !important;
 }
 
+html.theme-light-root body.has-shell-layout .eyebrow,
+html.theme-light-root body.has-shell-layout .kicker,
+html.theme-light-root body.has-shell-layout .summary-label,
+html.theme-light-root body.has-shell-layout .stat-label,
+html.theme-light-root body.has-shell-layout .pill-label,
+html.theme-light-root body.has-shell-layout .hero-service-label,
+body.theme-light.has-shell-layout .eyebrow,
+body.theme-light.has-shell-layout .kicker,
+body.theme-light.has-shell-layout .summary-label,
+body.theme-light.has-shell-layout .stat-label,
+body.theme-light.has-shell-layout .pill-label,
+body.theme-light.has-shell-layout .hero-service-label {
+  color: #2b7180 !important;
+}
+
+html.theme-light-root body.has-shell-layout .panel-title-row p,
+html.theme-light-root body.has-shell-layout .hero-copy p,
+html.theme-light-root body.has-shell-layout .summary-card p,
+html.theme-light-root body.has-shell-layout .empty-state p,
+body.theme-light.has-shell-layout .panel-title-row p,
+body.theme-light.has-shell-layout .hero-copy p,
+body.theme-light.has-shell-layout .summary-card p,
+body.theme-light.has-shell-layout .empty-state p {
+  color: var(--bc-muted) !important;
+}
+
+html.theme-light-root body.has-shell-layout .empty-state strong,
+body.theme-light.has-shell-layout .empty-state strong,
+html.theme-light-root body.has-shell-layout .summary-split strong,
+body.theme-light.has-shell-layout .summary-split strong {
+  color: var(--bc-text) !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-split small,
+body.theme-light.has-shell-layout .summary-split small {
+  color: var(--bc-muted) !important;
+}
+
+html.theme-light-root body.has-shell-layout .chip,
+html.theme-light-root body.has-shell-layout .status-pill,
+body.theme-light.has-shell-layout .chip,
+body.theme-light.has-shell-layout .status-pill {
+  border-color: var(--bc-border) !important;
+  background: var(--bc-surface-2) !important;
+  background-image: none !important;
+  color: var(--bc-text) !important;
+}
+
+html.theme-light-root body.has-shell-layout .chip.is-blue,
+body.theme-light.has-shell-layout .chip.is-blue {
+  border-color: #c7daf7 !important;
+  background: #edf4ff !important;
+  color: #174e98 !important;
+}
+
+html.theme-light-root body.has-shell-layout .chip.is-green,
+body.theme-light.has-shell-layout .chip.is-green {
+  border-color: #b9e8de !important;
+  background: #eaf8f5 !important;
+  color: #176d60 !important;
+}
+
+html.theme-light-root body.has-shell-layout .chip.is-rust,
+body.theme-light.has-shell-layout .chip.is-rust {
+  border-color: #f0d9a5 !important;
+  background: #fff8e8 !important;
+  color: #795000 !important;
+}
+
+html.theme-light-root body.has-shell-layout .chip.is-slate,
+body.theme-light.has-shell-layout .chip.is-slate {
+  border-color: var(--bc-border) !important;
+  background: #f1f5f9 !important;
+  color: #42566d !important;
+}
+
+html.theme-light-root body.has-shell-layout .ghost-button,
+html.theme-light-root body.has-shell-layout .mini-button,
+html.theme-light-root body.has-shell-layout .unified-return-button,
+body.theme-light.has-shell-layout .ghost-button,
+body.theme-light.has-shell-layout .mini-button,
+body.theme-light.has-shell-layout .unified-return-button {
+  border-color: var(--bc-border) !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  color: var(--bc-text) !important;
+}
+
+html.theme-light-root body.has-shell-layout .overview-date-field span,
+body.theme-light.has-shell-layout .overview-date-field span {
+  color: #42566d !important;
+}
+
+html.theme-light-root body.has-shell-layout .timeline-day-col.is-past .timeline-day-button,
+html.theme-light-root body.has-shell-layout .timeline-day-col.is-past .timeline-day-button span,
+body.theme-light.has-shell-layout .timeline-day-col.is-past .timeline-day-button,
+body.theme-light.has-shell-layout .timeline-day-col.is-past .timeline-day-button span {
+  color: #5f7084 !important;
+}
+
 html.theme-light-root body label,
 body.theme-light label,
 html.theme-light-root body .field-label,
@@ -791,6 +929,16 @@ body.theme-light .field > span,
 html.theme-light-root body .cash-audit-field > span,
 body.theme-light .cash-audit-field > span {
   color: #51657a !important;
+}
+
+html.theme-light-root body .money.is-ok,
+body.theme-light .money.is-ok {
+  color: #13745f !important;
+}
+
+html.theme-light-root body .money-prefix,
+body.theme-light .money-prefix {
+  color: #42566d !important;
 }
 
 html.theme-light-root body .summary-split span,
@@ -846,6 +994,65 @@ body.theme-light .room-card-kicker {
 html.theme-light-root body .history-card.is-stock-alert .rank-list li,
 body.theme-light .history-card.is-stock-alert .rank-list li {
   color: #855300 !important;
+}
+
+html.theme-light-root body.has-shell-layout .product-card.is-low-stock,
+html.theme-light-root body.has-shell-layout .catalog-row.is-low-stock td,
+body.theme-light.has-shell-layout .product-card.is-low-stock,
+body.theme-light.has-shell-layout .catalog-row.is-low-stock td {
+  border-color: #e8c66f !important;
+  background: #fff9e8 !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .product-card.is-low-stock h4,
+html.theme-light-root body.has-shell-layout .product-card.is-low-stock .product-price-main,
+html.theme-light-root body.has-shell-layout .product-card.is-low-stock .product-subline,
+html.theme-light-root body.has-shell-layout .product-card.is-low-stock .product-price-side,
+html.theme-light-root body.has-shell-layout .catalog-row.is-low-stock td,
+body.theme-light.has-shell-layout .product-card.is-low-stock h4,
+body.theme-light.has-shell-layout .product-card.is-low-stock .product-price-main,
+body.theme-light.has-shell-layout .product-card.is-low-stock .product-subline,
+body.theme-light.has-shell-layout .product-card.is-low-stock .product-price-side,
+body.theme-light.has-shell-layout .catalog-row.is-low-stock td {
+  color: #704900 !important;
+}
+
+html.theme-light-root body.has-shell-layout .product-card.is-low-stock .product-context-badge,
+body.theme-light.has-shell-layout .product-card.is-low-stock .product-context-badge {
+  border-color: #d9b755 !important;
+  background: #f8e7ae !important;
+  color: #573900 !important;
+}
+
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock,
+html.theme-light-root body.has-shell-layout .catalog-row.is-out-of-stock td,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock,
+body.theme-light.has-shell-layout .catalog-row.is-out-of-stock td {
+  border-color: #edb5bd !important;
+  background: #fff1f3 !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock h4,
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock .product-subline,
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock .product-price-main,
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock .product-price-side,
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock .product-context-badge,
+html.theme-light-root body.has-shell-layout .catalog-row.is-out-of-stock td,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock h4,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock .product-subline,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock .product-price-main,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock .product-price-side,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock .product-context-badge,
+body.theme-light.has-shell-layout .catalog-row.is-out-of-stock td {
+  color: #8a3141 !important;
+}
+
+html.theme-light-root body.has-shell-layout .product-card.is-out-of-stock .product-context-badge,
+body.theme-light.has-shell-layout .product-card.is-out-of-stock .product-context-badge {
+  border-color: #e1a2ac !important;
+  background: #f8dce1 !important;
 }
 
 html.theme-light-root body .inventory-kpi-row span,
