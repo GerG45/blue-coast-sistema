@@ -7569,6 +7569,100 @@ function emitSystemEmbeddedHeight() {
   });
 }
 
+let embeddedRoomShortcutViewportTrackingStarted = false;
+
+function getEmbeddedRoomShortcutViewport() {
+  if (!SYSTEM_EMBEDDED || !window.parent || window.parent === window) {
+    return null;
+  }
+
+  try {
+    const parentDocument = window.parent.document;
+    const frame = Array.from(parentDocument.querySelectorAll("iframe")).find(
+      (candidate) => candidate.contentWindow === window
+    );
+    if (!frame) return null;
+
+    const frameRect = frame.getBoundingClientRect();
+    const scrollContainer = frame.closest(".app-main");
+    const scrollRect = scrollContainer
+      ? scrollContainer.getBoundingClientRect()
+      : { top: 0, bottom: window.parent.innerHeight };
+    const visualViewport = window.parent.visualViewport;
+    const viewportTop = visualViewport ? visualViewport.offsetTop : 0;
+    const viewportHeight = visualViewport
+      ? visualViewport.height
+      : window.parent.innerHeight || parentDocument.documentElement.clientHeight;
+    const viewportBottom = viewportTop + viewportHeight;
+    const visibleTop = Math.max(frameRect.top, scrollRect.top, viewportTop);
+    const visibleBottom = Math.min(frameRect.bottom, scrollRect.bottom, viewportBottom);
+
+    if (visibleBottom <= visibleTop) return null;
+
+    return {
+      top: Math.max(0, visibleTop - frameRect.top + window.scrollY),
+      height: Math.max(1, visibleBottom - visibleTop),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function syncEmbeddedRoomShortcutViewport() {
+  if (!SYSTEM_EMBEDDED) return;
+
+  const modalLayers = document.querySelectorAll(
+    ".room-shortcut-backdrop, .room-shortcut-shell"
+  );
+  if (!modalLayers.length) return;
+
+  const viewport = getEmbeddedRoomShortcutViewport();
+  if (!viewport) return;
+
+  modalLayers.forEach((layer) => {
+    layer.classList.add("is-parent-viewport-bound");
+    layer.style.setProperty(
+      "--embedded-shortcut-modal-top",
+      `${viewport.top}px`
+    );
+    layer.style.setProperty(
+      "--embedded-shortcut-modal-height",
+      `${viewport.height}px`
+    );
+  });
+}
+
+function setupEmbeddedRoomShortcutViewportTracking() {
+  if (
+    embeddedRoomShortcutViewportTrackingStarted ||
+    !SYSTEM_EMBEDDED ||
+    !window.parent ||
+    window.parent === window
+  ) {
+    return;
+  }
+
+  try {
+    embeddedRoomShortcutViewportTrackingStarted = true;
+    window.parent.document.addEventListener(
+      "scroll",
+      syncEmbeddedRoomShortcutViewport,
+      true
+    );
+    window.parent.addEventListener("resize", syncEmbeddedRoomShortcutViewport);
+    window.parent.visualViewport?.addEventListener(
+      "resize",
+      syncEmbeddedRoomShortcutViewport
+    );
+    window.parent.visualViewport?.addEventListener(
+      "scroll",
+      syncEmbeddedRoomShortcutViewport
+    );
+  } catch (error) {
+    embeddedRoomShortcutViewportTrackingStarted = false;
+  }
+}
+
 function requestEmbeddedModuleFocus(reason = "top") {
   if (!SYSTEM_EMBEDDED || !window.parent || window.parent === window) {
     return;
@@ -12075,7 +12169,7 @@ function renderRoomShortcutModal() {
         : `Figura disponible para ${formatDisplayDate(descriptor.referenceDate)}.`;
 
   return `
-    <div class="scanner-modal-backdrop" data-action="close-room-shortcut-modal"></div>
+    <div class="scanner-modal-backdrop room-shortcut-backdrop" data-action="close-room-shortcut-modal"></div>
     <section class="scanner-modal-shell room-shortcut-shell" aria-modal="true" role="dialog" aria-labelledby="room-shortcut-title">
       <div class="scanner-modal room-shortcut-modal">
         <div class="scanner-modal-toolbar">
@@ -13197,6 +13291,10 @@ function render(options = {}) {
 
   document.body.classList.toggle("has-shell-layout", SYSTEM_CHROME);
   document.body.classList.toggle("is-system-embedded", SYSTEM_EMBEDDED);
+
+  setupEmbeddedRoomShortcutViewportTracking();
+  syncEmbeddedRoomShortcutViewport();
+  window.requestAnimationFrame(syncEmbeddedRoomShortcutViewport);
 
   document.body.classList.toggle(
     "has-modal",

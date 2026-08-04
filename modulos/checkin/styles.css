@@ -6193,13 +6193,31 @@ button.timeline-status.is-actionable:focus-visible {
 }
 
 .room-shortcut-shell {
-  align-items: flex-start;
-  padding-top: min(18vh, 120px);
+  align-items: center;
+  padding-top: 24px;
 }
 
 .room-shortcut-modal {
   width: min(420px, 100%);
   padding: 20px;
+}
+
+body.is-system-embedded
+  .room-shortcut-backdrop.is-parent-viewport-bound,
+body.is-system-embedded
+  .room-shortcut-shell.is-parent-viewport-bound {
+  position: absolute;
+  inset: auto 0 auto;
+  top: var(--embedded-shortcut-modal-top, 0);
+  height: var(--embedded-shortcut-modal-height, 100vh);
+  min-height: 0;
+}
+
+body.is-system-embedded
+  .room-shortcut-shell.is-parent-viewport-bound {
+  align-items: center;
+  padding: 18px;
+  overflow-y: auto;
 }
 
 .footer-note {
