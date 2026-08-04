@@ -7569,9 +7569,9 @@ function emitSystemEmbeddedHeight() {
   });
 }
 
-let embeddedRoomShortcutViewportTrackingStarted = false;
+let embeddedCheckinModalViewportTrackingStarted = false;
 
-function getEmbeddedRoomShortcutViewport() {
+function getEmbeddedCheckinModalViewport() {
   if (!SYSTEM_EMBEDDED || !window.parent || window.parent === window) {
     return null;
   }
@@ -7608,33 +7608,33 @@ function getEmbeddedRoomShortcutViewport() {
   }
 }
 
-function syncEmbeddedRoomShortcutViewport() {
+function syncEmbeddedCheckinModalViewport() {
   if (!SYSTEM_EMBEDDED) return;
 
   const modalLayers = document.querySelectorAll(
-    ".room-shortcut-backdrop, .room-shortcut-shell"
+    ".scanner-modal-backdrop, .scanner-modal-shell:not(.room-picker-confirm-shell)"
   );
   if (!modalLayers.length) return;
 
-  const viewport = getEmbeddedRoomShortcutViewport();
+  const viewport = getEmbeddedCheckinModalViewport();
   if (!viewport) return;
 
   modalLayers.forEach((layer) => {
     layer.classList.add("is-parent-viewport-bound");
     layer.style.setProperty(
-      "--embedded-shortcut-modal-top",
+      "--embedded-checkin-modal-top",
       `${viewport.top}px`
     );
     layer.style.setProperty(
-      "--embedded-shortcut-modal-height",
+      "--embedded-checkin-modal-height",
       `${viewport.height}px`
     );
   });
 }
 
-function setupEmbeddedRoomShortcutViewportTracking() {
+function setupEmbeddedCheckinModalViewportTracking() {
   if (
-    embeddedRoomShortcutViewportTrackingStarted ||
+    embeddedCheckinModalViewportTrackingStarted ||
     !SYSTEM_EMBEDDED ||
     !window.parent ||
     window.parent === window
@@ -7643,23 +7643,23 @@ function setupEmbeddedRoomShortcutViewportTracking() {
   }
 
   try {
-    embeddedRoomShortcutViewportTrackingStarted = true;
+    embeddedCheckinModalViewportTrackingStarted = true;
     window.parent.document.addEventListener(
       "scroll",
-      syncEmbeddedRoomShortcutViewport,
+      syncEmbeddedCheckinModalViewport,
       true
     );
-    window.parent.addEventListener("resize", syncEmbeddedRoomShortcutViewport);
+    window.parent.addEventListener("resize", syncEmbeddedCheckinModalViewport);
     window.parent.visualViewport?.addEventListener(
       "resize",
-      syncEmbeddedRoomShortcutViewport
+      syncEmbeddedCheckinModalViewport
     );
     window.parent.visualViewport?.addEventListener(
       "scroll",
-      syncEmbeddedRoomShortcutViewport
+      syncEmbeddedCheckinModalViewport
     );
   } catch (error) {
-    embeddedRoomShortcutViewportTrackingStarted = false;
+    embeddedCheckinModalViewportTrackingStarted = false;
   }
 }
 
@@ -13292,9 +13292,9 @@ function render(options = {}) {
   document.body.classList.toggle("has-shell-layout", SYSTEM_CHROME);
   document.body.classList.toggle("is-system-embedded", SYSTEM_EMBEDDED);
 
-  setupEmbeddedRoomShortcutViewportTracking();
-  syncEmbeddedRoomShortcutViewport();
-  window.requestAnimationFrame(syncEmbeddedRoomShortcutViewport);
+  setupEmbeddedCheckinModalViewportTracking();
+  syncEmbeddedCheckinModalViewport();
+  window.requestAnimationFrame(syncEmbeddedCheckinModalViewport);
 
   document.body.classList.toggle(
     "has-modal",

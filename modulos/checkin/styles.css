@@ -6203,21 +6203,25 @@ button.timeline-status.is-actionable:focus-visible {
 }
 
 body.is-system-embedded
-  .room-shortcut-backdrop.is-parent-viewport-bound,
+  .scanner-modal-backdrop.is-parent-viewport-bound,
 body.is-system-embedded
-  .room-shortcut-shell.is-parent-viewport-bound {
+  .scanner-modal-shell.is-parent-viewport-bound:not(.room-picker-confirm-shell) {
   position: absolute;
   inset: auto 0 auto;
-  top: var(--embedded-shortcut-modal-top, 0);
-  height: var(--embedded-shortcut-modal-height, 100vh);
+  top: var(--embedded-checkin-modal-top, 0);
+  height: var(--embedded-checkin-modal-height, 100vh);
   min-height: 0;
+}
+
+body.is-system-embedded
+  .scanner-modal-shell.is-parent-viewport-bound:not(.room-picker-confirm-shell) {
+  padding: 18px;
+  overflow-y: auto;
 }
 
 body.is-system-embedded
   .room-shortcut-shell.is-parent-viewport-bound {
   align-items: center;
-  padding: 18px;
-  overflow-y: auto;
 }
 
 .footer-note {
