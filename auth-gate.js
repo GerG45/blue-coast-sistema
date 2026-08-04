@@ -173,8 +173,18 @@ function loadApplication() {
   document.body.appendChild(script);
 }
 
+function isEmbeddedContext() {
+  try {
+    return window.self !== window.top;
+  } catch (error) {
+    return true;
+  }
+}
+
 function renderSessionControl(user, account) {
   document.querySelector("[data-auth-session-control]")?.remove();
+  if (isEmbeddedContext()) return;
+
   const control = document.createElement("div");
   control.className = "auth-session-control";
   control.dataset.authSessionControl = "true";
