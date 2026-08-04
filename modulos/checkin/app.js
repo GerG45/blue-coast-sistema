@@ -6776,7 +6776,7 @@ function buildPrintableReservationHtml(reservation) {
   `;
 }
 
-function buildPrintableLegalPacketHtml(reservation) {
+function buildLegacyPrintableLegalPacketHtml(reservation) {
   const responsible = getTitular(reservation);
   const responsibleName =
     [responsible.firstName, responsible.lastName].filter(Boolean).join(" ").trim() ||
@@ -7384,6 +7384,561 @@ function buildPrintableLegalPacketHtml(reservation) {
                 )}
               </p>
             </section>
+          </section>
+        </main>
+      </body>
+    </html>
+  `;
+}
+
+function buildPrintableLegalPacketHtml(reservation) {
+  const responsible = getTitular(reservation);
+  const responsibleName =
+    [responsible.firstName, responsible.lastName].filter(Boolean).join(" ").trim() ||
+    "Titular / responsable";
+  const responsibleAgeInfo = getResponsibleLegalAgeInfo(reservation);
+  const paymentSummary = getPaymentSummary(reservation);
+  const showFinancialFields = shouldShowReservationFinancialFields(reservation);
+  const reservationNotes = [reservation.notes, reservation.discountNote]
+    .filter(Boolean)
+    .join(" \u00b7 ");
+  const groupCompany = getReservationCompanyLabel(reservation);
+  const travelOrigin = getReservationTravelOrigin(reservation);
+  const regimeLabel = reservation.regime || "Sin r\u00e9gimen";
+  const totalGuests = getReservationGuestCount(reservation);
+  const generatedAt = formatLocalDateTime(nowIso());
+  const printableValue = (value, fallback = "________________") => escapeHtml(value || fallback);
+  const responsibleBirthDate = normalizeHumanDate(responsible.birthDate) || responsible.birthDate;
+  const paymentTotal =
+    paymentSummary.total === null ? "" : formatCurrency(paymentSummary.total);
+  const paymentPending =
+    paymentSummary.pending === null ? "" : formatCurrency(paymentSummary.pending);
+  const ruleGroups = [
+    {
+      title: "Convivencia y cuidado",
+      items: [
+        "Prohibido fumar en habitaciones y espacios cerrados: pasillos, recepci\u00f3n y restaurante.",
+        "Cuidar control remoto, caloventores, tap\u00f3n de ba\u00f1era, toallas, frazadas y dem\u00e1s equipamiento.",
+        "Todo da\u00f1o o p\u00e9rdida se abona al egreso seg\u00fan el valor de reposici\u00f3n.",
+        "No derramar l\u00edquidos sobre alfombras, ropa de cama ni mobiliario.",
+        "Al salir, apagar y desconectar los artefactos el\u00e9ctricos.",
+      ],
+    },
+    {
+      title: "Uso de habitaci\u00f3n e instalaciones",
+      items: [
+        "No consumir comestibles en la habitaci\u00f3n. Solicitar vajilla en recepci\u00f3n.",
+        "No limpiar el mate en lavamanos, ducha ni otros sectores del ba\u00f1o.",
+        "No llevar toallas ni toallones de la habitaci\u00f3n a la piscina.",
+        "Dejar la llave en recepci\u00f3n al retirarse. Su extrav\u00edo tiene costo de reposici\u00f3n.",
+        "Los menores deben permanecer supervisados en piscina y ba\u00f1era.",
+      ],
+    },
+    {
+      title: "Operaci\u00f3n y recepci\u00f3n",
+      items: [
+        "Check-out: 10:00 a. m. Respetar el horario para permitir limpieza y preparaci\u00f3n.",
+        "La disponibilidad queda sujeta a admisi\u00f3n y organizaci\u00f3n del hotel.",
+        "La llave del veh\u00edculo debe quedar en recepci\u00f3n por necesidades de log\u00edstica interna.",
+        "Informar al personal cualquier faltante o desperfecto detectado.",
+        "Solicitar en recepci\u00f3n la gu\u00eda para realizar correctamente el ba\u00f1o termal.",
+      ],
+    },
+    {
+      title: "Ba\u00f1os termales y bienestar",
+      items: [
+        "Comenzar con sesiones de 5 minutos y aumentar gradualmente seg\u00fan la respuesta corporal.",
+        "Evitar ba\u00f1os termales durante las 2 horas anteriores o posteriores a cada comida.",
+        "Alternar el ba\u00f1o con pausas al aire fresco para mayor seguridad y disfrute.",
+        "Escuchar y respetar las se\u00f1ales del cuerpo.",
+      ],
+    },
+    {
+      title: "Sustentabilidad",
+      items: [
+        "Para recambio, dejar toallas sobre la ba\u00f1era; para reutilizarlas, dejarlas colgadas.",
+        "Separar residuos en los cestos de planta baja, frente al ba\u00f1o de mujeres.",
+      ],
+    },
+  ];
+
+  const guestRows = reservation.guests
+    .map((guest) => {
+      const ageInfo = getLegalAgeInfo(guest);
+      const fullName = [guest.firstName, guest.lastName].filter(Boolean).join(" ").trim();
+      const birthDate = normalizeHumanDate(guest.birthDate) || guest.birthDate;
+      return `
+        <tr>
+          <td>${escapeHtml(fullName || "-")}</td>
+          <td>${escapeHtml(guest.document || "-")}</td>
+          <td>${escapeHtml(birthDate || "-")}${
+            ageInfo.age !== null ? ` &middot; ${escapeHtml(ageInfo.shortLabel)}` : ""
+          }</td>
+          <td>${escapeHtml(
+            [guest.gender || "-", guest.nationality || DEFAULT_NATIONALITY].join(" / ")
+          )}</td>
+          <td>${escapeHtml(guest.specialRegime || "-")}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  let ruleNumber = 0;
+  const renderRuleGroup = (group) => `
+    <section class="rule-group">
+      <div class="rule-heading"><span>${escapeHtml(group.title)}</span></div>
+      <ol class="rule-list">
+        ${group.items
+          .map((item) => {
+            ruleNumber += 1;
+            return `
+              <li>
+                <span class="rule-number">${ruleNumber}</span>
+                <span>${escapeHtml(item)}</span>
+              </li>
+            `;
+          })
+          .join("")}
+      </ol>
+    </section>
+  `;
+  const leftRuleGroupsHtml = ruleGroups.slice(0, 2).map(renderRuleGroup).join("");
+  const rightRuleGroupsHtml = ruleGroups.slice(2).map(renderRuleGroup).join("");
+  const supplementalDetails = [
+    groupCompany
+      ? `<div><span>Empresa / grupo</span><strong>${escapeHtml(groupCompany)}</strong></div>`
+      : "",
+    reservationNotes
+      ? `<div><span>Observaciones</span><strong>${escapeHtml(reservationNotes)}</strong></div>`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("");
+
+  return `
+    <!DOCTYPE html>
+    <html lang="es">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Registro y constancia | Solanas</title>
+        <style>
+          :root {
+            --ink: #000000;
+            --muted: #666666;
+            --line: #c9c9c9;
+            --line-dark: #1c1c1c;
+            --paper: #ffffff;
+            --screen: #e7e7e7;
+            --body-font: Arial, Helvetica, sans-serif;
+          }
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            font-family: var(--body-font);
+            color: var(--ink);
+            background: var(--screen);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 12px 18px;
+            border-bottom: 1px solid #cccccc;
+            background: rgba(255, 255, 255, 0.96);
+          }
+          .toolbar button {
+            padding: 10px 14px;
+            border: 0;
+            border-radius: 6px;
+            background: #111111;
+            color: #ffffff;
+            font: inherit;
+            cursor: pointer;
+          }
+          .toolbar .ghost {
+            background: #ffffff;
+            color: var(--ink);
+            border: 1px solid var(--line);
+          }
+          .print-shell { padding: 18px 0 24px; overflow-x: auto; }
+          .sheet {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 7mm 8mm 6.5mm;
+            background: var(--paper);
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+          }
+          .sheet-header {
+            display: grid;
+            grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.25fr);
+            align-items: end;
+            gap: 8mm;
+            padding-bottom: 2.5mm;
+            border-bottom: 0.35mm solid var(--line-dark);
+          }
+          .wordmark {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 25pt;
+            line-height: 0.95;
+          }
+          .wordmark-sub {
+            margin-top: 2mm;
+            padding-left: 4mm;
+            font-size: 6.5pt;
+          }
+          .wordmark-sub strong {
+            margin-left: 1.2mm;
+            font-size: 8pt;
+            letter-spacing: 0.12em;
+          }
+          .document-title { text-align: right; }
+          .document-title h1 {
+            margin: 0;
+            font-size: 13pt;
+            line-height: 1.05;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+          }
+          .document-title p {
+            margin: 1.4mm 0 0;
+            color: var(--muted);
+            font-size: 6.8pt;
+            line-height: 1.35;
+          }
+          .hotel-line {
+            margin: 2mm 0 2.2mm;
+            color: var(--muted);
+            font-size: 6.4pt;
+          }
+          .status-strip {
+            display: grid;
+            grid-template-columns: 0.82fr 1.08fr 1.08fr 0.84fr 1.42fr;
+            gap: 1.6mm;
+          }
+          .status-box {
+            min-height: 13mm;
+            padding: 2.5mm 2.2mm;
+            border: 0.25mm solid var(--line);
+            border-radius: 2.2mm;
+          }
+          .status-box span,
+          .detail-cell span,
+          .supplemental-data span {
+            display: block;
+            color: #777777;
+            font-size: 5.4pt;
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .status-box strong {
+            display: block;
+            margin-top: 2.2mm;
+            font-size: 9.2pt;
+            line-height: 1;
+          }
+          .section-title {
+            display: grid;
+            grid-template-columns: max-content minmax(0, 1fr);
+            gap: 4mm;
+            align-items: center;
+            margin: 2mm 0 1.3mm;
+            font-size: 7.4pt;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+          .section-title::after {
+            content: "";
+            height: 0.2mm;
+            background: var(--line-dark);
+          }
+          .details-grid {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr 1.05fr 1.04fr;
+            border: 0.25mm solid var(--line);
+            border-radius: 2.3mm;
+            overflow: hidden;
+          }
+          .detail-cell {
+            min-height: 8.2mm;
+            padding: 1.6mm 2.4mm;
+            border-right: 0.2mm solid #dddddd;
+            border-bottom: 0.2mm solid #dddddd;
+          }
+          .detail-cell:nth-child(4n) { border-right: 0; }
+          .detail-cell:nth-last-child(-n + 4) { border-bottom: 0; }
+          .detail-cell strong,
+          .supplemental-data strong {
+            display: block;
+            margin-top: 0.5mm;
+            font-size: 7.4pt;
+            line-height: 1.1;
+            overflow-wrap: anywhere;
+          }
+          .supplemental-data {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2mm;
+            margin-top: 1.2mm;
+          }
+          .supplemental-data > div {
+            padding: 1.5mm 2.3mm;
+            border: 0.25mm solid var(--line);
+            border-radius: 1.8mm;
+          }
+          .guest-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+          .guest-table th,
+          .guest-table td {
+            padding: 1.25mm 1.6mm;
+            border: 0.2mm solid #dddddd;
+            text-align: left;
+            vertical-align: top;
+            font-size: 6.8pt;
+            line-height: 1.1;
+            overflow-wrap: anywhere;
+          }
+          .guest-table th {
+            color: #777777;
+            font-size: 5.5pt;
+            text-transform: uppercase;
+            border-bottom-color: var(--line-dark);
+          }
+          .guest-table td:first-child { font-weight: 700; }
+          .rules-intro {
+            margin-top: 2.1mm;
+            padding: 2mm 2.5mm;
+            border: 0.25mm solid var(--line);
+            border-radius: 2.1mm;
+          }
+          .rules-intro strong {
+            display: block;
+            margin-bottom: 0.7mm;
+            font-size: 7.4pt;
+            text-transform: uppercase;
+          }
+          .rules-intro p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 6.4pt;
+            line-height: 1.25;
+          }
+          .rules-columns {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 5mm;
+            margin-top: 2mm;
+          }
+          .rules-column { display: grid; align-content: start; gap: 2.2mm; }
+          .rule-heading {
+            display: grid;
+            grid-template-columns: max-content minmax(0, 1fr);
+            gap: 3mm;
+            align-items: center;
+            margin-bottom: 1.3mm;
+            font-size: 7.1pt;
+            font-weight: 800;
+            text-transform: uppercase;
+          }
+          .rule-heading::after { content: ""; height: 0.2mm; background: var(--line); }
+          .rule-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 1mm;
+          }
+          .rule-list li {
+            display: grid;
+            grid-template-columns: 4.5mm minmax(0, 1fr);
+            gap: 1.8mm;
+            align-items: start;
+            font-size: 7.2pt;
+            line-height: 1.16;
+          }
+          .rule-number {
+            width: 4.5mm;
+            height: 4.5mm;
+            border: 0.25mm solid var(--line-dark);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 5.5pt;
+            font-weight: 700;
+            line-height: 1;
+          }
+          .document-footer { margin-top: auto; padding-top: 2.5mm; }
+          .legal-value {
+            min-height: 14mm;
+            padding: 2.5mm 3mm;
+            border: 0.3mm solid var(--line-dark);
+            border-left-width: 1mm;
+            border-radius: 0 2.2mm 2.2mm 0;
+          }
+          .legal-value strong {
+            display: block;
+            margin-bottom: 1.4mm;
+            font-size: 7pt;
+            text-transform: uppercase;
+          }
+          .legal-value p { margin: 0; font-size: 6.3pt; line-height: 1.28; }
+          .signature-card {
+            min-height: 29mm;
+            margin-top: 3mm;
+            padding: 3mm 4mm 2.5mm;
+            border: 0.25mm solid var(--line);
+            border-radius: 2.3mm;
+            display: flex;
+            flex-direction: column;
+          }
+          .signature-card > strong { font-size: 7.2pt; text-transform: uppercase; }
+          .signature-line { margin: auto 2mm 2.8mm; border-bottom: 0.25mm solid var(--line-dark); }
+          .signature-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 6mm;
+            color: var(--muted);
+            font-size: 5.9pt;
+          }
+          @page { size: A4; margin: 0; }
+          @media print {
+            body { background: #ffffff; }
+            .toolbar { display: none; }
+            .print-shell { padding: 0; }
+            .sheet {
+              width: 210mm;
+              height: 297mm;
+              min-height: 297mm;
+              margin: 0;
+              box-shadow: none;
+              overflow: hidden;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="toolbar">
+          <button type="button" class="ghost" onclick="window.close()">Cerrar</button>
+          <button type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+        </div>
+        <main class="print-shell">
+          <section class="sheet">
+            <header class="sheet-header">
+              <div class="wordmark-block">
+                <div class="wordmark">Solanas</div>
+                <div class="wordmark-sub">by <strong>BC PARADISE</strong></div>
+              </div>
+              <div class="document-title">
+                <h1>Registro y constancia de ingreso</h1>
+                <p>Hu&eacute;spedes, datos declarados y aceptaci&oacute;n del reglamento<br />${escapeHtml(
+                  HOTEL_INFO.name
+                )} &middot; Atenci&oacute;n las 24 horas</p>
+              </div>
+            </header>
+            <div class="hotel-line">${escapeHtml(HOTEL_INFO.address)} &middot; Tel. ${escapeHtml(
+              HOTEL_INFO.phone
+            )} &middot; ${escapeHtml(HOTEL_INFO.hours)}</div>
+
+            <div class="status-strip">
+              <div class="status-box"><span>Hu&eacute;spedes</span><strong>${escapeHtml(
+                String(totalGuests)
+              )}</strong></div>
+              <div class="status-box"><span>Ingreso</span><strong>${escapeHtml(
+                formatDisplayDate(reservation.checkInDate)
+              )}</strong></div>
+              <div class="status-box"><span>Egreso</span><strong>${escapeHtml(
+                formatDisplayDate(reservation.checkOutDate)
+              )}</strong></div>
+              <div class="status-box"><span>Habitaci&oacute;n</span><strong>${printableValue(
+                reservation.roomNumber
+              )}</strong></div>
+              <div class="status-box"><span>R&eacute;gimen</span><strong>${escapeHtml(
+                regimeLabel
+              )}</strong></div>
+            </div>
+
+            <div class="section-title"><span>Datos de la reserva</span></div>
+            <section class="details-grid">
+              <div class="detail-cell"><span>Responsable</span><strong>${escapeHtml(responsibleName)}</strong></div>
+              <div class="detail-cell"><span>DNI</span><strong>${printableValue(responsible.document)}</strong></div>
+              <div class="detail-cell"><span>Tel&eacute;fono</span><strong>${printableValue(reservation.phone)}</strong></div>
+              <div class="detail-cell"><span>Correo</span><strong>${printableValue(reservation.email)}</strong></div>
+              <div class="detail-cell"><span>Procedencia / destino</span><strong>${printableValue(
+                travelOrigin
+              )}</strong></div>
+              <div class="detail-cell"><span>Noches</span><strong>${printableValue(
+                formatNightsLabel(reservation.nights || 1)
+              )}</strong></div>
+              <div class="detail-cell"><span>Patente</span><strong>${printableValue(
+                reservation.licensePlate
+              )}</strong></div>
+              <div class="detail-cell"><span>R&eacute;gimen</span><strong>${escapeHtml(regimeLabel)}</strong></div>
+              <div class="detail-cell"><span>Total pactado</span><strong>${
+                showFinancialFields ? printableValue(paymentTotal) : "-"
+              }</strong></div>
+              <div class="detail-cell"><span>Pagado / saldo</span><strong>${
+                showFinancialFields
+                  ? `${escapeHtml(formatCurrency(paymentSummary.paid || 0))} / ${printableValue(paymentPending)}`
+                  : "-"
+              }</strong></div>
+              <div class="detail-cell"><span>F. nac. responsable</span><strong>${printableValue(
+                responsibleBirthDate
+              )}${responsibleAgeInfo.age !== null ? ` &middot; ${escapeHtml(responsibleAgeInfo.shortLabel)}` : ""}</strong></div>
+              <div class="detail-cell"><span>G&eacute;n. / nac.</span><strong>${escapeHtml(
+                [responsible.gender || "-", responsible.nationality || DEFAULT_NATIONALITY].join(" / ")
+              )}</strong></div>
+            </section>
+            ${supplementalDetails ? `<section class="supplemental-data">${supplementalDetails}</section>` : ""}
+
+            <div class="section-title"><span>Hu&eacute;spedes que ocupan la habitaci&oacute;n</span></div>
+            <table class="guest-table">
+              <colgroup>
+                <col style="width: 28%;" /><col style="width: 13%;" /><col style="width: 23%;" />
+                <col style="width: 23%;" /><col style="width: 13%;" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Nombre y apellido</th><th>DNI</th><th>F. nac. / edad</th>
+                  <th>G&eacute;n. / nac.</th><th>Reg. esp.</th>
+                </tr>
+              </thead>
+              <tbody>${guestRows}</tbody>
+            </table>
+
+            <section class="rules-intro">
+              <strong>Constancia de reglas del hotel</strong>
+              <p>El titular o responsable declara haber le&iacute;do, comprendido y aceptado las normas detalladas a continuaci&oacute;n.</p>
+            </section>
+            <section class="rules-columns">
+              <div class="rules-column">${leftRuleGroupsHtml}</div>
+              <div class="rules-column">${rightRuleGroupsHtml}</div>
+            </section>
+
+            <footer class="document-footer">
+              <section class="legal-value">
+                <strong>Declaraci&oacute;n y valor legal</strong>
+                <p>El titular o responsable declara haber le&iacute;do, comprendido y aceptado las reglas durante toda la estad&iacute;a. En caso de da&ntilde;os, p&eacute;rdidas o incumplimientos, acepta abonar el valor correspondiente al momento del egreso.</p>
+              </section>
+              <section class="signature-card">
+                <strong>Firma del titular / responsable de la reserva</strong>
+                <div class="signature-line" aria-hidden="true"></div>
+                <div class="signature-meta">
+                  <span>${escapeHtml(responsibleName)} &middot; DNI ${escapeHtml(
+                    responsible.document || "________________"
+                  )}</span>
+                  <span>Impresi&oacute;n: ${escapeHtml(
+                    formatDisplayDate(getTodayInputDate())
+                  )} &middot; Generado: ${escapeHtml(generatedAt)}</span>
+                </div>
+              </section>
+            </footer>
           </section>
         </main>
       </body>
