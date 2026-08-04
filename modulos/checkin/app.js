@@ -8765,9 +8765,23 @@ function renderLegalPacketAction(reservation, operationalInfo, options = {}) {
 
   const { compact = false } = options;
   if (isLegalPacketPrintedCurrent(reservation)) {
-    return `<span class="status-badge is-printed legal-print-state${
-      compact ? " is-compact" : ""
-    }">Formulario impreso</span>`;
+    return `
+      <div class="legal-print-current-control${compact ? " is-compact" : ""}">
+        <span class="status-badge is-printed legal-print-state${
+          compact ? " is-compact" : ""
+        }">Formulario impreso</span>
+        <button
+          class="ghost-button is-compact legal-reprint-button"
+          type="button"
+          data-action="print-legal-packet"
+          data-reservation-id="${escapeHtml(reservation.id)}"
+          aria-label="Reimprimir formulario y reglamento"
+          title="Reimprimir formulario y reglamento"
+        >
+          Reimprimir
+        </button>
+      </div>
+    `;
   }
 
   const label = reservation.lastPrintedAt
