@@ -10405,6 +10405,80 @@ function postSystemEmbeddedHeight() {
   });
 }
 
+let embeddedModalViewportTrackingStarted = false;
+
+function getEmbeddedFrameViewport() {
+  if (!SYSTEM_EMBEDDED || !window.parent || window.parent === window) {
+    return null;
+  }
+
+  try {
+    const parentDocument = window.parent.document;
+    const frame = Array.from(parentDocument.querySelectorAll("iframe")).find(
+      (candidate) => candidate.contentWindow === window
+    );
+    if (!frame) return null;
+
+    const frameRect = frame.getBoundingClientRect();
+    const scrollContainer = frame.closest(".app-main");
+    const scrollRect = scrollContainer
+      ? scrollContainer.getBoundingClientRect()
+      : { top: 0, bottom: window.parent.innerHeight };
+    const visualViewport = window.parent.visualViewport;
+    const viewportTop = visualViewport ? visualViewport.offsetTop : 0;
+    const viewportHeight = visualViewport
+      ? visualViewport.height
+      : window.parent.innerHeight || parentDocument.documentElement.clientHeight;
+    const viewportBottom = viewportTop + viewportHeight;
+    const visibleTop = Math.max(frameRect.top, scrollRect.top, viewportTop);
+    const visibleBottom = Math.min(frameRect.bottom, scrollRect.bottom, viewportBottom);
+
+    if (visibleBottom <= visibleTop) return null;
+
+    return {
+      top: Math.max(0, visibleTop - frameRect.top + window.scrollY),
+      height: Math.max(1, visibleBottom - visibleTop),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function syncEmbeddedModalViewport() {
+  const backdrops = document.querySelectorAll(".modal-backdrop");
+  if (!backdrops.length || !SYSTEM_EMBEDDED) return;
+
+  const viewport = getEmbeddedFrameViewport();
+  if (!viewport) return;
+
+  backdrops.forEach((backdrop) => {
+    backdrop.classList.add("is-parent-viewport-bound");
+    backdrop.style.setProperty("--embedded-modal-top", `${viewport.top}px`);
+    backdrop.style.setProperty("--embedded-modal-height", `${viewport.height}px`);
+  });
+}
+
+function setupEmbeddedModalViewportTracking() {
+  if (
+    embeddedModalViewportTrackingStarted ||
+    !SYSTEM_EMBEDDED ||
+    !window.parent ||
+    window.parent === window
+  ) {
+    return;
+  }
+
+  try {
+    embeddedModalViewportTrackingStarted = true;
+    window.parent.document.addEventListener("scroll", syncEmbeddedModalViewport, true);
+    window.parent.addEventListener("resize", syncEmbeddedModalViewport);
+    window.parent.visualViewport?.addEventListener("resize", syncEmbeddedModalViewport);
+    window.parent.visualViewport?.addEventListener("scroll", syncEmbeddedModalViewport);
+  } catch (error) {
+    embeddedModalViewportTrackingStarted = false;
+  }
+}
+
 function render(options = {}) {
   const {
     preserveScroll = false,
@@ -10549,6 +10623,9 @@ function render(options = {}) {
   }
   postSystemEmbeddedHeight();
   window.requestAnimationFrame(postSystemEmbeddedHeight);
+  syncEmbeddedModalViewport();
+  window.requestAnimationFrame(syncEmbeddedModalViewport);
+  window.setTimeout(syncEmbeddedModalViewport, 120);
 }
 
 document.addEventListener("click", (event) => {
@@ -11192,5 +11269,6 @@ window.addEventListener("storage", (event) => {
 
 window.addEventListener("resize", postSystemEmbeddedHeight);
 requestCheckinStateFromParent();
+setupEmbeddedModalViewportTracking();
 render();
 postBeverageStateToParent();

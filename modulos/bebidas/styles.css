@@ -1550,6 +1550,20 @@ th {
   backdrop-filter: blur(8px);
 }
 
+body.is-system-embedded .modal-backdrop.is-parent-viewport-bound {
+  position: absolute;
+  inset: auto 0 auto;
+  top: var(--embedded-modal-top, 0);
+  height: var(--embedded-modal-height, 100vh);
+  min-height: 0;
+}
+
+body.is-system-embedded
+  .modal-backdrop.is-parent-viewport-bound
+  .payment-modal {
+  max-height: calc(var(--embedded-modal-height, 100vh) - 36px);
+}
+
 .modal-dismiss-layer {
   position: absolute;
   inset: 0;
