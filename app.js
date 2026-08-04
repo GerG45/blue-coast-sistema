@@ -2825,7 +2825,6 @@ function renderUnifiedMenu() {
   return `
     ${renderGeneralDashboard(summary)}
     ${renderMenuTimelinePanel()}
-    ${renderMenuBackupPanel()}
   `;
   return `
     ${renderGeneralDashboard(summary)}
@@ -2881,39 +2880,6 @@ function renderUnifiedMenu() {
         </div>
       </div>
       ${renderSummary(summary)}
-      <div class="backup-bridge-panel">
-        <div>
-          <h3>Respaldo JSON central</h3>
-          <p>
-            Exporta un solo archivo con las tres fuentes separadas y etiquetadas:
-            <code>${UNIFIED_STORAGE_KEY}</code>, <code>${CHECKIN_STORAGE_KEY}</code> y <code>${BEVERAGE_STORAGE_KEY}</code>.
-          </p>
-        </div>
-        <div class="actions-row">
-          <button class="button is-compact" data-action="sync-local">Actualizar datos</button>
-          <button class="button is-blue is-compact" data-action="export-unified">Exportar JSON central</button>
-          <button class="ghost-button is-compact" data-action="trigger-unified-import">Importar JSON central</button>
-        </div>
-      </div>
-    </section>
-  `;
-}
-
-function renderMenuBackupPanel() {
-  return `
-    <section class="panel menu-backup-panel">
-      <div class="backup-bridge-panel">
-        <div>
-          <h3>Respaldo JSON central</h3>
-          <p>
-            El men&uacute; se sincroniza solo con Check-in y Bebidas. Este respaldo guarda todo el sistema operativo en un solo archivo.
-          </p>
-        </div>
-        <div class="actions-row">
-          <button class="button is-blue is-compact" data-action="export-unified">Exportar JSON central</button>
-          <button class="ghost-button is-compact" data-action="trigger-unified-import">Importar JSON central</button>
-        </div>
-      </div>
     </section>
   `;
 }
