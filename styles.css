@@ -4414,6 +4414,12 @@ body {
   overflow: hidden;
 }
 
+.app-layout.is-module-view .app-main,
+.app-shell.is-module-view .original-system-stage,
+.app-shell.is-module-view .original-system-frame {
+  overflow-anchor: none;
+}
+
 .app-shell.is-module-view,
 .app-shell.is-module-view .embedded-module-shell {
   display: grid;
