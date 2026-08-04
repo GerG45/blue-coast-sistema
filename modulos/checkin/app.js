@@ -13116,6 +13116,16 @@ function render(options = {}) {
   const moduleMainScrollTop = preserveScroll
     ? document.querySelector(".module-main-scroll")?.scrollTop || 0
     : 0;
+  let embeddedParentMain = null;
+  let embeddedParentMainScrollTop = 0;
+  if (preserveScroll && window.parent && window.parent !== window) {
+    try {
+      embeddedParentMain = window.parent.document.querySelector(".app-main");
+      embeddedParentMainScrollTop = embeddedParentMain?.scrollTop || 0;
+    } catch (error) {
+      embeddedParentMain = null;
+    }
+  }
   const resolvedElementScrollSnapshots =
     elementScrollSnapshots.length || !preserveScroll
       ? elementScrollSnapshots
@@ -13227,14 +13237,19 @@ function render(options = {}) {
   }
 
   if (preserveScroll) {
-    window.scrollTo(scrollX, scrollY);
-    const nextModuleMain = document.querySelector(".module-main-scroll");
-    if (nextModuleMain) {
-      nextModuleMain.scrollTop = moduleMainScrollTop;
-      window.requestAnimationFrame(() => {
+    const restorePreservedScroll = () => {
+      window.scrollTo(scrollX, scrollY);
+      const nextModuleMain = document.querySelector(".module-main-scroll");
+      if (nextModuleMain) {
         nextModuleMain.scrollTop = moduleMainScrollTop;
-      });
-    }
+      }
+      if (embeddedParentMain) {
+        embeddedParentMain.scrollTop = embeddedParentMainScrollTop;
+      }
+    };
+    restorePreservedScroll();
+    window.requestAnimationFrame(restorePreservedScroll);
+    window.setTimeout(restorePreservedScroll, 120);
   }
 
   scheduleElementScrollRestore(resolvedElementScrollSnapshots);

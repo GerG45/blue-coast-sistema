@@ -2458,7 +2458,13 @@ function applyMenuTimelineViewport() {
   window.requestAnimationFrame(applyScroll);
 }
 
-function render() {
+function render(options = {}) {
+  const { preserveScroll = false } = options;
+  const windowScrollX = preserveScroll ? window.scrollX : 0;
+  const windowScrollY = preserveScroll ? window.scrollY : 0;
+  const currentMainScrollTop = preserveScroll
+    ? document.querySelector(".app-main")?.scrollTop || 0
+    : 0;
   const root = document.getElementById("app");
   const activeModule = getActiveModule();
   const isOriginalSystem =
@@ -2512,6 +2518,18 @@ function render() {
   document.body.classList.toggle("has-modal", hasOpenModal());
   document.body.classList.toggle("is-original-system", false);
   applyMenuTimelineViewport();
+
+  if (preserveScroll) {
+    const restoreScroll = () => {
+      window.scrollTo(windowScrollX, windowScrollY);
+      const nextMain = document.querySelector(".app-main");
+      if (nextMain) {
+        nextMain.scrollTop = currentMainScrollTop;
+      }
+    };
+    restoreScroll();
+    window.requestAnimationFrame(restoreScroll);
+  }
 }
 
 function renderSystemFooter(copy = "") {
@@ -5825,7 +5843,7 @@ document.addEventListener("click", (event) => {
 
   if (action === "set-menu-timeline-today") {
     ui.menuTimelineDate = getTodayInputDate();
-    render();
+    render({ preserveScroll: true });
     return;
   }
 
@@ -5834,7 +5852,7 @@ document.addEventListener("click", (event) => {
       getMenuTimelineDate(),
       Number(target.dataset.shift) || 0
     );
-    render();
+    render({ preserveScroll: true });
     return;
   }
 
@@ -5842,7 +5860,7 @@ document.addEventListener("click", (event) => {
     const nextDate = normalizeDate(target.dataset.date);
     if (!nextDate) return;
     ui.menuTimelineDate = nextDate;
-    render();
+    render({ preserveScroll: true });
     return;
   }
 
@@ -6015,7 +6033,7 @@ document.addEventListener("change", (event) => {
 
   if (target.matches("[data-menu-timeline-date]")) {
     ui.menuTimelineDate = normalizeDate(target.value) || getMenuTimelineDate();
-    render();
+    render({ preserveScroll: true });
     return;
   }
 
