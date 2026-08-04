@@ -464,6 +464,54 @@ function readLocalJson(key) {
   }
 }
 
+function getStateSavedAtMs(payload) {
+  if (!payload || typeof payload !== "object") {
+    return 0;
+  }
+
+  const candidates = [
+    payload.lastSavedAt,
+    payload.clientSavedAt,
+    payload.exportedAt,
+    payload.updatedAt,
+  ];
+  if (Array.isArray(payload.reservations)) {
+    payload.reservations.forEach((reservation) => {
+      if (!reservation || typeof reservation !== "object") return;
+      candidates.push(
+        reservation.updatedAt,
+        reservation.legalUpdatedAt,
+        reservation.confirmedAt,
+        reservation.createdAt
+      );
+    });
+  }
+
+  return candidates.reduce((latest, value) => {
+    const parsed = Date.parse(value || "");
+    return Number.isFinite(parsed) ? Math.max(latest, parsed) : latest;
+  }, 0);
+}
+
+function selectFreshestPayload(localPayload, remotePayload, isValid) {
+  const localValid = Boolean(localPayload && isValid(localPayload));
+  const remoteValid = Boolean(remotePayload && isValid(remotePayload));
+
+  if (!localValid) {
+    return { payload: remoteValid ? remotePayload : null, usedLocal: false };
+  }
+  if (!remoteValid) {
+    return { payload: localPayload, usedLocal: true };
+  }
+
+  const localSavedAt = getStateSavedAtMs(localPayload);
+  const remoteSavedAt = getStateSavedAtMs(remotePayload);
+  if (localSavedAt > remoteSavedAt) {
+    return { payload: localPayload, usedLocal: true };
+  }
+  return { payload: remotePayload, usedLocal: false };
+}
+
 function canUseCentralStateApi() {
   return window.location.protocol === "http:" || window.location.protocol === "https:";
 }
@@ -521,18 +569,38 @@ function applyUnifiedPayloadLocally(payload, meta = {}) {
     payload.unifiedState ||
     payload.state ||
     payload;
-  const nextState = normalizeUnifiedStatePayload(unifiedPayload);
-  const checkinPayload =
+  const remoteState = normalizeUnifiedStatePayload(unifiedPayload);
+  const unifiedSelection = selectFreshestPayload(
+    state,
+    remoteState,
+    (candidate) => Boolean(normalizeUnifiedStatePayload(candidate))
+  );
+  const nextState = normalizeUnifiedStatePayload(unifiedSelection.payload);
+  const remoteCheckinPayload =
     getUnifiedBackupSystem(payload, "checkin") ||
     (nextState && nextState.sources ? nextState.sources.checkin : null);
-  const beveragePayload =
+  const checkinSelection = selectFreshestPayload(
+    readLocalJson(CHECKIN_STORAGE_KEY),
+    remoteCheckinPayload,
+    (candidate) => sourceLooksValid("checkin", candidate)
+  );
+  const remoteBeveragePayload =
     getUnifiedBackupSystem(payload, "beverages") ||
     (nextState && nextState.sources ? nextState.sources.beverages : null);
-  const normalizedCheckin = sourceLooksValid("checkin", checkinPayload) ? checkinPayload : null;
-  const beverageNormalization = sourceLooksValid("beverages", beveragePayload)
-    ? normalizeBeveragePayloadForDashboard(beveragePayload)
+  const beverageSelection = selectFreshestPayload(
+    readLocalJson(BEVERAGE_STORAGE_KEY),
+    remoteBeveragePayload,
+    (candidate) => sourceLooksValid("beverages", candidate)
+  );
+  const normalizedCheckin = sourceLooksValid("checkin", checkinSelection.payload)
+    ? checkinSelection.payload
+    : null;
+  const beverageNormalization = sourceLooksValid("beverages", beverageSelection.payload)
+    ? normalizeBeveragePayloadForDashboard(beverageSelection.payload)
     : { payload: null, changed: false };
   const normalizedBeverages = beverageNormalization.payload;
+  const preservedNewerLocalState =
+    unifiedSelection.usedLocal || checkinSelection.usedLocal || beverageSelection.usedLocal;
 
   if (!nextState && !normalizedCheckin && !normalizedBeverages) {
     return false;
@@ -559,7 +627,7 @@ function applyUnifiedPayloadLocally(payload, meta = {}) {
   }
   writeLocalStateMirrors();
   isApplyingCentralState = false;
-  if (beverageNormalization.changed) {
+  if (beverageNormalization.changed || preservedNewerLocalState) {
     scheduleCentralStateWrite();
   }
   return true;
@@ -6064,6 +6132,22 @@ function scrollAppMainToElement(element, offset = 18) {
 
 window.addEventListener("message", (event) => {
   if (!event || !event.data) {
+    return;
+  }
+
+  if (event.data.type === "solanas:navigate-module") {
+    const moduleKey = String(event.data.module || "").trim();
+    if (!Object.prototype.hasOwnProperty.call(MODULES, moduleKey)) {
+      return;
+    }
+    syncFromLocalStorage({ silent: true, renderAfter: false });
+    ui.systemMenuOpen = false;
+    const nextHash = `#${moduleKey}`;
+    if (window.location.hash === nextHash) {
+      render();
+    } else {
+      window.location.hash = nextHash;
+    }
     return;
   }
 

@@ -8414,7 +8414,7 @@ function renderShellSidebar() {
         >
           <span class="module-sidebar__toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
         </button>
-        <a class="module-sidebar__brand" href="${new URL("../../index.html#menu", window.location.href).href}" target="_parent" aria-label="Ir al dashboard">
+        <a class="module-sidebar__brand" href="${new URL("../../#menu", window.location.href).href}" data-shell-module-link="menu" target="_parent" aria-label="Ir al dashboard">
           <img class="module-sidebar__brand-logo-full" src="${BLUE_COAST_LOGO_URL}" alt="Blue Coast Sistema Hotelero" />
         </a>
       </div>
@@ -8428,7 +8428,8 @@ function renderShellSidebar() {
             return `
               <a
                 class="module-sidebar__link ${activeKey === item.key ? "is-active" : ""}"
-                href="${new URL(`../../index.html#${item.key}`, window.location.href).href}"
+                href="${new URL(`../../#${item.key}`, window.location.href).href}"
+                data-shell-module-link="${escapeHtml(item.key)}"
                 target="_parent"
               >
                 <span class="module-sidebar__icon" aria-hidden="true">${iconMarkup}</span>
@@ -14004,6 +14005,21 @@ document.addEventListener("click", (event) => {
     } catch (error) {
       // Algunos navegadores no permiten abrir el picker por c\u00f3digo; en ese caso sigue el comportamiento nativo.
     }
+  }
+
+  const shellModuleLink = event.target.closest("[data-shell-module-link]");
+  if (shellModuleLink && window.parent && window.parent !== window) {
+    event.preventDefault();
+    postCheckinStateToParent();
+    window.parent.postMessage(
+      {
+        type: "solanas:navigate-module",
+        module: shellModuleLink.dataset.shellModuleLink,
+        emittedAt: nowIso(),
+      },
+      "*"
+    );
+    return;
   }
 
   const target = event.target.closest("[data-action]");
