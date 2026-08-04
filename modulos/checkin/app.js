@@ -7687,6 +7687,11 @@ function focusModuleStartAfterRender() {
 
 function focusActiveModalAfterRender() {
   window.requestAnimationFrame(() => {
+    if (SYSTEM_EMBEDDED) {
+      syncEmbeddedCheckinModalViewport();
+      return;
+    }
+
     const activeModal = getManagedModalRoots()[0] || null;
     const modalTarget =
       activeModal && activeModal.closest(".scanner-modal-shell, .private-reservation-modal-shell")
@@ -7698,7 +7703,6 @@ function focusActiveModalAfterRender() {
     if (modalTarget) {
       modalTarget.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-    requestEmbeddedModuleFocus("modal");
   });
 }
 
