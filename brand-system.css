@@ -1121,3 +1121,145 @@ body.theme-light .timeline-panel .timeline-cell.is-selected-day {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Light mode: operational modals, inventory status and brand mark. */
+html.theme-light-root body .app-sidebar__brand-logo-full,
+html.theme-light-root body .module-sidebar__brand-logo-full,
+body.theme-light .app-sidebar__brand-logo-full,
+body.theme-light .module-sidebar__brand-logo-full {
+  content: url("./assets/blue-coast-logo-light.svg");
+}
+
+html.theme-light-root body .stock-status.is-ready,
+body.theme-light .stock-status.is-ready {
+  border-color: #5bbf9f !important;
+  background: #d9f5ea !important;
+  color: #075c49 !important;
+}
+
+html.theme-light-root body .stock-status.is-warning,
+body.theme-light .stock-status.is-warning {
+  border-color: #dfb44a !important;
+  background: #fff2c9 !important;
+  color: #6f4700 !important;
+}
+
+html.theme-light-root body .stock-status.is-danger,
+body.theme-light .stock-status.is-danger {
+  border-color: #e98b8b !important;
+  background: #fee2e2 !important;
+  color: #8f1d1d !important;
+}
+
+html.theme-light-root body .stock-status.is-blue,
+body.theme-light .stock-status.is-blue {
+  border-color: #7da9ec !important;
+  background: #dceaff !important;
+  color: #173f7a !important;
+}
+
+html.theme-light-root body .stock-status.is-muted,
+body.theme-light .stock-status.is-muted {
+  border-color: #a9b8c7 !important;
+  background: #e9eff4 !important;
+  color: #33485c !important;
+}
+
+html.theme-light-root body .modal-backdrop,
+body.theme-light .modal-backdrop {
+  background: rgba(15, 30, 43, 0.42) !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-modal,
+html.theme-light-root body.has-shell-layout .empty-room-modal,
+html.theme-light-root body.has-shell-layout .group-editor-modal,
+body.theme-light.has-shell-layout .payment-modal,
+body.theme-light.has-shell-layout .empty-room-modal,
+body.theme-light.has-shell-layout .group-editor-modal {
+  border-color: #b9d1de !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #102033 !important;
+  box-shadow: 0 20px 44px rgba(17, 45, 64, 0.18) !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-modal h2,
+html.theme-light-root body.has-shell-layout .payment-modal h3,
+html.theme-light-root body.has-shell-layout .payment-modal strong,
+html.theme-light-root body.has-shell-layout .payment-modal .stat-label,
+body.theme-light.has-shell-layout .payment-modal h2,
+body.theme-light.has-shell-layout .payment-modal h3,
+body.theme-light.has-shell-layout .payment-modal strong,
+body.theme-light.has-shell-layout .payment-modal .stat-label {
+  color: #102033 !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-modal p,
+html.theme-light-root body.has-shell-layout .payment-modal .muted,
+html.theme-light-root body.has-shell-layout .payment-modal small,
+body.theme-light.has-shell-layout .payment-modal p,
+body.theme-light.has-shell-layout .payment-modal .muted,
+body.theme-light.has-shell-layout .payment-modal small {
+  color: #536b7d !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-modal .warning-note,
+body.theme-light.has-shell-layout .payment-modal .warning-note {
+  border-color: #e4bd67 !important;
+  background: #fff5da !important;
+  color: #714800 !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-cash,
+body.theme-light.has-shell-layout .payment-choice.is-cash {
+  border-color: #76c9a9 !important;
+  background: #e4f7ef !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-cash .payment-choice-title,
+body.theme-light.has-shell-layout .payment-choice.is-cash .payment-choice-title {
+  color: #08634d !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-transfer,
+body.theme-light.has-shell-layout .payment-choice.is-transfer {
+  border-color: #8bb4ed !important;
+  background: #e8f1ff !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-transfer .payment-choice-title,
+body.theme-light.has-shell-layout .payment-choice.is-transfer .payment-choice-title {
+  color: #174b91 !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-stay,
+body.theme-light.has-shell-layout .payment-choice.is-stay {
+  border-color: #e1b35a !important;
+  background: #fff1cf !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-stay .payment-choice-title,
+body.theme-light.has-shell-layout .payment-choice.is-stay .payment-choice-title {
+  color: #794700 !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-staff-member,
+body.theme-light.has-shell-layout .payment-choice.is-staff-member {
+  border-color: #aebdca !important;
+  background: #edf2f6 !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice.is-staff-member .payment-choice-title,
+body.theme-light.has-shell-layout .payment-choice.is-staff-member .payment-choice-title {
+  color: #31475a !important;
+}
+
+html.theme-light-root body.has-shell-layout .payment-choice .payment-choice-copy,
+body.theme-light.has-shell-layout .payment-choice .payment-choice-copy {
+  color: #526a7c !important;
+  opacity: 1 !important;
+}
