@@ -6169,18 +6169,30 @@ button.timeline-status.is-actionable:focus-visible {
 .pricing-book-summary {
   padding: 14px 16px;
   border-radius: 18px;
-  border: 1px solid rgba(185, 109, 24, 0.2);
-  background: rgba(255, 247, 236, 0.9);
-  color: #8f4d22;
+  border: 1px solid rgba(245, 179, 66, 0.34);
+  background: linear-gradient(180deg, rgba(55, 43, 24, 0.96), rgba(31, 31, 29, 0.96));
+  color: #e8c77f;
 }
 
 .pricing-book-summary strong {
-  color: #6e4020;
+  color: #fff1c2;
 }
 
 .pricing-book-summary p {
   margin: 6px 0 0;
   line-height: 1.45;
+}
+
+html.theme-light-root .pricing-book-summary,
+body.theme-light .pricing-book-summary {
+  border-color: rgba(185, 109, 24, 0.2);
+  background: rgba(255, 247, 236, 0.9);
+  color: #8f4d22;
+}
+
+html.theme-light-root .pricing-book-summary strong,
+body.theme-light .pricing-book-summary strong {
+  color: #6e4020;
 }
 
 .confirmation-box {
