@@ -13930,9 +13930,9 @@ function render(options = {}) {
           `
           : isReservationsMode()
             ? `
+              ${renderRoomTimelinePanel()}
               ${renderHistoryPanel()}
               ${renderRoomOverviewPanel()}
-              ${renderRoomTimelinePanel()}
             `
             : `
               ${renderHistoryPanel()}
