@@ -5421,7 +5421,7 @@ function upsertCatalogProduct(payload) {
   const sellable = payload.sellable;
   const price = payload.price === "" ? 0 : Number(payload.price);
   const costPrice = payload.costPrice === "" ? 0 : Number(payload.costPrice);
-  const lowStockThreshold = normalizeLowStockThreshold(payload.lowStockThreshold);
+  const lowStockThresholdValue = Number(payload.lowStockThreshold);
   const trackStock = productKind === "manufactured" ? false : payload.trackStock;
   const stockValue = productKind === "manufactured" || payload.stock === "" ? null : Number(payload.stock);
 
@@ -5439,6 +5439,18 @@ function upsertCatalogProduct(payload) {
     alert("Si el stock está activo, la cantidad debe ser válida.");
     return;
   }
+
+  if (trackStock && !Number.isInteger(stockValue)) {
+    alert("El stock debe cargarse en unidades enteras, sin decimales.");
+    return;
+  }
+
+  if (!Number.isInteger(lowStockThresholdValue) || lowStockThresholdValue < 0) {
+    alert("El umbral de alerta debe ser un número entero, sin decimales.");
+    return;
+  }
+
+  const lowStockThreshold = normalizeLowStockThreshold(lowStockThresholdValue);
 
   if (productKind === "manufactured" && ui.recipeDraftIngredients.length === 0) {
     alert("Las bebidas elaboradas necesitan al menos un ingrediente en su receta.");
@@ -9295,7 +9307,8 @@ function renderCatalogSection() {
               type="number"
               name="stock"
               min="0"
-              step="0.001"
+              step="1"
+              inputmode="numeric"
               value="${escapeHtml(isDraftManufactured ? "" : draft.stock)}"
               placeholder="${isDraftManufactured ? "La receta descuenta insumos" : "0"}"
               ${isDraftManufactured ? "disabled" : ""}
@@ -9307,7 +9320,8 @@ function renderCatalogSection() {
               type="number"
               name="lowStockThreshold"
               min="0"
-              step="0.001"
+              step="1"
+              inputmode="numeric"
               value="${escapeHtml(draft.lowStockThreshold)}"
               placeholder="${
                 isDraftManufactured

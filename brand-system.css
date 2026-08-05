@@ -1263,3 +1263,70 @@ body.theme-light.has-shell-layout .payment-choice .payment-choice-copy {
   color: #526a7c !important;
   opacity: 1 !important;
 }
+
+/* Stock e Inventario: contraste exclusivo del tema claro. */
+html.theme-light-root body.has-shell-layout .catalog-option-card,
+body.theme-light.has-shell-layout .catalog-option-card {
+  border-color: #bfd0dc !important;
+  background: #f4f8fb !important;
+  background-image: none !important;
+  color: #102033 !important;
+  box-shadow: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .catalog-option-card:hover,
+html.theme-light-root body.has-shell-layout .catalog-option-card:focus-within,
+body.theme-light.has-shell-layout .catalog-option-card:hover,
+body.theme-light.has-shell-layout .catalog-option-card:focus-within {
+  border-color: #5c9fa4 !important;
+  background: #eef7f7 !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .catalog-option-card.is-on,
+body.theme-light.has-shell-layout .catalog-option-card.is-on {
+  border-color: #72aaa9 !important;
+  background: #e5f3f1 !important;
+  background-image: none !important;
+}
+
+html.theme-light-root body.has-shell-layout .catalog-option-title,
+body.theme-light.has-shell-layout .catalog-option-title {
+  color: #102033 !important;
+}
+
+html.theme-light-root body.has-shell-layout .catalog-option-description,
+body.theme-light.has-shell-layout .catalog-option-description {
+  color: #496174 !important;
+}
+
+html.theme-light-root body.has-shell-layout .catalog-option-state,
+body.theme-light.has-shell-layout .catalog-option-state {
+  border-color: #b8c9d5 !important;
+  background: #ffffff !important;
+  color: #385064 !important;
+}
+
+html.theme-light-root body.has-shell-layout .catalog-option-card.is-on .catalog-option-state,
+body.theme-light.has-shell-layout .catalog-option-card.is-on .catalog-option-state {
+  border-color: #63a6a3 !important;
+  background: #d3ebe7 !important;
+  color: #115d5a !important;
+}
+
+html.theme-light-root body .inventory-area-card span,
+body.theme-light .inventory-area-card span {
+  color: #08736f !important;
+}
+
+html.theme-light-root body .inventory-area-card.is-open span,
+body.theme-light .inventory-area-card.is-open span,
+html.theme-light-root body .inventory-area-section.is-gold .source-tag,
+body.theme-light .inventory-area-section.is-gold .source-tag {
+  color: #8a6100 !important;
+}
+
+html.theme-light-root body .inventory-area-section.is-violet .source-tag,
+body.theme-light .inventory-area-section.is-violet .source-tag {
+  color: #6d3fa3 !important;
+}
