@@ -4028,10 +4028,6 @@ function renderInventoryPage() {
           <h2>Stock e Inventario</h2>
           <p>Bebidas queda sincronizado con la Estaci&oacute;n de bebidas. Alimentos y Extras ya quedan separados para cargar compras, consumos y reposiciones en la siguiente etapa.</p>
         </div>
-        <div class="actions-row">
-          <button class="ghost-button is-compact" data-action="sync-local">Actualizar desde sistemas</button>
-          <a class="button is-compact" href="#bebidas">Abrir Bebidas</a>
-        </div>
       </div>
       <div class="inventory-group-grid">
         ${renderInventoryGroupCard({
@@ -4145,7 +4141,7 @@ function renderBeverageInventorySection(products, summary) {
             </div>`
           : `<div class="empty-state">
               <strong>Sin cat&aacute;logo de bebidas visible.</strong>
-              <p>Abr&iacute; Bebidas una vez o us&aacute; Actualizar desde sistemas para traer el stock operativo.</p>
+              <p>El cat&aacute;logo aparecer&aacute; autom&aacute;ticamente cuando el JSON central tenga stock operativo.</p>
             </div>`
       }
     </section>
@@ -4156,7 +4152,6 @@ function renderBeverageInventorySection(products, summary) {
           <h2>Cat&aacute;logo y stock</h2>
           <p>Crear, editar, archivar y controlar recetas desde el mismo m&oacute;dulo que usa la Estaci&oacute;n de bebidas.</p>
         </div>
-        <a class="ghost-button is-compact" href="#bebidas">Abrir estaci&oacute;n completa</a>
       </div>
       <iframe
         class="inventory-catalog-frame"
@@ -4271,7 +4266,7 @@ function renderCheckoutToolbar(summary) {
     : "Falta conectar una fuente";
   const bridgeCopy = hasCheckin && hasBeverages
     ? "Las reservas y consumos ya pueden cruzarse por habitación y por grupo."
-    : "Actualizá los datos desde los sistemas existentes o importá respaldos JSON.";
+    : "El sistema todavía no recibió datos operativos completos desde el JSON central.";
 
   return `
     <section class="panel checkout-toolbar">
@@ -4280,7 +4275,6 @@ function renderCheckoutToolbar(summary) {
           <h2>Panel de cierre</h2>
           <p class="muted">${escapeHtml(bridgeCopy)}</p>
           <div class="hero-actions">
-            <button class="button" data-action="sync-local">Actualizar datos</button>
             <button class="button is-blue" data-action="open-report-modal">Emitir informe</button>
           </div>
         </div>
@@ -5840,11 +5834,6 @@ document.addEventListener("click", (event) => {
   if (action === "toggle-system-menu") {
     ui.systemMenuOpen = !ui.systemMenuOpen;
     render();
-    return;
-  }
-
-  if (action === "sync-local") {
-    syncFromLocalStorage();
     return;
   }
 
