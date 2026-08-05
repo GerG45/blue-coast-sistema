@@ -5050,6 +5050,8 @@ function setActiveReservation(reservationId) {
     render({ preserveScroll: true, focusId: "responsible-firstName", focusModal: true });
     return;
   }
+  const shouldStartAtResponsible =
+    isCheckinMode() && needsHistoryLegajoBadge(reservation);
   const primaryGuest = ensureReservationHasGuest(reservation);
   state.activeReservationId = reservation.id;
   ui.activeGuestId = primaryGuest.id;
@@ -5060,8 +5062,13 @@ function setActiveReservation(reservationId) {
   closeTariffModal();
   closeReservationConfirmModal();
   persistState();
-  render();
-  scrollToReservationPanel();
+  render({
+    focusId: shouldStartAtResponsible ? "responsible-firstName" : null,
+    scrollToId: shouldStartAtResponsible ? "responsible-panel" : null,
+  });
+  if (!shouldStartAtResponsible) {
+    scrollToReservationPanel();
+  }
 }
 
 function createNewReservation(options = {}) {
@@ -8661,7 +8668,7 @@ function renderResponsiblePanel(reservation) {
   const responsible = getTitular(reservation);
   const ageInfo = getResponsibleLegalAgeInfo(reservation);
   return `
-    <section class="responsible-box">
+    <section class="responsible-box" id="responsible-panel">
       <div class="panel-title-row">
         <div>
           <div class="eyebrow" style="margin-bottom: 8px; color: var(--accent); opacity: 1;">Responsable</div>
@@ -13877,6 +13884,7 @@ function render(options = {}) {
     focusId = null,
     focusModal = false,
     focusTop = false,
+    scrollToId = null,
     selectionStart = null,
     selectionEnd = null,
     elementScrollSnapshots = [],
@@ -14039,6 +14047,13 @@ function render(options = {}) {
 
   if (focusModal) {
     focusActiveModalAfterRender();
+  } else if (scrollToId) {
+    window.requestAnimationFrame(() => {
+      const scrollTarget = document.getElementById(scrollToId);
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
   } else if (focusTop || !preserveScroll) {
     focusModuleStartAfterRender();
   }

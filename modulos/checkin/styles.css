@@ -4256,6 +4256,10 @@ button:disabled {
   border: 1px solid rgba(13, 124, 121, 0.14);
 }
 
+#responsible-panel {
+  scroll-margin-top: 22px;
+}
+
 .scanner-modal-backdrop {
   position: fixed;
   inset: 0;
