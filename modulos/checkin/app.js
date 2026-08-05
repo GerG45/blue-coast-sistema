@@ -4907,6 +4907,19 @@ function isReservationReadyForCheckinHistory(reservation) {
   return getStayPaymentStatus(reservation).className === "is-green";
 }
 
+function isReservationVisibleInCompletedCheckinHistory(
+  reservation,
+  referenceDate = getTodayInputDate()
+) {
+  if (!isReservationReadyForCheckinHistory(reservation)) {
+    return false;
+  }
+
+  const today = normalizeInputDate(referenceDate) || getTodayInputDate();
+  const checkOutDate = normalizeInputDate(reservation.checkOutDate);
+  return !checkOutDate || today <= checkOutDate;
+}
+
 function getReadyReservationsCount() {
   return getVisibleReservations().filter(
     (reservation) => !reservation.archived && Boolean(reservation.confirmedAt)
@@ -13218,15 +13231,18 @@ function renderHistoryPanel() {
 }
 
 function renderCompletedCheckinHistoryPanel() {
-  const reservations = getReservationsSorted().filter(isReservationReadyForCheckinHistory);
+  const reservations = getReservationsSorted().filter(
+    isReservationVisibleInCompletedCheckinHistory
+  );
   return `
     <section id="completed-history-section" class="panel">
       <div class="panel-title-row">
         <div>
           <h2>Historial de hu&eacute;spedes ingresados</h2>
           <p>
-            Habitaciones ya ingresadas y ordenadas. Quedan abajo para consulta y solo conservan la
-            edici&oacute;n por si hay que corregir alg&uacute;n dato.
+            Habitaciones ya ingresadas que siguen dentro de su estad&iacute;a. Se muestran hasta el d&iacute;a
+            del Check-out inclusive; desde el d&iacute;a siguiente quedan resguardadas solamente en el
+            Libro de Hu&eacute;spedes.
           </p>
         </div>
       </div>
@@ -13308,8 +13324,8 @@ function renderCompletedCheckinHistoryPanel() {
                 .join("")
             : `
               <div class="empty-state">
-                <strong>Todav&iacute;a no hay habitaciones en historial.</strong>
-                <p>Se completar&aacute; cuando haya formulario impreso, ingreso registrado y pago resuelto.</p>
+                <strong>No hay hu&eacute;spedes ingresados dentro de su estad&iacute;a.</strong>
+                <p>Los egresos anteriores permanecen conservados en el Libro de Hu&eacute;spedes.</p>
               </div>
             `
         }
