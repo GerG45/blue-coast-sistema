@@ -3,15 +3,25 @@ const LEGACY_UNIFIED_STORAGE_KEYS = ["solanas-unificado-state-v1"];
 const CHECKIN_STORAGE_KEY = "solanas-checkin-state-v2";
 const BEVERAGE_STORAGE_KEY = "solanas-comandero-state-v5";
 const UNIFIED_BACKUP_FORMAT = "solanas-unified-backup-v1";
-const CENTRAL_STATE_URL = "/api/state";
-const CENTRAL_STATE_WRITE_DELAY_MS = 250;
+const CENTRAL_STATE_WRITE_DELAY_MS = 500;
 const REMOTE_STATE_CONFIG = window.BLUE_COAST_REMOTE_STATE || {};
-const REMOTE_STATE_URL = String(
-  REMOTE_STATE_CONFIG.url || window.BLUE_COAST_REMOTE_STATE_URL || ""
+const REMOTE_STATE_PROVIDER = String(REMOTE_STATE_CONFIG.provider || "")
+  .trim()
+  .toLowerCase();
+const FIRESTORE_STATE_CONFIG = REMOTE_STATE_CONFIG.firestore || {};
+const FIRESTORE_STATE_COLLECTION = String(
+  FIRESTORE_STATE_CONFIG.collection || "blue_coast_state"
 ).trim();
-const REMOTE_STATE_TOKEN = String(
-  REMOTE_STATE_CONFIG.token || window.BLUE_COAST_REMOTE_STATE_TOKEN || ""
+const FIRESTORE_STATE_DOCUMENT = String(
+  FIRESTORE_STATE_CONFIG.document || "operational"
 ).trim();
+const FIRESTORE_STATE_CHUNK_SIZE = Math.min(
+  700000,
+  Math.max(100000, Number(FIRESTORE_STATE_CONFIG.chunkSize) || 600000)
+);
+const FIRESTORE_STATE_FORMAT = "blue-coast-unified-json-v1";
+const FIRESTORE_MAX_CHUNKS = 450;
+const FIRESTORE_SDK_URL = "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
 const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system", window.location.href).href;
@@ -317,6 +327,10 @@ const ui = {
 
 let state = loadUnifiedState();
 let centralStateWriteTimer = null;
+let centralStateWriteInFlight = null;
+let centralStateWriteQueued = false;
+let firestoreApiPromise = null;
+let firestoreDb = null;
 let isApplyingCentralState = false;
 
 function createUnifiedState() {
@@ -513,50 +527,211 @@ function selectFreshestPayload(localPayload, remotePayload, isValid) {
 }
 
 function canUseCentralStateApi() {
-  return window.location.protocol === "http:" || window.location.protocol === "https:";
+  const isWebPage = window.location.protocol === "http:" || window.location.protocol === "https:";
+  return (
+    isWebPage &&
+    REMOTE_STATE_PROVIDER === "firestore" &&
+    Boolean(FIRESTORE_STATE_COLLECTION) &&
+    Boolean(FIRESTORE_STATE_DOCUMENT) &&
+    Boolean(window.BLUE_COAST_FIREBASE_APP) &&
+    Boolean(window.BLUE_COAST_AUTH_SESSION)
+  );
 }
 
-function hasRemoteStateApi() {
-  return Boolean(REMOTE_STATE_URL);
+async function getFirestoreContext() {
+  if (!canUseCentralStateApi()) {
+    return null;
+  }
+  if (!firestoreApiPromise) {
+    firestoreApiPromise = import(FIRESTORE_SDK_URL);
+  }
+  const api = await firestoreApiPromise;
+  if (!firestoreDb) {
+    firestoreDb = api.getFirestore(window.BLUE_COAST_FIREBASE_APP);
+  }
+  return { api, db: firestoreDb };
 }
 
-function getRemoteStateUrl(action = "state") {
-  if (!hasRemoteStateApi()) {
-    return "";
+function encodeUtf8Base64(value) {
+  const bytes = new TextEncoder().encode(String(value || ""));
+  let binary = "";
+  const blockSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += blockSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + blockSize));
   }
-  try {
-    const url = new URL(REMOTE_STATE_URL, window.location.href);
-    if (action) {
-      url.searchParams.set("action", action);
-    }
-    if (REMOTE_STATE_TOKEN) {
-      url.searchParams.set("token", REMOTE_STATE_TOKEN);
-    }
-    return url.href;
-  } catch (error) {
-    console.error("La URL remota de Google Sheets no es valida.", error);
-    return "";
-  }
+  return window.btoa(binary);
 }
 
-function normalizeCentralStateResponse(result) {
-  if (!result || typeof result !== "object") {
-    return { ok: false, exists: false, payload: null };
+function decodeUtf8Base64(value) {
+  const binary = window.atob(String(value || ""));
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
   }
-  if (Object.prototype.hasOwnProperty.call(result, "payload")) {
-    return {
-      ok: result.ok !== false,
-      exists: result.exists !== false && Boolean(result.payload),
-      payload: result.payload || null,
-      sourceName: result.sourceName || result.storage || "",
-    };
+  return new TextDecoder().decode(bytes);
+}
+
+function getFirestoreChunkId(generation, index) {
+  return `${FIRESTORE_STATE_DOCUMENT}__${generation}__${String(index).padStart(4, "0")}`;
+}
+
+function splitCentralStatePayload(payload) {
+  const json = JSON.stringify(payload);
+  const encoded = encodeUtf8Base64(json);
+  const chunks = [];
+  for (let index = 0; index < encoded.length; index += FIRESTORE_STATE_CHUNK_SIZE) {
+    chunks.push(encoded.slice(index, index + FIRESTORE_STATE_CHUNK_SIZE));
+  }
+  if (!chunks.length) {
+    chunks.push(encodeUtf8Base64("{}"));
+  }
+  if (chunks.length > FIRESTORE_MAX_CHUNKS) {
+    throw new Error("El estado central supera el tamano permitido para una escritura segura.");
   }
   return {
-    ok: true,
-    exists: true,
-    payload: result,
-    sourceName: "",
+    chunks,
+    byteLength: new TextEncoder().encode(json).length,
   };
+}
+
+async function readCentralStateFromFirestore() {
+  const context = await getFirestoreContext();
+  if (!context) {
+    return { exists: false, payload: null };
+  }
+  const { api, db } = context;
+  const metadataRef = api.doc(
+    db,
+    FIRESTORE_STATE_COLLECTION,
+    FIRESTORE_STATE_DOCUMENT
+  );
+  const metadataSnapshot = await api.getDoc(metadataRef);
+  if (!metadataSnapshot.exists()) {
+    return { exists: false, payload: null };
+  }
+
+  const metadata = metadataSnapshot.data() || {};
+  const generation = String(metadata.generation || "");
+  const chunkCount = Number(metadata.chunkCount);
+  if (
+    metadata.format !== FIRESTORE_STATE_FORMAT ||
+    !generation ||
+    !Number.isInteger(chunkCount) ||
+    chunkCount < 1 ||
+    chunkCount > FIRESTORE_MAX_CHUNKS
+  ) {
+    throw new Error("El estado de Firestore tiene un formato invalido.");
+  }
+
+  const snapshots = await Promise.all(
+    Array.from({ length: chunkCount }, (_, index) =>
+      api.getDoc(
+        api.doc(
+          db,
+          FIRESTORE_STATE_COLLECTION,
+          getFirestoreChunkId(generation, index)
+        )
+      )
+    )
+  );
+  const encoded = snapshots
+    .map((snapshot, index) => {
+      if (!snapshot.exists()) {
+        throw new Error(`Falta el fragmento ${index + 1} del estado central.`);
+      }
+      const chunk = snapshot.data() || {};
+      if (chunk.generation !== generation || Number(chunk.index) !== index) {
+        throw new Error(`El fragmento ${index + 1} del estado central no coincide.`);
+      }
+      return String(chunk.data || "");
+    })
+    .join("");
+
+  return {
+    exists: true,
+    payload: JSON.parse(decodeUtf8Base64(encoded)),
+  };
+}
+
+async function deleteFirestoreGeneration(context, generation, chunkCount) {
+  if (!generation || !Number.isInteger(chunkCount) || chunkCount < 1) {
+    return;
+  }
+  const { api, db } = context;
+  for (let start = 0; start < chunkCount; start += FIRESTORE_MAX_CHUNKS) {
+    const batch = api.writeBatch(db);
+    const end = Math.min(chunkCount, start + FIRESTORE_MAX_CHUNKS);
+    for (let index = start; index < end; index += 1) {
+      batch.delete(
+        api.doc(
+          db,
+          FIRESTORE_STATE_COLLECTION,
+          getFirestoreChunkId(generation, index)
+        )
+      );
+    }
+    await batch.commit();
+  }
+}
+
+async function writeCentralStateToFirestore(payload) {
+  const context = await getFirestoreContext();
+  if (!context) {
+    return false;
+  }
+  const { api, db } = context;
+  const metadataRef = api.doc(
+    db,
+    FIRESTORE_STATE_COLLECTION,
+    FIRESTORE_STATE_DOCUMENT
+  );
+  const previousSnapshot = await api.getDoc(metadataRef);
+  const previousMetadata = previousSnapshot.exists() ? previousSnapshot.data() || {} : {};
+  const randomGenerationPart =
+    typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID().replace(/-/g, "")
+      : `${Math.random().toString(16).slice(2)}${Date.now().toString(16)}`;
+  const generation = `${Date.now()}_${randomGenerationPart}`;
+  const { chunks, byteLength } = splitCentralStatePayload(payload);
+  const batch = api.writeBatch(db);
+
+  chunks.forEach((data, index) => {
+    batch.set(
+      api.doc(
+        db,
+        FIRESTORE_STATE_COLLECTION,
+        getFirestoreChunkId(generation, index)
+      ),
+      {
+        format: FIRESTORE_STATE_FORMAT,
+        generation,
+        index,
+        data,
+      }
+    );
+  });
+
+  const session = window.BLUE_COAST_AUTH_SESSION || {};
+  batch.set(metadataRef, {
+    format: FIRESTORE_STATE_FORMAT,
+    generation,
+    chunkCount: chunks.length,
+    byteLength,
+    clientSavedAt: new Date().toISOString(),
+    serverSavedAt: api.serverTimestamp(),
+    savedByUid: String(session.uid || ""),
+    savedByEmail: String(session.email || ""),
+  });
+  await batch.commit();
+
+  const previousGeneration = String(previousMetadata.generation || "");
+  const previousChunkCount = Number(previousMetadata.chunkCount);
+  if (previousGeneration && previousGeneration !== generation) {
+    deleteFirestoreGeneration(context, previousGeneration, previousChunkCount).catch((error) => {
+      console.warn("No se pudieron limpiar fragmentos anteriores de Firestore.", error);
+    });
+  }
+  return true;
 }
 
 function applyUnifiedPayloadLocally(payload, meta = {}) {
@@ -639,29 +814,17 @@ async function loadCentralState() {
   }
 
   try {
-    const readUrl = hasRemoteStateApi() ? getRemoteStateUrl("state") : CENTRAL_STATE_URL;
-    if (!readUrl) {
-      return false;
-    }
-    const response = await fetch(readUrl, { cache: "no-store" });
-    if (!response.ok) {
-      return false;
-    }
-    const result = normalizeCentralStateResponse(await response.json());
-    if (!result.ok) {
-      console.error("El almacenamiento central rechazo la lectura.", result);
-      return false;
-    }
+    const result = await readCentralStateFromFirestore();
     if (result.exists && result.payload) {
       return applyUnifiedPayloadLocally(result.payload, {
-        sourceName: result.sourceName || (hasRemoteStateApi() ? "Google Sheets" : "datos/solanas-estado-unificado.json"),
-        mode: hasRemoteStateApi() ? "google-sheets" : "central-json",
+        sourceName: "Firestore seguro",
+        mode: "firestore-authenticated",
       });
     }
     scheduleCentralStateWrite();
     return false;
   } catch (error) {
-    console.error("No se pudo cargar el JSON central del sistema.", error);
+    console.error("No se pudo cargar el estado seguro de Firestore.", error);
     return false;
   }
 }
@@ -682,43 +845,28 @@ async function saveCentralStateNow() {
     return false;
   }
 
-  try {
-    const payload = buildUnifiedBackupPayload();
-    const writeUrl = hasRemoteStateApi() ? getRemoteStateUrl("state") : CENTRAL_STATE_URL;
-    if (!writeUrl) {
-      return false;
-    }
-    const response = hasRemoteStateApi()
-      ? await fetch(writeUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-          },
-          body: JSON.stringify({
-            token: REMOTE_STATE_TOKEN,
-            payload,
-            clientSavedAt: new Date().toISOString(),
-          }),
-        })
-      : await fetch(writeUrl, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-    if (!response.ok) {
-      return false;
-    }
+  if (centralStateWriteInFlight) {
+    centralStateWriteQueued = true;
+    return centralStateWriteInFlight;
+  }
+
+  centralStateWriteInFlight = (async () => {
     try {
-      const result = await response.json();
-      return result ? result.ok !== false : true;
+      return await writeCentralStateToFirestore(buildUnifiedBackupPayload());
     } catch (error) {
-      return true;
+      console.error("No se pudo guardar el estado seguro de Firestore.", error);
+      return false;
     }
-  } catch (error) {
-    console.error("No se pudo guardar el JSON central del sistema.", error);
-    return false;
+  })();
+
+  try {
+    return await centralStateWriteInFlight;
+  } finally {
+    centralStateWriteInFlight = null;
+    if (centralStateWriteQueued) {
+      centralStateWriteQueued = false;
+      scheduleCentralStateWrite();
+    }
   }
 }
 

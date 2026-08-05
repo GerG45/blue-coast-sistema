@@ -265,6 +265,7 @@ async function startAuthentication() {
   ]);
   authApi = firebaseAuthApi;
   const firebaseApp = firebaseAppApi.initializeApp(config.firebaseConfig);
+  window.BLUE_COAST_FIREBASE_APP = firebaseApp;
   firebaseAuth = firebaseAuthApi.getAuth(firebaseApp);
   await firebaseAuthApi.setPersistence(
     firebaseAuth,

@@ -1,0 +1,23 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAllowedUser() {
+      return request.auth != null
+        && request.auth.token.email in [
+          "admin@blue-coast-hotel-gerg45.firebaseapp.com",
+          "recepcion@blue-coast-hotel-gerg45.firebaseapp.com",
+          "mozo@blue-coast-hotel-gerg45.firebaseapp.com",
+          "caja@blue-coast-hotel-gerg45.firebaseapp.com"
+        ];
+    }
+
+    match /blue_coast_state/{documentId} {
+      allow read, write: if isAllowedUser();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
