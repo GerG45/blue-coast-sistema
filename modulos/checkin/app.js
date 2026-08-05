@@ -11795,32 +11795,27 @@ function renderGroupRoomSelectionCard(descriptor) {
                   data-comp-type="${escapeHtml(type)}"
                   title="${escapeHtml(meta.helper)}"
                 >
-                  ${escapeHtml(meta.label)} $0
+                  ${escapeHtml(type === "coordinators" ? "Coord." : meta.label)} $0
                 </button>
               `
             )
             .join("")}
-          ${
-            compRoomType
-              ? `
-                <button
-                  class="ghost-button is-compact group-comp-toggle"
-                  type="button"
-                  data-action="set-group-comp-room"
-                  data-room-number="${escapeHtml(roomNumber)}"
-                  data-comp-type=""
-                >
-                  Con tarifa
-                </button>
-              `
-              : ""
-          }
+          <button
+            class="ghost-button is-compact group-comp-toggle ${compRoomType ? "" : "is-active"}"
+            type="button"
+            data-action="set-group-comp-room"
+            data-room-number="${escapeHtml(roomNumber)}"
+            data-comp-type=""
+            title="Mantener esta habitaci&oacute;n dentro de las plazas tarifadas"
+          >
+            Con tarifa
+          </button>
         </div>
       `
       : "";
 
   return `
-    <article class="group-room-card">
+    <article class="group-room-card ${compControls ? "has-comp-controls" : ""}">
       <button
         class="${classes}"
         type="button"
@@ -12114,7 +12109,7 @@ function renderGroupLoadModal() {
   const isEditingGroup = Boolean(draft.editingGroupId);
 
   return `
-    <div class="scanner-modal-backdrop" data-action="close-group-load-modal"></div>
+    <div class="scanner-modal-backdrop group-load-modal-backdrop" aria-hidden="true"></div>
     <section class="scanner-modal-shell" aria-modal="true" role="dialog" aria-labelledby="group-load-modal-title">
       <div class="scanner-modal group-modal">
         <div class="scanner-modal-toolbar">

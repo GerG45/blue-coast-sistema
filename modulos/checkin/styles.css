@@ -7869,3 +7869,96 @@ body.has-shell-layout button[data-action="add-guest"]:focus-visible {
   background: linear-gradient(135deg, #ffe08a, #ffb020) !important;
   color: #09111d !important;
 }
+
+/* Carga grupal: controles integrados sin alterar la altura de las habitaciones. */
+body.has-shell-layout .scanner-modal.group-modal .group-room-grid {
+  grid-auto-rows: 210px !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-grid > .group-room-card {
+  position: relative !important;
+  min-height: 210px !important;
+  height: 210px !important;
+  overflow: hidden !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-button {
+  height: 210px !important;
+  min-height: 210px !important;
+  padding-bottom: 58px !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-meta,
+body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-helper {
+  display: none !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-comp-actions {
+  position: absolute !important;
+  z-index: 2;
+  right: 10px;
+  bottom: 10px;
+  left: 10px;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+  padding: 0 !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-comp-toggle,
+body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-comp-toggle[data-comp-type=""] {
+  grid-column: auto !important;
+  min-width: 0 !important;
+  min-height: 34px !important;
+  padding: 5px 4px !important;
+  border-radius: 10px !important;
+  font-size: 0.68rem !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied {
+  border-color: rgba(255, 112, 128, 0.55) !important;
+  background: linear-gradient(180deg, rgba(74, 25, 38, 0.98), rgba(45, 18, 29, 0.98)) !important;
+  color: #fff4f6 !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-kicker {
+  color: #ff9fac !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied strong,
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-number {
+  color: #fff7f8 !important;
+}
+
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-meta,
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-helper,
+body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .bed-icon {
+  color: #ffc4cb !important;
+}
+
+body.has-shell-layout .group-load-modal-backdrop {
+  cursor: default;
+}
+
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied {
+  border-color: rgba(190, 50, 70, 0.4) !important;
+  background: linear-gradient(180deg, #fff0f2, #ffe3e8) !important;
+  color: #5b1723 !important;
+}
+
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-kicker {
+  color: #b4233b !important;
+}
+
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied strong,
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-number {
+  color: #531522 !important;
+}
+
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-meta,
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .group-room-helper,
+html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .bed-icon {
+  color: #8f3444 !important;
+}
