@@ -2252,6 +2252,34 @@ function getBulkScannerSession() {
   return ui.bulkScannerSession;
 }
 
+function getBulkScannerCapacityState(reservation = getActiveReservation()) {
+  const roomNumber = sanitizeRoomNumber(reservation && reservation.roomNumber);
+  const roomProfile = getRoomProfile(roomNumber);
+  const compMeta = getReservationGroupCompRoomMeta(reservation);
+  const physicalBaseCapacity = Number(roomProfile && roomProfile.baseCapacity) || MAX_GUESTS;
+  const physicalMaxCapacity = Number(roomProfile && roomProfile.maxCapacity) || physicalBaseCapacity;
+  const operationalMaxCapacity = Number(compMeta && compMeta.maxGuests) || MAX_GUESTS;
+  const maxCapacity = Math.max(
+    1,
+    Math.min(MAX_GUESTS, physicalMaxCapacity, operationalMaxCapacity)
+  );
+  const baseCapacity = Math.max(1, Math.min(maxCapacity, physicalBaseCapacity));
+  const loadedGuestCount = Array.isArray(reservation && reservation.guests)
+    ? reservation.guests.filter((guest) => hasGuestData(guest)).length
+    : 0;
+
+  return {
+    roomNumber,
+    roomProfile,
+    compMeta,
+    baseCapacity,
+    maxCapacity,
+    loadedGuestCount,
+    baseCapacityReached: loadedGuestCount >= baseCapacity,
+    maxCapacityReached: loadedGuestCount >= maxCapacity,
+  };
+}
+
 function getGuestRoleLabel(index) {
   return `Huésped ${index + 1}`;
 }
@@ -5943,12 +5971,17 @@ function applyParsedScannerDataToResponsible(reservation, result) {
 }
 
 function getNextGuestSlotForBulkScan(reservation) {
+  const capacityState = getBulkScannerCapacityState(reservation);
+  if (capacityState.maxCapacityReached) {
+    return null;
+  }
+
   const emptyGuest = reservation.guests.find((guest) => !hasGuestData(guest));
   if (emptyGuest) {
     return emptyGuest;
   }
 
-  if (reservation.guests.length >= MAX_GUESTS) {
+  if (reservation.guests.length >= capacityState.maxCapacity) {
     return null;
   }
 
@@ -5964,6 +5997,10 @@ function getBulkNextTargetLabel(session = getBulkScannerSession()) {
   }
 
   const reservation = getActiveReservation();
+  const capacityState = getBulkScannerCapacityState(reservation);
+  if (capacityState.maxCapacityReached) {
+    return "Capacidad m\u00e1xima alcanzada";
+  }
   const nextEmptyGuestIndex = reservation.guests.findIndex((guest) => !hasGuestData(guest));
   if (nextEmptyGuestIndex >= 0) {
     return getGuestRoleLabel(nextEmptyGuestIndex);
@@ -6029,10 +6066,13 @@ function applyBulkScannerLine(line, lineIndex = 0) {
 
   const guest = getNextGuestSlotForBulkScan(reservation);
   if (!guest) {
+    const capacityState = getBulkScannerCapacityState(reservation);
     session.skipped.push({
       line,
       lineIndex,
-      reason: `La reserva lleg\u00f3 al m\u00e1ximo de ${MAX_GUESTS} hu\u00e9spedes.`,
+      reason: capacityState.roomNumber
+        ? `La habitaci\u00f3n ${capacityState.roomNumber} alcanz\u00f3 su capacidad m\u00e1xima de ${capacityState.maxCapacity} hu\u00e9spedes.`
+        : `La reserva lleg\u00f3 al m\u00e1ximo de ${capacityState.maxCapacity} hu\u00e9spedes.`,
     });
     return false;
   }
@@ -6050,9 +6090,49 @@ function applyBulkScannerLine(line, lineIndex = 0) {
     label: getGuestRoleLabel(reservation.guests.indexOf(guest)),
     result,
   });
+  const capacityState = getBulkScannerCapacityState(reservation);
+  reservation.allowExtraBed = Boolean(
+    capacityState.roomProfile && capacityState.loadedGuestCount > capacityState.baseCapacity
+  );
   reservation.lastScanAt = nowIso();
   touchReservation(reservation);
   return true;
+}
+
+function removeBulkScannerAssignment(assignmentIndex) {
+  const session = getBulkScannerSession();
+  const index = Number(assignmentIndex);
+  const assignment = Number.isInteger(index) ? session.assigned[index] : null;
+  if (!assignment) return;
+
+  const reservation = getActiveReservation();
+  if (assignment.kind === "responsible") {
+    reservation.responsible = createEmptyResponsible();
+    session.responsibleLoaded = false;
+  } else if (assignment.kind === "guest" && assignment.guestId) {
+    const guestIndex = reservation.guests.findIndex((guest) => guest.id === assignment.guestId);
+    if (guestIndex >= 0) {
+      const previousGuest = reservation.guests[guestIndex];
+      const clearedGuest = createEmptyGuest(previousGuest.role === "principal");
+      clearedGuest.id = previousGuest.id;
+      clearedGuest.role = previousGuest.role === "principal" ? "principal" : "huesped";
+      reservation.guests[guestIndex] = clearedGuest;
+      ui.activeGuestId = clearedGuest.id;
+      ui.scannerTargetGuestId = clearedGuest.id;
+      session.createdGuestCount = Math.max(0, session.createdGuestCount - 1);
+    }
+  }
+
+  session.assigned.splice(index, 1);
+  const capacityState = getBulkScannerCapacityState(reservation);
+  if (capacityState.loadedGuestCount <= capacityState.baseCapacity) {
+    reservation.allowExtraBed = false;
+  }
+  touchReservation(reservation);
+  ui.parseResult = buildBulkScannerParseResult(session);
+  ui.scannerDraft = "";
+  persistState({ toast: "Se quit\u00f3 la ficha cargada. La plaza vuelve a estar disponible." });
+  render({ preserveScroll: true, focusId: "scanner-input" });
 }
 
 function applyBulkScannerToGuests() {
@@ -11488,6 +11568,10 @@ function renderScannerPanel() {
   const isBulkMode = ui.scannerTargetKind === "bulkGuests";
   const bulkSession = isBulkMode ? getBulkScannerSession() : null;
   const bulkNextTargetLabel = bulkSession ? getBulkNextTargetLabel(bulkSession) : "";
+  const capacityState = isBulkMode ? getBulkScannerCapacityState() : null;
+  const scannerBlocked = Boolean(
+    isBulkMode && bulkSession.responsibleLoaded && capacityState.maxCapacityReached
+  );
 
   return `
     <div class="scanner-box">
@@ -11506,29 +11590,51 @@ function renderScannerPanel() {
           <span class="chip">Destino: ${escapeHtml(isBulkMode ? bulkNextTargetLabel : guestLabel)}</span>
           ${
             isBulkMode
-              ? `<span class="chip">${escapeHtml(String(bulkSession.assigned.length))} cargado${
-                  bulkSession.assigned.length === 1 ? "" : "s"
-                }</span><span class="chip">M&aacute;ximo ${MAX_GUESTS} hu&eacute;spedes</span>`
+              ? `<span class="chip">Habitaci&oacute;n ${escapeHtml(capacityState.roomNumber || "-")}</span>
+                <span class="chip">${escapeHtml(String(capacityState.loadedGuestCount))} hu&eacute;sped${
+                  capacityState.loadedGuestCount === 1 ? "" : "es"
+                }</span>
+                <span class="chip">Capacidad normal ${escapeHtml(String(capacityState.baseCapacity))}</span>
+                <span class="chip">M&aacute;ximo ${escapeHtml(String(capacityState.maxCapacity))}</span>`
               : ""
           }
         </div>
       </div>
 
+      ${
+        isBulkMode && capacityState.maxCapacityReached
+          ? `<div class="scanner-capacity-alert is-maximum">
+              <strong>Capacidad m&aacute;xima alcanzada</strong>
+              <span>No se pueden escanear m&aacute;s hu&eacute;spedes en esta habitaci&oacute;n.</span>
+            </div>`
+          : isBulkMode && capacityState.baseCapacityReached
+            ? `<div class="scanner-capacity-alert is-extra-bed">
+                <strong>Capacidad normal completa</strong>
+                <span>La pr&oacute;xima plaza es excepcional y requiere preparar una cama extra.</span>
+              </div>`
+            : ""
+      }
+
       <textarea
         id="scanner-input"
-        class="scanner-input"
+        class="scanner-input${scannerBlocked ? " is-blocked" : ""}"
+        ${scannerBlocked ? "disabled aria-disabled=\"true\"" : ""}
         placeholder='${escapeHtml(
-          isBulkMode
+          scannerBlocked
+            ? "Capacidad m\u00e1xima alcanzada. Quita una ficha para habilitar el lector."
+            : isBulkMode
             ? 'Apunta aqu\u00ed y escanea de corrido. 1\u00ba titular, luego hu\u00e9spedes.'
             : 'Ejemplo: 00727915252"LORENZINO"GABRIEL"M"...'
         )}'
       >${escapeHtml(ui.scannerDraft)}</textarea>
 
       <div class="actions-row" style="margin-top: 12px;">
-        <button class="button scanner-action-button" type="button" data-action="parse-scanner">
-          ${isBulkMode ? "Procesar lectura pendiente" : "Procesar y cargar"}
-        </button>
-        <button class="ghost-button" type="button" data-action="focus-scanner">Enfocar lector</button>
+        ${
+          isBulkMode
+            ? ""
+            : '<button class="button scanner-action-button" type="button" data-action="parse-scanner">Procesar y cargar</button>'
+        }
+        <button class="ghost-button" type="button" data-action="focus-scanner" ${scannerBlocked ? "disabled" : ""}>Enfocar lector</button>
         <button class="ghost-button" type="button" data-action="clear-scanner">Limpiar caja</button>
       </div>
     </div>
@@ -11569,16 +11675,24 @@ function renderBulkParseResultPanel(result) {
             <ul class="result-list bulk-result-list" style="margin-top: 12px;">
               ${assigned
                 .map(
-                  (item) => `
-                    <li>
-                      <strong>${escapeHtml(item.label)}</strong>: ${escapeHtml(
+                  (item, assignmentIndex) => `
+                    <li class="bulk-result-item">
+                      <span class="bulk-result-person"><strong>${escapeHtml(item.label)}</strong>: ${escapeHtml(
                         [item.result.data.firstName, item.result.data.lastName]
                           .filter(Boolean)
                           .join(" ") || "Sin nombre"
-                      )} &middot; DNI ${escapeHtml(item.result.data.document || "-")}
+                      )} &middot; DNI ${escapeHtml(item.result.data.document || "-")}</span>
                       <span class="result-pill is-${escapeHtml(item.result.confidence)}">
                         ${escapeHtml(item.result.confidence)}
                       </span>
+                      <button
+                        class="scanner-assignment-remove"
+                        type="button"
+                        data-action="remove-bulk-scanner-assignment"
+                        data-assignment-index="${assignmentIndex}"
+                        aria-label="Quitar ${escapeHtml(item.label)}"
+                        title="Quitar ficha cargada"
+                      >&times;</button>
                     </li>
                   `
                 )
@@ -14432,6 +14546,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "remove-guest") {
     removeGuestFromActiveReservation(target.dataset.guestId);
+    return;
+  }
+
+  if (action === "remove-bulk-scanner-assignment") {
+    removeBulkScannerAssignment(target.dataset.assignmentIndex);
     return;
   }
 
