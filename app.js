@@ -5081,10 +5081,19 @@ function getGuestRegisterMissingCount(rows) {
   return rows.filter((row) => !row.guestName || row.guestName === "Sin cargar" || !row.document).length;
 }
 
+function getOperationalGuestRegisterRows(rows) {
+  const oldestVisibleCheckOut = addDaysToInputDate(getTodayInputDate(), -4);
+  return rows.filter((row) => {
+    const checkOutDate = normalizeDate(row.checkOutDate);
+    return !checkOutDate || checkOutDate >= oldestVisibleCheckOut;
+  });
+}
+
 function renderGuestRegisterDashboard() {
   const rows = getGuestRegisterRows();
+  const operationalRows = getOperationalGuestRegisterRows(rows);
   const missingCount = getGuestRegisterMissingCount(rows);
-  const rooms = new Set(rows.map((row) => row.roomNumber).filter(Boolean));
+  const operationalRooms = new Set(operationalRows.map((row) => row.roomNumber).filter(Boolean));
   return `
     <section id="guest-register-section" class="panel checkout-toolbar register-toolbar">
       <div class="checkout-toolbar-grid">
@@ -5100,12 +5109,12 @@ function renderGuestRegisterDashboard() {
         </div>
         <div class="checkout-toolbar-status">
           <div class="status-panel">
-            <strong>${rows.length} registros</strong>
-            <span>${rooms.size} habitaciones detectadas en Check-in.</span>
+            <strong>${operationalRows.length} registros en vista</strong>
+            <span>${operationalRooms.size} habitaciones. Se muestran hasta cuatro d&iacute;as despu&eacute;s del egreso.</span>
           </div>
           <div class="status-panel">
-            <strong>${missingCount} a completar</strong>
-            <span>Marca filas sin nombre o documento completo. La procedencia declarada se duplica como destino legal.</span>
+            <strong>${rows.length} registros hist&oacute;ricos</strong>
+            <span>Todos permanecen en el PDF descargable. ${missingCount} tienen nombre o documento pendiente.</span>
           </div>
         </div>
       </div>
@@ -5114,10 +5123,10 @@ function renderGuestRegisterDashboard() {
       <div class="panel-title-row">
         <div>
           <h2>Registro legal operativo</h2>
-          <p>La tabla toma los datos disponibles del Check-in y deja visibles los campos legales pendientes de completar.</p>
+          <p>La tabla conserva en vista a cada hu&eacute;sped hasta cuatro d&iacute;as posteriores a su egreso. El PDF mantiene el historial completo.</p>
         </div>
       </div>
-      ${rows.length ? renderGuestRegisterTable(rows) : `<div class="empty-state">Todav&iacute;a no hay reservas conectadas para construir el libro.</div>`}
+      ${operationalRows.length ? renderGuestRegisterTable(operationalRows) : `<div class="empty-state">No hay hu&eacute;spedes dentro del per&iacute;odo operativo visible. Los registros anteriores contin&uacute;an disponibles en el PDF.</div>`}
       <div class="legal-note">
         Formato de trabajo basado en los campos habituales de registro: apellido y nombre, documento, nacionalidad, procedencia, domicilio y fechas/horas de ingreso y egreso. Conviene validar la plantilla final con la normativa municipal/provincial que aplique al establecimiento.
       </div>
