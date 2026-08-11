@@ -24,8 +24,9 @@ const FIRESTORE_MAX_CHUNKS = 450;
 const FIRESTORE_SDK_URL = "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
-const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260811-15", window.location.href).href;
-const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260811-15", window.location.href).href;
+const TIMELINE_ICON_URL = new URL("./assets/module-icons/linea-de-tiempo.svg", window.location.href).href;
+const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260811-16", window.location.href).href;
+const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260811-16", window.location.href).href;
 const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260811-10", window.location.href).href;
 const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260811-10", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
@@ -3357,7 +3358,10 @@ function renderMenuTimelinePanel(referenceDate = getMenuTimelineDate()) {
       <div class="panel-title-row">
         <div>
           <span class="source-tag">Planificaci&oacute;n</span>
-          <h2>L&iacute;nea del tiempo</h2>
+          <div class="timeline-title-heading">
+            <span class="timeline-title-icon" aria-hidden="true"><img src="${TIMELINE_ICON_URL}" alt="" /></span>
+            <h2>L&iacute;nea del tiempo</h2>
+          </div>
           <p>
             Espejo autom&aacute;tico del Check-in: ocupaci&oacute;n por habitaci&oacute;n y por d&iacute;a, con colores de grupos y reservas particulares.
           </p>

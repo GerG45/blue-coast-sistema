@@ -93,6 +93,7 @@ const THEME_PREF_KEY = "bluecoast-theme-v1";
 const TITLE_FONT_URL = new URL("./fonts/libre-baskerville-bold.ttf", window.location.href).href;
 const ROOM_ICON_SINGLE_URL = new URL("./assets/cama-single.svg", window.location.href).href;
 const ROOM_ICON_DOUBLE_URL = new URL("./assets/cama-doble.svg", window.location.href).href;
+const TIMELINE_ICON_URL = new URL("../../assets/module-icons/linea-de-tiempo.svg", window.location.href).href;
 const SUMMARY_ICON_URLS = Object.freeze({
   openReservations: new URL("./assets/resumen/reservas-abiertas.svg", window.location.href).href,
   confirmedReservations: new URL("./assets/resumen/reservas-confirmadas.svg", window.location.href).href,
@@ -11261,7 +11262,10 @@ function renderRoomTimelinePanel(referenceDate = getRoomOverviewDate()) {
       <div class="panel-title-row">
         <div>
           <div class="eyebrow" style="margin-bottom: 8px; color: var(--accent); opacity: 1;">Planificaci&oacute;n</div>
-          <h2>L&iacute;nea del tiempo</h2>
+          <div class="timeline-title-heading">
+            <span class="timeline-title-icon" aria-hidden="true"><img src="${TIMELINE_ICON_URL}" alt="" /></span>
+            <h2>L&iacute;nea del tiempo</h2>
+          </div>
           <p>
             La misma informaci&oacute;n del mapa, pero ordenada por habitaci&oacute;n y por d&iacute;a
             del mes para leer la ocupaci&oacute;n como planilla.
