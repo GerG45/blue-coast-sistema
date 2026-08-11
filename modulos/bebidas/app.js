@@ -111,6 +111,28 @@ const DRIVER_COORDINATOR_MEMBER_SEED = [
 const SERVICE_LABEL_OPTIONS = ["ALMUERZO", "CENA"];
 const DRIVER_COORDINATOR_DISCOUNT_FACTOR = 0.7;
 const STANDARD_CATEGORIES = ["Sin alcohol", "Cervezas", "Vinos", "Tragos", "Insumos"];
+const PRODUCT_CATEGORY_VISUALS = Object.freeze({
+  "Sin alcohol": {
+    icon: "assets/categorias/sin-alcohol.svg",
+    className: "is-non-alcoholic",
+  },
+  Cervezas: {
+    icon: "assets/categorias/cervezas.svg",
+    className: "is-beer",
+  },
+  Vinos: {
+    icon: "assets/categorias/vinos.svg",
+    className: "is-wine",
+  },
+  Tragos: {
+    icon: "assets/categorias/tragos.svg",
+    className: "is-cocktail",
+  },
+  Insumos: {
+    icon: "assets/categorias/insumos.svg",
+    className: "is-supply",
+  },
+});
 const SERVICE_WINDOWS = {
   ALMUERZO: { start: "12:00", end: "15:30" },
   CENA: { start: "20:00", end: "23:30" },
@@ -8324,37 +8346,44 @@ function renderProductPicker(scope, query, category) {
               : margin.marginPercent === null
                 ? "Sin margen"
                 : formatPercent(margin.marginPercent);
+          const categoryVisual =
+            PRODUCT_CATEGORY_VISUALS[product.category] || PRODUCT_CATEGORY_VISUALS.Insumos;
 
-            return `
-              <article class="product-card ${isOutOfStock ? "is-out-of-stock" : ""} ${isLowStock ? "is-low-stock" : ""} ${!canAddProduct ? "is-unavailable" : ""}">
-                <div class="product-card-head">
-                  <div class="product-copy">
-                    <h4>${escapeHtml(product.name)}</h4>
-                    <span class="product-subline">${escapeHtml(descriptorText)}</span>
-                  </div>
-                  <span class="${stockBadgeClass}">${escapeHtml(stockText)}</span>
-                </div>
-                <div class="product-price-row">
-                  <strong class="product-price-main">${mainValueLabel}</strong>
-                  <span class="product-price-side">${secondaryValueLabel}</span>
-                </div>
-                <div class="product-foot">
-                  <span class="product-context-badge">${escapeHtml(contextBadgeLabel)}</span>
-                  <button
-                    class="button is-compact"
-                    data-action="add-product"
-                    data-scope="${scope}"
-                    data-product-id="${product.id}"
-                    title="${escapeHtml(
-                      canAddProduct ? `Agregar ${product.name}` : availability.message || "Sin stock"
-                    )}"
-                    ${canAddProduct ? "" : "disabled"}
-                  >
-                    ${canAddProduct ? "Agregar" : "Sin stock"}
-                  </button>
-                </div>
-              </article>
-            `;
+          return `
+            <article class="product-card ${isOutOfStock ? "is-out-of-stock" : ""} ${isLowStock ? "is-low-stock" : ""} ${!canAddProduct ? "is-unavailable" : ""}">
+              <div class="product-card-icon-row">
+                <span class="product-category-icon ${categoryVisual.className}" title="${escapeHtml(
+                  product.category
+                )}">
+                  <img src="${categoryVisual.icon}" alt="" aria-hidden="true" loading="lazy" />
+                </span>
+                <span class="${stockBadgeClass}">${escapeHtml(stockText)}</span>
+              </div>
+              <div class="product-copy">
+                <h4>${escapeHtml(product.name)}</h4>
+                <span class="product-subline">${escapeHtml(descriptorText)}</span>
+              </div>
+              <div class="product-price-row">
+                <strong class="product-price-main">${mainValueLabel}</strong>
+                <span class="product-price-side">${secondaryValueLabel}</span>
+              </div>
+              <div class="product-foot">
+                <span class="product-context-badge">${escapeHtml(contextBadgeLabel)}</span>
+                <button
+                  class="button is-compact"
+                  data-action="add-product"
+                  data-scope="${scope}"
+                  data-product-id="${product.id}"
+                  title="${escapeHtml(
+                    canAddProduct ? `Agregar ${product.name}` : availability.message || "Sin stock"
+                  )}"
+                  ${canAddProduct ? "" : "disabled"}
+                >
+                  ${canAddProduct ? "Agregar" : "Sin stock"}
+                </button>
+              </div>
+            </article>
+          `;
           })
           .join("")}
       </div>
