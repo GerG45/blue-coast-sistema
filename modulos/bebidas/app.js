@@ -9144,14 +9144,22 @@ function renderHero() {
         <div class="hero-meta">
           <div class="hero-service-control">
             <label class="hero-service-label" for="hero-service-select">Servicio del turno</label>
-            <select id="hero-service-select" class="hero-service-select">
-              ${SERVICE_LABEL_OPTIONS.map(
-                (label) =>
-                  `<option value="${label}" ${
-                    state.activeShift.serviceLabel === label ? "selected" : ""
-                  }>${label}</option>`
-              ).join("")}
-            </select>
+            <div class="hero-service-picker">
+              <span
+                class="service-period-icon ${
+                  state.activeShift.serviceLabel === "CENA" ? "is-dinner" : "is-lunch"
+                }"
+                aria-hidden="true"
+              ></span>
+              <select id="hero-service-select" class="hero-service-select">
+                ${SERVICE_LABEL_OPTIONS.map(
+                  (label) =>
+                    `<option value="${label}" ${
+                      state.activeShift.serviceLabel === label ? "selected" : ""
+                    }>${label}</option>`
+                ).join("")}
+              </select>
+            </div>
             <div class="hero-service-hint">
               Sugerido por horario: ${escapeHtml(suggestedServiceLabel)}${
                 serviceWasAdjusted ? " | Ajustado manualmente" : ""

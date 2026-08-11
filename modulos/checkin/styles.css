@@ -8023,6 +8023,81 @@ body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied 
   color: #ffc4cb !important;
 }
 
+/* Iconografia operativa: las formas heredan el color de cada comando. */
+body.has-shell-layout .hero-actions .hero-action-button,
+body.has-shell-layout .hero-actions .reservation-tariff-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  min-height: 52px;
+  padding-inline: 20px;
+}
+
+.reservation-action-icon {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  background: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.reservation-action-icon.is-private {
+  -webkit-mask-image: url("assets/acciones/reserva-individual.svg");
+  mask-image: url("assets/acciones/reserva-individual.svg");
+}
+
+.reservation-action-icon.is-group {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  -webkit-mask-image: url("assets/acciones/reserva-grupal.svg");
+  mask-image: url("assets/acciones/reserva-grupal.svg");
+}
+
+.reservation-action-icon.is-tariff {
+  -webkit-mask-image: url("assets/acciones/tarifario.svg");
+  mask-image: url("assets/acciones/tarifario.svg");
+}
+
+.maintenance-room-icon-row {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  color: #8996a5;
+  pointer-events: none;
+}
+
+.maintenance-room-icon {
+  display: block;
+  width: 23px;
+  height: 23px;
+  background: currentColor;
+  opacity: 0.92;
+  -webkit-mask: url("assets/acciones/llave-mantenimiento.svg") center / contain no-repeat;
+  mask: url("assets/acciones/llave-mantenimiento.svg") center / contain no-repeat;
+}
+
+.maintenance-room-icon-row.is-group-room {
+  min-height: 22px;
+}
+
+.maintenance-room-icon-row.is-group-room .maintenance-room-icon {
+  width: 20px;
+  height: 20px;
+}
+
+html.theme-light-root .maintenance-room-icon-row,
+body.theme-light .maintenance-room-icon-row {
+  color: #66717d;
+}
+
 body.has-shell-layout .group-load-modal-backdrop {
   cursor: default;
 }

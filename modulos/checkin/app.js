@@ -3332,10 +3332,17 @@ function renderRoomBedIcon(type) {
   return `<img class="bed-icon is-${escapeHtml(type)}" src="${escapeHtml(src)}" alt="" loading="lazy" />`;
 }
 
-function renderRoomBedIcons(roomProfile, variant = "") {
+function renderRoomBedIcons(roomProfile, variant = "", maintenance = false) {
+  const variantClass = variant ? ` is-${variant}` : "";
+  if (maintenance) {
+    return `
+      <span class="maintenance-room-icon-row${variantClass}" aria-hidden="true">
+        <span class="maintenance-room-icon"></span>
+      </span>
+    `;
+  }
   const iconTypes = getRoomBedIconTypes(roomProfile);
   if (!iconTypes.length) return "";
-  const variantClass = variant ? ` is-${variant}` : "";
   return `
     <span class="bed-icon-row${variantClass}" aria-hidden="true">
       ${iconTypes.map((type) => renderRoomBedIcon(type)).join("")}
@@ -8550,13 +8557,16 @@ function renderHero(reservation, isWorkspaceOpen = false) {
               isReservationsMode()
                 ? `
                   <button class="button hero-action-button is-private-reservation" type="button" data-action="new-reservation">
-                    Nueva reserva particular
+                    <span class="reservation-action-icon is-private" aria-hidden="true"></span>
+                    <span>Nueva reserva particular</span>
                   </button>
                   <button class="button hero-action-button is-group-reservation" type="button" data-action="open-group-load-modal">
-                    Nueva reserva grupal
+                    <span class="reservation-action-icon is-group" aria-hidden="true"></span>
+                    <span>Nueva reserva grupal</span>
                   </button>
-                  <button class="ghost-button" type="button" data-action="open-tariff-modal">
-                    Tarifario particulares
+                  <button class="ghost-button reservation-tariff-button" type="button" data-action="open-tariff-modal">
+                    <span class="reservation-action-icon is-tariff" aria-hidden="true"></span>
+                    <span>Tarifario particulares</span>
                   </button>
                 `
                 : !workspaceReservation
@@ -10625,7 +10635,7 @@ function renderRoomAvailabilityCard(reservation, scope, descriptor, options = {}
             <span class="room-card-tag">${escapeHtml(tag)}</span>
           </span>
         </span>
-        ${renderRoomBedIcons(roomProfile, "room-card")}
+        ${renderRoomBedIcons(roomProfile, "room-card", maintenance)}
         <span class="room-total-row">
           <strong>${escapeHtml(roomProfile ? roomProfile.label : "Habitación")}</strong>
           <span class="room-meta">${escapeHtml(detailText)}</span>
@@ -10753,7 +10763,7 @@ function renderRoomOverviewCard(descriptor) {
             <span class="room-card-tag">${escapeHtml(tag)}</span>
           </span>
         </span>
-        ${renderRoomBedIcons(roomProfile, "room-card")}
+        ${renderRoomBedIcons(roomProfile, "room-card", maintenance)}
         <span class="room-total-row">
           <strong>${escapeHtml(roomProfile ? roomProfile.label : "Habitación")}</strong>
           <span class="room-meta">${escapeHtml(detailText)}</span>
@@ -12067,7 +12077,7 @@ function renderGroupRoomSelectionCard(descriptor) {
           <span class="group-room-number">Hab. ${escapeHtml(roomNumber)}</span>
         </span>
         <strong>${escapeHtml(roomProfile ? roomProfile.label : "Habitaci\u00f3n")}</strong>
-        ${renderRoomBedIcons(roomProfile, "group-room")}
+        ${renderRoomBedIcons(roomProfile, "group-room", maintenance)}
         <span class="group-room-meta">${escapeHtml(
           roomProfile ? getRoomCategoryLabel(roomProfile) : "Habitaci\u00f3n"
         )}</span>
