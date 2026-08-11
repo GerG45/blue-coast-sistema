@@ -3567,8 +3567,8 @@ function renderGeneralDashboard(summary) {
             </dl>
           </div>
           <div class="dashboard-occupancy-foot">
-            <strong>${occupancy.occupied} de ${occupancy.operational}</strong>
-            <span>habitaciones operativas en uso</span>
+            <strong>${occupancy.occupied} ocupadas</strong>
+            <span>${occupancy.operational} operativas</span>
           </div>
         </article>
       </div>

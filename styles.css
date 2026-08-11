@@ -602,7 +602,7 @@ p {
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 0.78fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(285px, 0.82fr);
   gap: 14px;
 }
 
@@ -737,9 +737,9 @@ p {
 
 .dashboard-occupancy-body {
   display: grid;
-  grid-template-columns: minmax(118px, 0.9fr) minmax(112px, 1fr);
+  grid-template-columns: 116px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .dashboard-occupancy-ring {
@@ -821,10 +821,9 @@ p {
 }
 
 .dashboard-occupancy-legend dt {
-  overflow: hidden;
   color: #c7d5e1;
-  font-size: 0.78rem;
-  text-overflow: ellipsis;
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .dashboard-occupancy-legend dd {
@@ -846,12 +845,15 @@ p {
 }
 
 .dashboard-occupancy-foot strong {
+  flex: 0 0 auto;
   color: #8fe2cb;
+  white-space: nowrap;
 }
 
 .dashboard-occupancy-foot span {
   color: #aebfd0;
   font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .dashboard-footnote {
