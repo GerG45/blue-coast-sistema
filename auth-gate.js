@@ -40,6 +40,33 @@ function resolveLoginEmail(value) {
   return accounts[normalized]?.email || normalized;
 }
 
+function getAllowedModules(account) {
+  return Array.from(
+    new Set(
+      (Array.isArray(account?.allowedModules) ? account.allowedModules : [])
+        .map((moduleKey) => String(moduleKey || "").trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+}
+
+function getDefaultModule(account, allowedModules = getAllowedModules(account)) {
+  const configuredDefault = String(account?.defaultModule || "").trim().toLowerCase();
+  return allowedModules.includes(configuredDefault) ? configuredDefault : allowedModules[0] || "";
+}
+
+function getRequestedAccessModule() {
+  return String(bootConfig.accessModule || "").trim().toLowerCase();
+}
+
+function redirectToAllowedModule(account) {
+  const allowedModules = getAllowedModules(account);
+  const defaultModule = getDefaultModule(account, allowedModules);
+  const systemUrl = new URL("./index.html", import.meta.url);
+  if (defaultModule) systemUrl.hash = defaultModule;
+  window.location.replace(systemUrl.href);
+}
+
 function setAuthView(view) {
   document.documentElement.dataset.authState = view;
   document.body?.setAttribute("data-auth-state", view);
@@ -223,12 +250,27 @@ async function acceptSession(user) {
     return;
   }
 
+  const allowedModules = getAllowedModules(account);
+  const defaultModule = getDefaultModule(account, allowedModules);
+  const requestedAccessModule = getRequestedAccessModule();
+  if (!allowedModules.length) {
+    await authApi.signOut(firebaseAuth);
+    renderLogin({ message: "Esta cuenta no tiene módulos habilitados." });
+    return;
+  }
+  if (requestedAccessModule && !allowedModules.includes(requestedAccessModule)) {
+    redirectToAllowedModule(account);
+    return;
+  }
+
   window.BLUE_COAST_AUTH_SESSION = Object.freeze({
     uid: user.uid,
     email: user.email,
     alias: account.alias,
     label: account.label,
     role: account.role,
+    defaultModule,
+    allowedModules: Object.freeze([...allowedModules]),
     getIdToken: (forceRefresh = false) => user.getIdToken(forceRefresh),
   });
   setAuthView("signed-in");

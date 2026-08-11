@@ -2590,7 +2590,33 @@ function sourceStatus(source) {
   };
 }
 
-function getActiveModule() {
+function getSessionAllowedModuleKeys() {
+  const configuredModules = window.BLUE_COAST_AUTH_SESSION?.allowedModules;
+  if (!Array.isArray(configuredModules)) return [];
+  const allowedSet = new Set(configuredModules.map((key) => String(key || "").trim()));
+  return Object.keys(MODULES).filter((key) => allowedSet.has(key));
+}
+
+function getAllowedModuleEntries() {
+  const allowedKeys = new Set(getSessionAllowedModuleKeys());
+  return Object.entries(MODULES).filter(([key]) => allowedKeys.has(key));
+}
+
+function canAccessModule(moduleKey) {
+  return getSessionAllowedModuleKeys().includes(moduleKey);
+}
+
+function getDefaultAllowedModule() {
+  const allowedModules = getSessionAllowedModuleKeys();
+  const configuredDefault = String(
+    window.BLUE_COAST_AUTH_SESSION?.defaultModule || ""
+  ).trim();
+  return allowedModules.includes(configuredDefault)
+    ? configuredDefault
+    : allowedModules[0] || "menu";
+}
+
+function resolveModuleFromHash() {
   const key = String(window.location.hash || "")
     .replace(/^#/, "")
     .split(/[/?&]/)[0];
@@ -2603,6 +2629,18 @@ function getActiveModule() {
   if (key === "guest-register-section") return "registro";
   if (checkoutSectionHashes.has(key)) return "checkout";
   return Object.prototype.hasOwnProperty.call(MODULES, key) ? key : "menu";
+}
+
+function getActiveModule() {
+  const requestedModule = resolveModuleFromHash();
+  return canAccessModule(requestedModule) ? requestedModule : getDefaultAllowedModule();
+}
+
+function enforceModuleAccess(activeModule) {
+  const requestedModule = resolveModuleFromHash();
+  if (requestedModule === activeModule) return;
+  const nextUrl = `${window.location.pathname}${window.location.search}#${activeModule}`;
+  window.history.replaceState(null, "", nextUrl);
 }
 
 function getTimelineViewportAnchor(timelineWrap) {
@@ -2691,6 +2729,7 @@ function render(options = {}) {
     : 0;
   const root = document.getElementById("app");
   const activeModule = getActiveModule();
+  enforceModuleAccess(activeModule);
   const isOriginalSystem =
     activeModule === "reservas" || activeModule === "checkin" || activeModule === "bebidas";
   applyThemePreference(ui.theme);
@@ -2774,7 +2813,7 @@ function renderSidebar(activeModule) {
   return `
     <aside class="app-sidebar">
       <div class="app-sidebar__header">
-        <a class="app-sidebar__brand" href="#menu" aria-label="Ir al dashboard">
+        <a class="app-sidebar__brand" href="#${getDefaultAllowedModule()}" aria-label="Ir al inicio permitido">
           <img class="app-sidebar__brand-logo-full" src="${BLUE_COAST_LOGO_URL}" alt="Blue Coast Sistema Hotelero" />
         </a>
         <button
@@ -2788,7 +2827,7 @@ function renderSidebar(activeModule) {
         </button>
       </div>
       <nav class="app-sidebar__nav" aria-label="Navegaci&oacute;n principal">
-        ${Object.entries(MODULES)
+        ${getAllowedModuleEntries()
           .map(
             ([key, module]) => `
               <a
@@ -2811,7 +2850,7 @@ function renderBlueCoastSidebar(activeModule) {
   return `
     <aside class="app-sidebar">
       <div class="app-sidebar__header">
-        <a class="app-sidebar__brand" href="#menu" aria-label="Ir al dashboard">
+        <a class="app-sidebar__brand" href="#${getDefaultAllowedModule()}" aria-label="Ir al inicio permitido">
           <img class="app-sidebar__brand-logo-full" src="${BLUE_COAST_LOGO_URL}" alt="Blue Coast Sistema Hotelero" />
         </a>
         <button
@@ -2825,7 +2864,7 @@ function renderBlueCoastSidebar(activeModule) {
         </button>
       </div>
       <nav class="app-sidebar__nav" aria-label="Navegacion principal">
-        ${Object.entries(MODULES)
+        ${getAllowedModuleEntries()
           .map(([key, module]) => {
             const iconUrl = getSidebarIconUrl(key);
             const iconMarkup = iconUrl
@@ -2970,7 +3009,7 @@ function renderShellHeader(activeModule) {
         </div>
         <div class="hero-status">
           <nav class="hero-nav unified-main-nav" aria-label="Menú principal">
-            ${Object.entries(MODULES)
+            ${getAllowedModuleEntries()
               .map(
                 ([key, module]) => `
                   <a class="${activeModule === key ? "is-active" : ""}" href="#${key}">
@@ -2993,7 +3032,7 @@ function renderLogoSwitcher(activeModule, extraClass = "") {
         <img src="${LOGO_URL}" alt="Solanas" />
       </button>
       <nav class="logo-switcher-menu" aria-label="Cambiar de sistema">
-        ${Object.entries(MODULES)
+        ${getAllowedModuleEntries()
           .map(
             ([key, module]) => `
               <a class="${activeModule === key ? "is-active" : ""}" href="#${key}">
@@ -3010,7 +3049,7 @@ function renderLogoSwitcher(activeModule, extraClass = "") {
 function renderSystemMenuPopover(activeModule) {
   return `
     <nav class="system-menu-popover" aria-label="Cambiar de sistema">
-      ${Object.entries(MODULES)
+      ${getAllowedModuleEntries()
         .map(
           ([key, module]) => `
             <a class="${activeModule === key ? "is-active" : ""}" href="#${key}">
@@ -3691,7 +3730,7 @@ function renderConstructionPage(title, copy) {
       <div class="construction-mark">En construcci&oacute;n</div>
       <h2>${escapeHtml(title)}</h2>
       <p>${copy}</p>
-      <a class="ghost-button" href="#menu">Volver al men&uacute;</a>
+      <a class="ghost-button" href="#${getDefaultAllowedModule()}">Volver al inicio</a>
     </section>
   `;
 }
@@ -4384,7 +4423,7 @@ function renderModuleFrame(moduleKey) {
           <p>${escapeHtml(module.subtitle)}</p>
         </div>
         <div class="actions-row">
-          <a class="ghost-button is-compact" href="#menu">Volver al menú</a>
+          <a class="ghost-button is-compact" href="#${getDefaultAllowedModule()}">Volver al inicio</a>
           <a class="button is-compact" href="${module.src}" target="_blank" rel="noopener">Abrir en pestaña nueva</a>
         </div>
       </div>
@@ -6278,7 +6317,10 @@ window.addEventListener("message", (event) => {
 
   if (event.data.type === "solanas:navigate-module") {
     const moduleKey = String(event.data.module || "").trim();
-    if (!Object.prototype.hasOwnProperty.call(MODULES, moduleKey)) {
+    if (
+      !Object.prototype.hasOwnProperty.call(MODULES, moduleKey) ||
+      !canAccessModule(moduleKey)
+    ) {
       return;
     }
     syncFromLocalStorage({ silent: true, renderAfter: false });
@@ -6361,7 +6403,7 @@ window.addEventListener("message", (event) => {
   if (event.data.type === "solanas:return-unified-menu") {
     ui.systemMenuOpen = false;
     syncFromLocalStorage({ silent: true, renderAfter: false });
-    window.location.hash = "menu";
+    window.location.hash = getDefaultAllowedModule();
     render();
     return;
   }

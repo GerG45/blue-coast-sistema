@@ -66,6 +66,27 @@ const SHELL_SIDEBAR_ITEMS = Object.freeze([
   { key: "inventario", label: "Stock e Inventario", fallback: "ST" },
   { key: "empleados", label: "Empleados", fallback: "EM" },
 ]);
+
+function getAuthorizedShellSidebarItems() {
+  const allowedModules = window.BLUE_COAST_AUTH_SESSION?.allowedModules;
+  if (!Array.isArray(allowedModules)) return [];
+  const allowedSet = new Set(allowedModules);
+  return SHELL_SIDEBAR_ITEMS.filter((item) => allowedSet.has(item.key));
+}
+
+function getAuthorizedDefaultModule() {
+  const items = getAuthorizedShellSidebarItems();
+  const configuredDefault = String(
+    window.BLUE_COAST_AUTH_SESSION?.defaultModule || ""
+  ).trim();
+  return items.some((item) => item.key === configuredDefault)
+    ? configuredDefault
+    : items[0]?.key || "checkin";
+}
+
+function isAuthorizedShellModule(moduleKey) {
+  return getAuthorizedShellSidebarItems().some((item) => item.key === moduleKey);
+}
 const BLUE_COAST_LOGO_URL = new URL("../../assets/blue-coast-logo.svg", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
 const THEME_PREF_KEY = "bluecoast-theme-v1";
@@ -8514,12 +8535,12 @@ function renderShellSidebar() {
         >
           <span class="module-sidebar__toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
         </button>
-        <a class="module-sidebar__brand" href="${new URL("../../#menu", window.location.href).href}" data-shell-module-link="menu" target="_parent" aria-label="Ir al dashboard">
+        <a class="module-sidebar__brand" href="${new URL(`../../#${getAuthorizedDefaultModule()}`, window.location.href).href}" data-shell-module-link="${getAuthorizedDefaultModule()}" target="_parent" aria-label="Ir al inicio permitido">
           <img class="module-sidebar__brand-logo-full" src="${BLUE_COAST_LOGO_URL}" alt="Blue Coast Sistema Hotelero" />
         </a>
       </div>
       <nav class="module-sidebar__nav" aria-label="Navegaci\u00f3n principal">
-        ${SHELL_SIDEBAR_ITEMS
+        ${getAuthorizedShellSidebarItems()
           .map((item) => {
             const iconUrl = getSidebarIconUrl(item.key);
             const iconMarkup = iconUrl
@@ -14148,6 +14169,10 @@ document.addEventListener("click", (event) => {
   }
 
   const shellModuleLink = event.target.closest("[data-shell-module-link]");
+  if (shellModuleLink && !isAuthorizedShellModule(shellModuleLink.dataset.shellModuleLink)) {
+    event.preventDefault();
+    return;
+  }
   if (shellModuleLink && window.parent && window.parent !== window) {
     event.preventDefault();
     postCheckinStateToParent();
