@@ -1783,6 +1783,14 @@ body.is-system-embedded
   display: none !important;
 }
 
+.closure-actions-only > :not(.actions-row) {
+  display: none;
+}
+
+.closure-actions-only > .actions-row {
+  margin-top: 0 !important;
+}
+
 @media (max-width: 1180px) {
   .summary-grid,
   .three-grid {

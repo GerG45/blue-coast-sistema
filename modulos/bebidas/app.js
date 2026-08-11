@@ -9601,7 +9601,6 @@ function renderCatalogSection() {
 }
 
 function renderClosuresSection() {
-  const activeDriverCoordinatorGroups = getActiveDriverCoordinatorGroups();
   const driverCoordinatorItems = getDriverCoordinatorOperationalItems();
   const openRooms = getOpenShiftRooms();
   const hasOpenRooms = openRooms.length > 0;
@@ -9624,7 +9623,7 @@ function renderClosuresSection() {
   const estimatedMargin = soldTotal > 0 ? (estimatedProfit / soldTotal) * 100 : null;
 
   return `
-    <section id="closures-section" class="three-grid">
+    <section id="closures-section" class="two-grid">
       <article class="panel">
         <div class="panel-title-row">
           <div>
@@ -9689,7 +9688,7 @@ function renderClosuresSection() {
         </div>
       </article>
 
-      <article class="panel">
+      <article class="panel closure-actions-only">
         <div class="panel-title-row">
           <div>
             <h2>Resumen para cierre</h2>
@@ -9808,15 +9807,13 @@ function renderClosuresSection() {
         </div>
       </article>
 
-      <article class="panel">
+      <article class="panel hidden">
         <div class="panel-title-row">
           <div>
             <h2>Grupos pendientes de cierre</h2>
             <p>Desde aquí se imprimen tickets, se revisa el acumulado y se cierra cada grupo cuando termina su viaje.</p>
           </div>
-          <span class="chip">${activeDriverCoordinatorGroups.length} activos</span>
         </div>
-        ${renderDriverCoordinatorClosureCards()}
       </article>
     </section>
   `;
@@ -10544,7 +10541,6 @@ function render(options = {}) {
       ${renderCashierSection()}
       ${renderStaffSection()}
       ${renderClosuresSection()}
-      ${renderShiftHistory()}
       <div class="footer-note">
         <div class="footer-note-copy">
           La app registra comandas, caja directa y cierres de turno. El stock se administra desde Stock e Inventario.

@@ -1834,6 +1834,14 @@ function getCheckoutRows() {
   });
 }
 
+function getVisibleCheckoutRows() {
+  const oldestVisibleDate = addDaysToInputDate(getTodayInputDate(), -1);
+  return getCheckoutRows().filter((row) => {
+    const checkOutDate = normalizeDate(row.reservation.checkOutDate);
+    return !checkOutDate || checkOutDate >= oldestVisibleDate;
+  });
+}
+
 function getGroupCheckoutRows() {
   const roomMap = getRoomBeverageMap();
   return getGroupedReservations().map((group) => {
@@ -4401,7 +4409,6 @@ function renderCheckoutDashboard() {
     ${renderCheckoutSection()}
     ${renderGroupsSection()}
     ${renderBeveragesSection()}
-    ${renderCheckoutHistorySection()}
     ${renderReportsSection()}
   `;
 }
@@ -4430,7 +4437,6 @@ function renderCheckoutToolbar(summary) {
           <nav class="hero-nav" aria-label="Secciones">
             <a href="#checkout-section">Check-out</a>
             <a href="#groups-section">Grupos</a>
-            <a href="#checkout-history-section">Hist&oacute;rico</a>
             <a href="#reports-section">Informes</a>
           </nav>
           <div class="status-panel">
@@ -4499,10 +4505,9 @@ function renderSourceCard(source) {
 
 function renderCheckoutSection() {
   autoArchiveClearCheckouts();
-  const rows = getCheckoutRows();
+  const rows = getVisibleCheckoutRows();
   const activeRows = rows.filter((row) => !row.settlement);
   const settledRows = rows.filter((row) => row.settlement);
-  const dueTodayRows = activeRows.filter((row) => row.reservation.checkOutDate <= getTodayInputDate());
   return `
     <section id="checkout-section" class="panel">
       <div class="panel-title-row">
@@ -4511,7 +4516,6 @@ function renderCheckoutSection() {
           <p>Reservas individuales y habitaciones de grupo con cruce directo contra bebidas abiertas y saldos de estadía.</p>
         </div>
         <div class="chip-row">
-          <span class="chip is-rust">${dueTodayRows.length} salidas hasta hoy</span>
           <span class="chip is-green">${settledRows.length} registradas</span>
         </div>
       </div>
@@ -4537,7 +4541,7 @@ function renderCheckoutSection() {
               </table>
             </div>
           `
-          : `<div class="empty-state">No hay habitaciones pendientes de Check-out. Las salidas ya registradas quedan abajo en el hist&oacute;rico.</div>`
+          : `<div class="empty-state">No hay habitaciones pendientes de Check-out dentro de la ventana operativa.</div>`
       }
     </section>
   `;
