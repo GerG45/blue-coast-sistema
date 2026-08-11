@@ -9490,7 +9490,6 @@ function renderReservationConfirmationPanel(reservation) {
   const hardIssues = getReservationConfirmationHardIssues(reservation);
   const softWarnings = getReservationConfirmationSoftWarnings(reservation);
   const isConfirmed = Boolean(reservation.confirmedAt);
-  const isNewReservation = isReservationPlaceholder(reservation);
   const bookingMode = isReservationsMode();
   const roomAccessIssues = isConfirmed && isCheckinMode() ? getRoomAccessIssues(reservation) : [];
   const canPrintPacket = isCheckinMode() && canPrintLegalPacket(reservation);
@@ -9592,7 +9591,7 @@ function renderReservationConfirmationPanel(reservation) {
           type="button"
           data-action="open-reservation-confirm-modal"
         >
-          ${isNewReservation ? "Confirmar reserva" : "Confirmar cambios"}
+          ${isConfirmed ? "Confirmar cambios" : "Confirmar reserva"}
         </button>
       </div>
     </section>
@@ -9702,14 +9701,6 @@ function renderPrivateReservationModal(reservation = getActiveReservation()) {
   }
 
   const isNewReservation = isReservationPlaceholder(reservation);
-  const hardIssues = getReservationConfirmationHardIssues(reservation);
-  const isConfirmed = Boolean(reservation.confirmedAt);
-  const footerStatus = getReservationStatus(reservation);
-  const footerHelper = isConfirmed
-    ? "La reserva ya est&aacute; confirmada. Si modificaste datos importantes, confirm&aacute; cambios para actualizar el registro."
-    : hardIssues.length
-      ? `Si cerr&aacute;s ahora, queda como ${escapeHtml(footerStatus.label.toLowerCase())}. Falta completar datos para confirmarla.`
-      : "Lista para confirmar. Si cerr&aacute;s ahora, queda guardada como no confirmada.";
   return `
     <div class="scanner-modal-backdrop" data-action="close-private-reservation-modal"></div>
     <section
@@ -9740,30 +9731,6 @@ function renderPrivateReservationModal(reservation = getActiveReservation()) {
         </div>
         <div class="private-reservation-modal-body">
           ${renderReservationPanel(reservation)}
-        </div>
-        <div class="private-reservation-modal-footer">
-          <div class="private-reservation-modal-footer-copy">
-            <strong>${escapeHtml(isConfirmed ? "Reserva confirmada" : footerStatus.label)}</strong>
-            <span>${footerHelper}</span>
-          </div>
-          <div class="private-reservation-modal-footer-actions">
-            <button
-              id="close-private-reservation-footer-button"
-              class="ghost-button"
-              type="button"
-              data-action="close-private-reservation-modal"
-            >
-              Cerrar sin confirmar
-            </button>
-            <button
-              id="confirm-private-reservation-button"
-              class="button"
-              type="button"
-              data-action="confirm-private-reservation"
-            >
-              ${isConfirmed ? "Confirmar cambios" : "Confirmar reserva"}
-            </button>
-          </div>
         </div>
       </div>
     </section>
@@ -12725,6 +12692,7 @@ function renderReservationConfirmModal() {
   const responsible = getTitular(reservation);
   const operationalInfo = getReservationOperationalInfo(reservation);
   const canConfirm = hardIssues.length === 0;
+  const isConfirmed = Boolean(reservation.confirmedAt);
 
   return `
     <div class="scanner-modal-backdrop" data-action="close-reservation-confirm-modal"></div>
@@ -12733,7 +12701,7 @@ function renderReservationConfirmModal() {
         <div class="scanner-modal-toolbar">
           <div>
             <p class="scanner-modal-kicker">Confirmaci&oacute;n</p>
-            <h2 id="reservation-confirm-title">Confirmar reserva</h2>
+            <h2 id="reservation-confirm-title">${isConfirmed ? "Confirmar cambios" : "Confirmar reserva"}</h2>
             <p class="scanner-helper">
               ${escapeHtml(buildReservationTitle(reservation))} &middot; ${escapeHtml(
                 formatStayRange(reservation.checkInDate, reservation.checkOutDate)
@@ -12809,7 +12777,15 @@ function renderReservationConfirmModal() {
               canConfirm
                 ? `
                   <button class="button" type="button" data-action="confirm-reservation">
-                    ${softWarnings.length ? "Confirmar igual" : "Confirmar reserva"}
+                    ${
+                      softWarnings.length
+                        ? isConfirmed
+                          ? "Confirmar cambios igualmente"
+                          : "Confirmar igualmente"
+                        : isConfirmed
+                          ? "Confirmar cambios"
+                          : "Confirmar reserva"
+                    }
                   </button>
                 `
                 : ""
@@ -13543,8 +13519,6 @@ const MANAGED_MODAL_TAB_ORDER = [
       "#field-depositAmount",
       "#field-depositDeferredReason",
       "#open-reservation-confirm-modal-button",
-      "#confirm-private-reservation-button",
-      "#close-private-reservation-footer-button",
       "#close-private-reservation-modal-button",
     ],
   },
