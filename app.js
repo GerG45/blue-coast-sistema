@@ -2161,6 +2161,49 @@ function getTodayArrivals() {
     .sort((left, right) => Number(left.roomNumber || 0) - Number(right.roomNumber || 0));
 }
 
+function getDashboardMealGuestCount(reservation) {
+  const guests = Array.isArray(reservation && reservation.guests) ? reservation.guests : [];
+  const filledGuests = guests.filter((guest) => guest && hasGuestIdentity(guest)).length;
+  return Math.max(1, guests.length, filledGuests);
+}
+
+function getDashboardMealSummary(date = getTodayInputDate()) {
+  const targetDate = normalizeDate(date) || getTodayInputDate();
+  const reservations =
+    state.sources.checkin && Array.isArray(state.sources.checkin.reservations)
+      ? state.sources.checkin.reservations
+      : [];
+
+  return reservations.reduce(
+    (summary, reservation) => {
+      const checkInDate = normalizeDate(reservation && reservation.checkInDate);
+      const checkOutDate = normalizeDate(reservation && reservation.checkOutDate);
+      if (
+        !reservation ||
+        reservation.archived === true ||
+        !reservation.confirmedAt ||
+        !checkInDate ||
+        !checkOutDate ||
+        targetDate < checkInDate ||
+        targetDate >= checkOutDate
+      ) {
+        return summary;
+      }
+
+      const guestCount = getDashboardMealGuestCount(reservation);
+      const regime = slugify(reservation.regime);
+      if (regime === "pension-completa") {
+        summary.lunch += guestCount;
+        summary.dinner += guestCount;
+      } else if (regime === "media-pension") {
+        summary.dinner += guestCount;
+      }
+      return summary;
+    },
+    { lunch: 0, dinner: 0 }
+  );
+}
+
 function getMenuTimelineDate() {
   return normalizeDate(ui.menuTimelineDate) || getTodayInputDate();
 }
@@ -3407,6 +3450,7 @@ function renderMenuTimelinePanel(referenceDate = getMenuTimelineDate()) {
 function renderGeneralDashboard(summary) {
   const departures = getTodayDepartures();
   const arrivals = getTodayArrivals();
+  const meals = getDashboardMealSummary();
   const showDepartureAlert = isAfterCheckoutAlertStart();
   const departureTotal = departures.reduce((sum, row) => sum + row.dueTotal, 0);
   const arrivalTotal = arrivals.reduce((sum, reservation) => sum + reservation.lodgingPending, 0);
@@ -3422,7 +3466,14 @@ function renderGeneralDashboard(summary) {
         <div class="chip-row dashboard-time-pills">
           <span class="chip is-rust">Egresos 10:00</span>
           <span class="chip is-blue">Ingresos 14:00</span>
-          <span class="chip is-green">Bebidas: almuerzo y cena</span>
+          <span class="chip dashboard-meal-pill is-lunch ${meals.lunch ? "" : "is-empty"}">
+            <strong>Almuerzo</strong>
+            <span>${meals.lunch ? `${meals.lunch} comensal${meals.lunch === 1 ? "" : "es"}` : "Sin servicio"}</span>
+          </span>
+          <span class="chip dashboard-meal-pill is-dinner ${meals.dinner ? "" : "is-empty"}">
+            <strong>Cena</strong>
+            <span>${meals.dinner ? `${meals.dinner} comensal${meals.dinner === 1 ? "" : "es"}` : "Sin servicio"}</span>
+          </span>
         </div>
       </div>
       <div class="dashboard-grid">

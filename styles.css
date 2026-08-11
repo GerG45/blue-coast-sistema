@@ -573,6 +573,33 @@ p {
   justify-content: flex-end;
 }
 
+.dashboard-time-pills .dashboard-meal-pill {
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.dashboard-time-pills .dashboard-meal-pill strong {
+  font-weight: 900;
+}
+
+.dashboard-time-pills .dashboard-meal-pill.is-lunch {
+  color: #ffd37a;
+  border-color: rgba(245, 180, 57, 0.3);
+  background: rgba(148, 91, 12, 0.24);
+}
+
+.dashboard-time-pills .dashboard-meal-pill.is-dinner {
+  color: #d2c2ff;
+  border-color: rgba(154, 121, 255, 0.3);
+  background: rgba(88, 57, 154, 0.24);
+}
+
+.dashboard-time-pills .dashboard-meal-pill.is-empty {
+  color: #aebdcc;
+  border-color: rgba(174, 189, 204, 0.18);
+  background: rgba(107, 122, 138, 0.12);
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

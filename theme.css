@@ -744,6 +744,27 @@ body.theme-light .dashboard-time-pills .chip:last-child {
   color: #047481 !important;
 }
 
+html.theme-light-root body .dashboard-time-pills .dashboard-meal-pill.is-lunch,
+body.theme-light .dashboard-time-pills .dashboard-meal-pill.is-lunch {
+  background: #fff7dd !important;
+  border-color: rgba(180, 112, 0, 0.24) !important;
+  color: #765000 !important;
+}
+
+html.theme-light-root body .dashboard-time-pills .dashboard-meal-pill.is-dinner,
+body.theme-light .dashboard-time-pills .dashboard-meal-pill.is-dinner {
+  background: #f3efff !important;
+  border-color: rgba(91, 61, 166, 0.22) !important;
+  color: #593b9e !important;
+}
+
+html.theme-light-root body .dashboard-time-pills .dashboard-meal-pill.is-empty,
+body.theme-light .dashboard-time-pills .dashboard-meal-pill.is-empty {
+  background: #f1f5f9 !important;
+  border-color: rgba(71, 85, 105, 0.16) !important;
+  color: #526174 !important;
+}
+
 html.theme-light-root body .dashboard-alert,
 body.theme-light .dashboard-alert {
   background: linear-gradient(180deg, #ffffff, #f4f9fb) !important;
