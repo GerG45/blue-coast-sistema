@@ -3842,6 +3842,36 @@ function filterProducts(products, query, category) {
   });
 }
 
+function getProductToneClass(product) {
+  const normalizedName = slugify(product?.name || "");
+
+  if (/(coca|cola|pepsi)/.test(normalizedName)) return "product-tone-cola";
+  if (/(naranja|fanta|mandarina)/.test(normalizedName)) return "product-tone-orange";
+  if (/(pomelo|grapefruit)/.test(normalizedName)) return "product-tone-grapefruit";
+  if (/(mix-frutal|frutal|frutos-rojos|berries)/.test(normalizedName)) {
+    return "product-tone-fruit-mix";
+  }
+  if (/(manzana|pera|sprite|lima|limon)/.test(normalizedName)) {
+    return "product-tone-green";
+  }
+  if (/(agua|soda|tonica|aqua)/.test(normalizedName)) return "product-tone-water";
+  if (/(malbec|vino|norton|alma-mora|cabernet|merlot)/.test(normalizedName)) {
+    return "product-tone-wine";
+  }
+  if (/(cerveza|quilmes|norte|lager|ipa|stout)/.test(normalizedName)) {
+    return "product-tone-amber";
+  }
+  if (/(fernet|whisky|gancia|secco|aperitivo|ron)/.test(normalizedName)) {
+    return "product-tone-amber";
+  }
+
+  if (product?.category === "Cervezas") return "product-tone-amber";
+  if (product?.category === "Vinos") return "product-tone-wine";
+  if (product?.category === "Tragos") return "product-tone-fruit-mix";
+  if (product?.category === "Insumos") return "product-tone-neutral";
+  return "product-tone-water";
+}
+
 function closeRoom(roomId) {
   const room = getRoomById(roomId);
   if (!room || room.items.length === 0) {
@@ -8348,9 +8378,10 @@ function renderProductPicker(scope, query, category) {
                 : formatPercent(margin.marginPercent);
           const categoryVisual =
             PRODUCT_CATEGORY_VISUALS[product.category] || PRODUCT_CATEGORY_VISUALS.Insumos;
+          const productToneClass = getProductToneClass(product);
 
           return `
-            <article class="product-card ${isOutOfStock ? "is-out-of-stock" : ""} ${isLowStock ? "is-low-stock" : ""} ${!canAddProduct ? "is-unavailable" : ""}">
+            <article class="product-card has-product-tone ${productToneClass} ${isOutOfStock ? "is-out-of-stock" : ""} ${isLowStock ? "is-low-stock" : ""} ${!canAddProduct ? "is-unavailable" : ""}">
               <div class="product-card-icon-row">
                 <span class="product-category-icon ${categoryVisual.className}" title="${escapeHtml(
                   product.category
