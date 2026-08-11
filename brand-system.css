@@ -11,6 +11,7 @@
   --bc-text: #f5f8fc;
   --bc-muted: #a9b7c8;
   --bc-subtle: #8191a4;
+  --bc-placeholder: #68788b;
   --bc-primary: #1f78ff;
   --bc-primary-hover: #1769e6;
   --bc-primary-action: #1769e6;
@@ -50,6 +51,7 @@ body.theme-light {
   --bc-text: #0e1e33;
   --bc-muted: #5f7084;
   --bc-subtle: #74859a;
+  --bc-placeholder: #738397;
   --bc-focus: 0 0 0 3px rgba(31, 120, 255, 0.16);
 }
 
@@ -522,7 +524,8 @@ label,
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--bc-subtle) !important;
+  color: var(--bc-placeholder) !important;
+  -webkit-text-fill-color: var(--bc-placeholder) !important;
   opacity: 1;
 }
 
