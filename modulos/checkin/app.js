@@ -9159,7 +9159,7 @@ function renderReservationFields(reservation) {
         />
         ${checkInLockedHint}
       </label>
-      <label class="field">
+      <label class="field field-checkout-align">
         <span>Check-out</span>
         <input
           id="field-checkOutDate"

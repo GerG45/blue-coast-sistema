@@ -8047,3 +8047,10 @@ html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-ro
 html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-room-button.is-occupied .bed-icon {
   color: #8f3444 !important;
 }
+
+@media (min-width: 821px) {
+  body.has-shell-layout .field.field-checkout-align {
+    align-content: start;
+    align-self: start;
+  }
+}
