@@ -1214,6 +1214,99 @@ button:disabled {
   gap: 12px;
 }
 
+.product-reel {
+  position: relative;
+  min-width: 0;
+}
+
+.product-reel-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.product-reel-button {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #102036;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.product-reel-button:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+html.theme-light-root body .product-reel-button,
+body.theme-light .product-reel-button {
+  border-color: rgba(27, 68, 96, 0.18);
+  background: #ffffff;
+  color: #102033;
+}
+
+html.theme-light-root body .product-reel-button:hover,
+body.theme-light .product-reel-button:hover {
+  border-color: #087f8c;
+  background: rgba(8, 127, 140, 0.1);
+}
+
+.product-reel-button:focus-visible,
+.product-reel-track:focus-visible {
+  outline: 3px solid rgba(65, 166, 255, 0.38);
+  outline-offset: 2px;
+}
+
+.product-picker-grid.product-reel-track {
+  display: flex;
+  grid-template-columns: none;
+  flex-wrap: nowrap;
+  gap: 14px;
+  width: 100%;
+  padding: 2px 2px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) rgba(126, 150, 170, 0.14);
+  overscroll-behavior-inline: contain;
+}
+
+.product-picker-grid.product-reel-track::-webkit-scrollbar {
+  height: 9px;
+}
+
+.product-picker-grid.product-reel-track::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(126, 150, 170, 0.14);
+}
+
+.product-picker-grid.product-reel-track::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.product-reel-track > .product-card {
+  flex: 0 0 clamp(230px, 22vw, 278px);
+  min-width: 0;
+  min-height: 218px;
+  grid-template-rows: minmax(76px, 1fr) auto auto;
+  scroll-snap-align: start;
+}
+
 .product-card {
   padding: 12px;
   border-radius: 18px;
@@ -1900,6 +1993,19 @@ body.is-system-embedded
 
   .picker-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .product-reel-controls {
+    margin-bottom: 8px;
+  }
+
+  .product-reel-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .product-reel-track > .product-card {
+    flex-basis: min(78vw, 270px);
   }
 
   .brand-row {

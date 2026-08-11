@@ -8248,9 +8248,30 @@ function renderProductPicker(scope, query, category) {
   }
 
   return `
-    <div class="product-picker-grid">
-      ${products
-        .map((product) => {
+    <div class="product-reel" data-product-reel="${escapeHtml(scope)}">
+      <div class="product-reel-controls" aria-label="Navegaci&oacute;n del cat&aacute;logo">
+        <button
+          type="button"
+          class="product-reel-button"
+          data-action="scroll-product-reel"
+          data-direction="-1"
+          aria-label="Ver productos anteriores"
+          title="Productos anteriores"
+        >&#8592;</button>
+        <button
+          type="button"
+          class="product-reel-button"
+          data-action="scroll-product-reel"
+          data-direction="1"
+          aria-label="Ver productos siguientes"
+          title="Productos siguientes"
+        >&#8594;</button>
+      </div>
+      <div class="product-picker-grid product-reel-track" data-product-reel-track="${escapeHtml(
+        scope
+      )}" tabindex="0" aria-label="Productos disponibles">
+        ${products
+          .map((product) => {
           const margin = getProductMarginData(product);
           const availability = getProductAvailability(product.id);
           const canAddProduct = availability.ok;
@@ -8304,38 +8325,39 @@ function renderProductPicker(scope, query, category) {
                 ? "Sin margen"
                 : formatPercent(margin.marginPercent);
 
-          return `
-            <article class="product-card ${isOutOfStock ? "is-out-of-stock" : ""} ${isLowStock ? "is-low-stock" : ""} ${!canAddProduct ? "is-unavailable" : ""}">
-              <div class="product-card-head">
-                <div class="product-copy">
-                  <h4>${escapeHtml(product.name)}</h4>
-                  <span class="product-subline">${escapeHtml(descriptorText)}</span>
+            return `
+              <article class="product-card ${isOutOfStock ? "is-out-of-stock" : ""} ${isLowStock ? "is-low-stock" : ""} ${!canAddProduct ? "is-unavailable" : ""}">
+                <div class="product-card-head">
+                  <div class="product-copy">
+                    <h4>${escapeHtml(product.name)}</h4>
+                    <span class="product-subline">${escapeHtml(descriptorText)}</span>
+                  </div>
+                  <span class="${stockBadgeClass}">${escapeHtml(stockText)}</span>
                 </div>
-                <span class="${stockBadgeClass}">${escapeHtml(stockText)}</span>
-              </div>
-              <div class="product-price-row">
-                <strong class="product-price-main">${mainValueLabel}</strong>
-                <span class="product-price-side">${secondaryValueLabel}</span>
-              </div>
-              <div class="product-foot">
-                <span class="product-context-badge">${escapeHtml(contextBadgeLabel)}</span>
-                <button
-                  class="button is-compact"
-                  data-action="add-product"
-                  data-scope="${scope}"
-                  data-product-id="${product.id}"
-                  title="${escapeHtml(
-                    canAddProduct ? `Agregar ${product.name}` : availability.message || "Sin stock"
-                  )}"
-                  ${canAddProduct ? "" : "disabled"}
-                >
-                  ${canAddProduct ? "Agregar" : "Sin stock"}
-                </button>
-              </div>
-            </article>
-          `;
-        })
-        .join("")}
+                <div class="product-price-row">
+                  <strong class="product-price-main">${mainValueLabel}</strong>
+                  <span class="product-price-side">${secondaryValueLabel}</span>
+                </div>
+                <div class="product-foot">
+                  <span class="product-context-badge">${escapeHtml(contextBadgeLabel)}</span>
+                  <button
+                    class="button is-compact"
+                    data-action="add-product"
+                    data-scope="${scope}"
+                    data-product-id="${product.id}"
+                    title="${escapeHtml(
+                      canAddProduct ? `Agregar ${product.name}` : availability.message || "Sin stock"
+                    )}"
+                    ${canAddProduct ? "" : "disabled"}
+                  >
+                    ${canAddProduct ? "Agregar" : "Sin stock"}
+                  </button>
+                </div>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
     </div>
   `;
 }
@@ -10527,6 +10549,12 @@ function render(options = {}) {
   const moduleMainScrollTop = preserveScroll
     ? document.querySelector(".module-main-scroll")?.scrollTop || 0
     : 0;
+  const productReelScrollPositions = new Map(
+    Array.from(document.querySelectorAll("[data-product-reel-track]")).map((track) => [
+      track.dataset.productReelTrack,
+      track.scrollLeft,
+    ])
+  );
   applyThemePreference(ui.theme);
   const catalogOnlyMarkup = `
     <main class="app-shell catalog-only-shell">
@@ -10646,6 +10674,19 @@ function render(options = {}) {
     }
   }
 
+  if (productReelScrollPositions.size) {
+    window.requestAnimationFrame(() => {
+      document.querySelectorAll("[data-product-reel-track]").forEach((track) => {
+        const previousScrollLeft = productReelScrollPositions.get(
+          track.dataset.productReelTrack
+        );
+        if (typeof previousScrollLeft === "number") {
+          track.scrollLeft = previousScrollLeft;
+        }
+      });
+    });
+  }
+
   if (!CATALOG_ONLY_VIEW) {
     setupFloatingModuleNav();
   }
@@ -10735,6 +10776,23 @@ document.addEventListener("click", (event) => {
     if (scope === "driver-coordinator") ui.driverCoordinatorCategory = category;
     if (scope === "catalog") ui.catalogCategory = category;
     render({ preserveScroll: true });
+    return;
+  }
+
+  if (action === "scroll-product-reel") {
+    const track = target.closest(".product-reel")?.querySelector(".product-reel-track");
+    if (!track) return;
+
+    const firstCard = track.querySelector(".product-card");
+    const cardWidth = firstCard?.getBoundingClientRect().width || 260;
+    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 14;
+    const direction = Number(target.dataset.direction) < 0 ? -1 : 1;
+    const visibleCards = Math.max(1, Math.floor(track.clientWidth / (cardWidth + gap)));
+
+    track.scrollBy({
+      left: direction * (cardWidth + gap) * visibleCards,
+      behavior: "smooth",
+    });
     return;
   }
 
