@@ -3979,6 +3979,13 @@ function scrollToReservationPanel() {
   scrollToModuleTargetAfterRender("reservation-active-panel");
 }
 
+function returnToCheckinHeaderAfterCompletion() {
+  scrollToModuleTargetAfterRender("hero-section");
+  window.setTimeout(() => {
+    scrollToModuleTargetAfterRender("hero-section");
+  }, 180);
+}
+
 function getReservationForConfirmation() {
   const reservationId = ui.confirmReservationId || state.activeReservationId;
   return state.reservations.find((reservation) => reservation.id === reservationId) || null;
@@ -14408,8 +14415,14 @@ document.addEventListener("click", (event) => {
 
   if (action === "confirm-reservation") {
     const wasConfirmed = confirmReservation();
-    render({ preserveScroll: !wasConfirmed });
-    if (wasConfirmed) {
+    const shouldReturnToCheckinHeader = wasConfirmed && isCheckinMode();
+    render({
+      preserveScroll: !wasConfirmed,
+      scrollToId: shouldReturnToCheckinHeader ? "hero-section" : null,
+    });
+    if (shouldReturnToCheckinHeader) {
+      returnToCheckinHeaderAfterCompletion();
+    } else if (wasConfirmed) {
       window.requestAnimationFrame(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       });
