@@ -93,6 +93,12 @@ const THEME_PREF_KEY = "bluecoast-theme-v1";
 const TITLE_FONT_URL = new URL("./fonts/libre-baskerville-bold.ttf", window.location.href).href;
 const ROOM_ICON_SINGLE_URL = new URL("./assets/cama-single.svg", window.location.href).href;
 const ROOM_ICON_DOUBLE_URL = new URL("./assets/cama-doble.svg", window.location.href).href;
+const SUMMARY_ICON_URLS = Object.freeze({
+  openReservations: new URL("./assets/resumen/reservas-abiertas.svg", window.location.href).href,
+  confirmedReservations: new URL("./assets/resumen/reservas-confirmadas.svg", window.location.href).href,
+  occupiedRooms: new URL("./assets/resumen/habitaciones-en-uso.svg", window.location.href).href,
+  meals: new URL("./assets/resumen/comidas-de-hoy.svg", window.location.href).href,
+});
 const APP_QUERY = new URLSearchParams(window.location.search);
 const APP_MODE = normalizeAppMode(APP_QUERY.get("mode"));
 const SHELL_LAYOUT = APP_QUERY.get("layout") === "shell";
@@ -8749,22 +8755,34 @@ function renderSummaryCards() {
   return `
     <section class="summary-grid">
       <article class="summary-card">
-        <div class="summary-label">Reservas abiertas</div>
+        <div class="summary-card-header">
+          <div class="summary-label">Reservas abiertas</div>
+          <span class="summary-card-icon is-open" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.openReservations}" alt="" /></span>
+        </div>
         <span class="summary-value">${getOpenVisibleReservationsCount()}</span>
         <span class="summary-foot">Solo cuenta las reservas visibles del sistema.</span>
       </article>
       <article class="summary-card">
-        <div class="summary-label">Reservas confirmadas</div>
+        <div class="summary-card-header">
+          <div class="summary-label">Reservas confirmadas</div>
+          <span class="summary-card-icon is-confirmed" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.confirmedReservations}" alt="" /></span>
+        </div>
         <span class="summary-value">${getReadyReservationsCount()}</span>
         <span class="summary-foot">Incluye confirmaciones individuales y reservas creadas desde carga grupal.</span>
       </article>
       <article class="summary-card">
-        <div class="summary-label">Habitaciones en uso hoy</div>
+        <div class="summary-card-header">
+          <div class="summary-label">Habitaciones en uso hoy</div>
+          <span class="summary-card-icon is-occupied" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.occupiedRooms}" alt="" /></span>
+        </div>
         <span class="summary-value">${todayOccupiedCount}</span>
         <span class="summary-foot">Control del d&iacute;a ${escapeHtml(formatDisplayDate(getTodayInputDate()))}.</span>
       </article>
       <article class="summary-card">
-        <div class="summary-label">Comidas de hoy</div>
+        <div class="summary-card-header">
+          <div class="summary-label">Comidas de hoy</div>
+          <span class="summary-card-icon is-meals" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.meals}" alt="" /></span>
+        </div>
         <div class="summary-split">
           <span>
             <small>Almuerzo</small>

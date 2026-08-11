@@ -3641,6 +3641,46 @@ h4 {
   font-weight: 700;
 }
 
+.summary-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.summary-card-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  place-items: center;
+  border: 1px solid rgba(113, 184, 245, 0.34);
+  border-radius: 12px;
+  background: #13243a;
+}
+
+.summary-card-icon img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.summary-card-icon.is-confirmed {
+  border-color: rgba(40, 213, 122, 0.36);
+  background: #123529;
+}
+
+.summary-card-icon.is-occupied {
+  border-color: rgba(60, 167, 253, 0.38);
+  background: #102f4a;
+}
+
+.summary-card-icon.is-meals {
+  border-color: rgba(245, 158, 11, 0.36);
+  background: #382a12;
+}
+
 .summary-foot {
   display: block;
   margin-top: 8px;
