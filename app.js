@@ -2204,6 +2204,31 @@ function getDashboardMealSummary(date = getTodayInputDate()) {
   );
 }
 
+function getDashboardOccupancySummary(date = getTodayInputDate()) {
+  const targetDate = normalizeDate(date) || getTodayInputDate();
+  const summary = ROOM_OPTIONS.reduce(
+    (result, roomNumber) => {
+      const descriptor = getRoomTimelineDescriptor(roomNumber, targetDate);
+      if (descriptor.status === "maintenance") {
+        result.maintenance += 1;
+      } else if (descriptor.status === "occupied") {
+        result.occupied += 1;
+      } else {
+        result.available += 1;
+      }
+      return result;
+    },
+    { occupied: 0, available: 0, maintenance: 0 }
+  );
+  const operational = summary.occupied + summary.available;
+  return {
+    ...summary,
+    total: ROOM_OPTIONS.length,
+    operational,
+    percentage: operational ? Math.round((summary.occupied / operational) * 100) : 0,
+  };
+}
+
 function getMenuTimelineDate() {
   return normalizeDate(ui.menuTimelineDate) || getTodayInputDate();
 }
@@ -3451,9 +3476,16 @@ function renderGeneralDashboard(summary) {
   const departures = getTodayDepartures();
   const arrivals = getTodayArrivals();
   const meals = getDashboardMealSummary();
+  const occupancy = getDashboardOccupancySummary();
   const showDepartureAlert = isAfterCheckoutAlertStart();
   const departureTotal = departures.reduce((sum, row) => sum + row.dueTotal, 0);
   const arrivalTotal = arrivals.reduce((sum, reservation) => sum + reservation.lodgingPending, 0);
+  const occupiedShare = occupancy.total ? (occupancy.occupied / occupancy.total) * 100 : 0;
+  const availableShare = occupancy.total
+    ? ((occupancy.occupied + occupancy.available) / occupancy.total) * 100
+    : 0;
+  const checkinIconUrl = getSidebarIconUrl("checkin");
+  const checkoutIconUrl = getSidebarIconUrl("checkout");
 
   return `
     <section class="panel dashboard-panel">
@@ -3479,9 +3511,14 @@ function renderGeneralDashboard(summary) {
       <div class="dashboard-grid">
         <article class="dashboard-alert ${showDepartureAlert && departures.length ? "is-urgent" : ""}">
           <div class="dashboard-alert-head">
-            <div>
-              <span class="kicker">Desde las 7:00</span>
-              <h3>Check-out de hoy</h3>
+            <div class="dashboard-alert-title">
+              <span class="dashboard-alert-icon" aria-hidden="true">
+                <img src="${checkoutIconUrl}" data-sidebar-icon-key="checkout" alt="" />
+              </span>
+              <div>
+                <span class="kicker">Desde las 7:00</span>
+                <h3>Check-out de hoy</h3>
+              </div>
             </div>
             <strong>${departures.length}</strong>
           </div>
@@ -3493,13 +3530,46 @@ function renderGeneralDashboard(summary) {
         </article>
         <article class="dashboard-alert">
           <div class="dashboard-alert-head">
-            <div>
-              <span class="kicker">Check-in 14:00</span>
-              <h3>Check-in de hoy</h3>
+            <div class="dashboard-alert-title">
+              <span class="dashboard-alert-icon" aria-hidden="true">
+                <img src="${checkinIconUrl}" data-sidebar-icon-key="checkin" alt="" />
+              </span>
+              <div>
+                <span class="kicker">Check-in 14:00</span>
+                <h3>Check-in de hoy</h3>
+              </div>
             </div>
             <strong>${arrivals.length}</strong>
           </div>
           ${renderArrivalAlertList(arrivals, arrivalTotal)}
+        </article>
+        <article class="dashboard-alert dashboard-occupancy">
+          <div class="dashboard-occupancy-heading">
+            <span class="kicker">Estado del hotel</span>
+            <h3>Ocupaci&oacute;n y estad&iacute;sticas</h3>
+          </div>
+          <div class="dashboard-occupancy-body">
+            <div
+              class="dashboard-occupancy-ring"
+              style="--occupied-share: ${occupiedShare.toFixed(2)}%; --available-share: ${availableShare.toFixed(2)}%;"
+              role="img"
+              aria-label="Ocupaci&oacute;n actual: ${occupancy.percentage} por ciento"
+            >
+              <div class="dashboard-occupancy-center">
+                <strong>${occupancy.percentage}%</strong>
+                <span>Ocupaci&oacute;n<br />actual</span>
+              </div>
+            </div>
+            <dl class="dashboard-occupancy-legend">
+              <div class="is-occupied"><dt>Ocupadas</dt><dd>${occupancy.occupied}</dd></div>
+              <div class="is-available"><dt>Disponibles</dt><dd>${occupancy.available}</dd></div>
+              <div class="is-maintenance"><dt>Mantenimiento</dt><dd>${occupancy.maintenance}</dd></div>
+            </dl>
+          </div>
+          <div class="dashboard-occupancy-foot">
+            <strong>${occupancy.occupied} de ${occupancy.operational}</strong>
+            <span>habitaciones operativas en uso</span>
+          </div>
         </article>
       </div>
       <div class="dashboard-footnote">

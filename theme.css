@@ -795,6 +795,45 @@ body.theme-light .dashboard-alert-head > strong {
   color: #072536 !important;
 }
 
+html.theme-light-root body .dashboard-alert-icon,
+body.theme-light .dashboard-alert-icon {
+  background: #e9f7f5 !important;
+  border-color: rgba(8, 127, 140, 0.2) !important;
+}
+
+html.theme-light-root body .dashboard-occupancy-ring::after,
+body.theme-light .dashboard-occupancy-ring::after {
+  background: #ffffff !important;
+  border-color: rgba(27, 68, 96, 0.12) !important;
+}
+
+html.theme-light-root body .dashboard-occupancy-center strong,
+body.theme-light .dashboard-occupancy-center strong,
+html.theme-light-root body .dashboard-occupancy-legend dd,
+body.theme-light .dashboard-occupancy-legend dd {
+  color: #102033 !important;
+}
+
+html.theme-light-root body .dashboard-occupancy-center span,
+body.theme-light .dashboard-occupancy-center span,
+html.theme-light-root body .dashboard-occupancy-legend dt,
+body.theme-light .dashboard-occupancy-legend dt,
+html.theme-light-root body .dashboard-occupancy-foot span,
+body.theme-light .dashboard-occupancy-foot span {
+  color: #587084 !important;
+}
+
+html.theme-light-root body .dashboard-occupancy-foot,
+body.theme-light .dashboard-occupancy-foot {
+  background: #effaf7 !important;
+  border-color: rgba(8, 127, 140, 0.18) !important;
+}
+
+html.theme-light-root body .dashboard-occupancy-foot strong,
+body.theme-light .dashboard-occupancy-foot strong {
+  color: #087f78 !important;
+}
+
 html.theme-light-root body .dashboard-list,
 body.theme-light .dashboard-list {
   scrollbar-color: rgba(8, 127, 140, 0.32) transparent;

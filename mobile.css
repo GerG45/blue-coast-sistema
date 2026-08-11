@@ -204,6 +204,14 @@
     line-height: 1.45;
   }
 
+  .dashboard-occupancy-body {
+    grid-template-columns: minmax(126px, 0.8fr) minmax(130px, 1fr);
+  }
+
+  .dashboard-occupancy-ring {
+    width: min(100%, 148px);
+  }
+
   .panel-title-row,
   .availability-toolbar,
   .calendar-toolbar,
