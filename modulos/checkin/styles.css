@@ -8253,3 +8253,217 @@ html.theme-light-root body.has-shell-layout .combined-payment-grid .money-prefix
     gap: 4px;
   }
 }
+
+/* Linea del tiempo: lectura compacta y consistente solo en telefonos. */
+@media (max-width: 760px) {
+  body.has-shell-layout .timeline-panel {
+    padding: 16px 12px 18px !important;
+    border-radius: 20px !important;
+  }
+
+  body.has-shell-layout .timeline-panel .panel-title-row {
+    display: block !important;
+  }
+
+  body.has-shell-layout .timeline-panel .eyebrow {
+    margin-bottom: 7px !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.14em !important;
+  }
+
+  body.has-shell-layout .timeline-panel .panel-title-row h2 {
+    margin-bottom: 6px !important;
+    font-size: 1.55rem !important;
+    line-height: 1.08 !important;
+  }
+
+  body.has-shell-layout .timeline-panel .panel-title-row p {
+    max-width: none !important;
+    font-size: 0.84rem !important;
+    line-height: 1.48 !important;
+  }
+
+  body.has-shell-layout .timeline-panel .availability-toolbar {
+    display: grid !important;
+    width: 100% !important;
+    margin-top: 14px !important;
+    gap: 9px !important;
+    align-items: stretch !important;
+  }
+
+  body.has-shell-layout .timeline-panel .chip-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  body.has-shell-layout .timeline-panel .chip-row .chip {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    min-height: 42px !important;
+    padding: 8px 7px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  body.has-shell-layout .timeline-panel .availability-mode-switch {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  body.has-shell-layout .timeline-panel .availability-mode-switch > .ghost-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 43px !important;
+    padding: 7px 5px !important;
+    border-radius: 12px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+  }
+
+  body.has-shell-layout .timeline-panel > .availability-copy {
+    margin: 11px 0 0 !important;
+    padding: 9px 11px !important;
+    border: 1px solid var(--hotel-border-soft) !important;
+    border-radius: 12px !important;
+    background: rgba(11, 24, 38, 0.7) !important;
+    color: #9fb2c5 !important;
+    font-size: 0.7rem !important;
+    line-height: 1.42 !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 11px !important;
+    border-radius: 14px !important;
+    overscroll-behavior-inline: contain !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(92, 219, 204, 0.6) rgba(26, 45, 65, 0.72) !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-table {
+    border-spacing: 0 !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-table thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 6 !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-room-col {
+    box-sizing: border-box !important;
+    width: 112px !important;
+    min-width: 112px !important;
+    max-width: 112px !important;
+    padding: 7px 8px !important;
+    box-shadow: 7px 0 16px rgba(1, 8, 15, 0.34) !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-table thead .timeline-room-col {
+    z-index: 9 !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.05em !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-room-copy {
+    gap: 3px !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-room-copy strong {
+    font-size: 0.78rem !important;
+    line-height: 1.1 !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-room-copy span {
+    font-size: 0.61rem !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-day-col,
+  body.has-shell-layout .timeline-panel .timeline-cell {
+    box-sizing: border-box !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-day-button {
+    min-height: 49px !important;
+    gap: 2px !important;
+    padding: 5px 3px !important;
+    font-size: 0.64rem !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-day-button strong {
+    font-size: 0.82rem !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-day-col.is-selected-day,
+  body.has-shell-layout .timeline-panel .timeline-cell.is-selected-day {
+    box-shadow:
+      inset 1px 0 rgba(83, 188, 255, 0.42),
+      inset -1px 0 rgba(83, 188, 255, 0.42) !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-day-button.is-selected {
+    border-radius: 9px 9px 0 0 !important;
+    color: #9fd8ff !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-cell {
+    height: 47px !important;
+    padding: 4px !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-status {
+    min-height: 37px !important;
+    border-radius: 9px !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-status.is-available::before,
+  body.has-shell-layout .timeline-panel .timeline-status.is-available::after {
+    content: none !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-half.is-left {
+    border-radius: 9px 0 0 9px !important;
+  }
+
+  body.has-shell-layout .timeline-panel .timeline-half.is-right {
+    border-radius: 0 9px 9px 0 !important;
+  }
+}
+
+@media (max-width: 760px) {
+  html.theme-light-root body.has-shell-layout .timeline-panel > .availability-copy {
+    border-color: #d8e2ec !important;
+    background: #f4f7fa !important;
+    color: #56697c !important;
+  }
+
+  html.theme-light-root body.has-shell-layout .timeline-panel .timeline-room-col {
+    box-shadow: 7px 0 16px rgba(52, 72, 91, 0.14) !important;
+  }
+
+  html.theme-light-root body.has-shell-layout .timeline-panel .timeline-wrap {
+    scrollbar-color: rgba(25, 139, 128, 0.56) rgba(218, 228, 237, 0.88) !important;
+  }
+
+  html.theme-light-root body.has-shell-layout .timeline-panel .timeline-day-col.is-selected-day,
+  html.theme-light-root body.has-shell-layout .timeline-panel .timeline-cell.is-selected-day {
+    box-shadow:
+      inset 1px 0 rgba(30, 125, 206, 0.42),
+      inset -1px 0 rgba(30, 125, 206, 0.42) !important;
+  }
+}

@@ -4541,3 +4541,242 @@ body {
   cursor: default;
   box-shadow: none;
 }
+
+/* Linea del tiempo: composicion optimizada solo para telefonos. */
+@media (max-width: 760px) {
+  .menu-timeline-panel.timeline-panel {
+    padding: 16px 12px 18px;
+    border-radius: 20px;
+  }
+
+  .timeline-panel .panel-title-row {
+    display: block;
+  }
+
+  .timeline-panel .source-tag {
+    margin-bottom: 7px;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+  }
+
+  .timeline-panel .panel-title-row h2 {
+    margin-bottom: 6px;
+    font-size: 1.55rem;
+    line-height: 1.08;
+  }
+
+  .timeline-panel .panel-title-row p {
+    max-width: none;
+    font-size: 0.84rem;
+    line-height: 1.48;
+  }
+
+  .timeline-panel .availability-toolbar {
+    display: grid;
+    width: 100%;
+    margin-top: 14px;
+    gap: 9px;
+    align-items: stretch;
+  }
+
+  .timeline-panel .chip-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 8px;
+    width: 100%;
+  }
+
+  .timeline-panel .chip-row .chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 7px;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .timeline-panel .timeline-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+  }
+
+  .timeline-panel .timeline-actions > .ghost-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 7px 5px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    line-height: 1.15;
+  }
+
+  .timeline-panel .timeline-date-field {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    width: 100%;
+    min-height: 46px;
+    padding: 7px 10px 7px 13px;
+    border-radius: 13px;
+  }
+
+  .timeline-panel .timeline-date-field span {
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .timeline-panel .timeline-date-field input {
+    min-width: 0;
+    text-align: right;
+  }
+
+  .timeline-panel .timeline-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    margin: 12px 0 0;
+  }
+
+  .timeline-panel .timeline-stats > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 40px;
+    padding: 7px 5px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    line-height: 1.12;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .timeline-panel .timeline-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 12px;
+    border-radius: 14px;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(92, 219, 204, 0.6) rgba(26, 45, 65, 0.72);
+  }
+
+  .timeline-panel .timeline-table {
+    border-spacing: 0;
+  }
+
+  .timeline-panel .timeline-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+  }
+
+  .timeline-panel .timeline-room-col {
+    box-sizing: border-box;
+    width: 112px;
+    min-width: 112px;
+    max-width: 112px;
+    padding: 7px 8px;
+    box-shadow: 7px 0 16px rgba(1, 8, 15, 0.34);
+  }
+
+  .timeline-panel .timeline-table thead .timeline-room-col {
+    z-index: 9;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+
+  .timeline-panel .timeline-room-copy {
+    gap: 3px;
+  }
+
+  .timeline-panel .timeline-room-copy strong {
+    font-size: 0.78rem;
+    line-height: 1.1;
+  }
+
+  .timeline-panel .timeline-room-copy span {
+    font-size: 0.61rem;
+    line-height: 1.18;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .timeline-panel .timeline-day-col,
+  .timeline-panel .timeline-cell {
+    box-sizing: border-box;
+    width: 46px;
+    min-width: 46px;
+    max-width: 46px;
+  }
+
+  .timeline-panel .timeline-day-button {
+    min-height: 49px;
+    gap: 2px;
+    padding: 5px 3px;
+    font-size: 0.64rem;
+  }
+
+  .timeline-panel .timeline-day-button strong {
+    font-size: 0.82rem;
+  }
+
+  .timeline-panel .timeline-day-col.is-selected-day,
+  .timeline-panel .timeline-cell.is-selected-day {
+    box-shadow:
+      inset 1px 0 rgba(83, 188, 255, 0.42),
+      inset -1px 0 rgba(83, 188, 255, 0.42);
+  }
+
+  .timeline-panel .timeline-day-button.is-selected {
+    border-radius: 9px 9px 0 0;
+    color: #9fd8ff;
+  }
+
+  .timeline-panel .timeline-cell {
+    height: 47px;
+    padding: 4px;
+  }
+
+  .timeline-panel .timeline-status {
+    min-height: 37px;
+    border-radius: 9px;
+  }
+
+  .timeline-panel .timeline-status.is-available::before,
+  .timeline-panel .timeline-status.is-available::after {
+    content: none;
+  }
+
+  .timeline-panel .timeline-half.is-left {
+    border-radius: 9px 0 0 9px;
+  }
+
+  .timeline-panel .timeline-half.is-right {
+    border-radius: 0 9px 9px 0;
+  }
+}
+
+@media (max-width: 760px) {
+  html.theme-light-root .timeline-panel .timeline-room-col {
+    box-shadow: 7px 0 16px rgba(52, 72, 91, 0.14);
+  }
+
+  html.theme-light-root .timeline-panel .timeline-wrap {
+    scrollbar-color: rgba(25, 139, 128, 0.56) rgba(218, 228, 237, 0.88);
+  }
+
+  html.theme-light-root .timeline-panel .timeline-day-col.is-selected-day,
+  html.theme-light-root .timeline-panel .timeline-cell.is-selected-day {
+    box-shadow:
+      inset 1px 0 rgba(30, 125, 206, 0.42),
+      inset -1px 0 rgba(30, 125, 206, 0.42);
+  }
+}
