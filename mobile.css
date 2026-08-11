@@ -471,3 +471,16 @@
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
+
+/* Cuatro habitaciones por fila en telefonos, tambien dentro de modales. */
+@media (max-width: 760px) {
+  body.has-shell-layout #rooms-section .room-grid,
+  body.has-shell-layout .availability-panel .room-grid,
+  body.has-shell-layout .room-picker-grid,
+  body.has-shell-layout .group-room-grid,
+  body.has-shell-layout .scanner-modal.group-modal .group-room-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-auto-rows: auto !important;
+    gap: 7px !important;
+  }
+}

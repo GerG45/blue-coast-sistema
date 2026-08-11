@@ -8467,3 +8467,241 @@ html.theme-light-root body.has-shell-layout .combined-payment-grid .money-prefix
       inset -1px 0 rgba(30, 125, 206, 0.42) !important;
   }
 }
+
+/* Habitaciones: mapa de cuatro columnas exclusivo de telefonos. */
+@media (max-width: 760px) {
+  body.has-shell-layout .availability-panel .room-grid,
+  body.has-shell-layout .room-picker-grid,
+  body.has-shell-layout .scanner-modal.group-modal .group-room-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-auto-rows: auto !important;
+    gap: 7px !important;
+    align-items: start !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card,
+  body.has-shell-layout .room-picker-grid .room-card {
+    min-width: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-available .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-readonly.is-available .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-unavailable .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-maintenance .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-capacity .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-exception .room-card-main,
+  body.has-shell-layout .availability-panel .room-card.is-commercial-base .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-available .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-readonly.is-available .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-unavailable .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-maintenance .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-capacity .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-exception .room-card-main,
+  body.has-shell-layout .room-picker-grid .room-card.is-commercial-base .room-card-main {
+    min-height: 118px !important;
+    height: 118px !important;
+    gap: 5px !important;
+    padding: 7px 6px !important;
+    justify-content: space-between !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-header,
+  body.has-shell-layout .room-picker-grid .room-card-header {
+    display: grid !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 5px !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-copy,
+  body.has-shell-layout .room-picker-grid .room-card-copy {
+    order: 2 !important;
+    min-width: 0 !important;
+    gap: 0 !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-copy > .room-meta,
+  body.has-shell-layout .room-picker-grid .room-card-copy > .room-meta,
+  body.has-shell-layout .availability-panel .room-total-row > .room-meta,
+  body.has-shell-layout .room-picker-grid .room-total-row > .room-meta,
+  body.has-shell-layout .availability-panel .bed-icon-row,
+  body.has-shell-layout .room-picker-grid .bed-icon-row {
+    display: none !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-side,
+  body.has-shell-layout .room-picker-grid .room-card-side {
+    order: 1 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 3px !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-number,
+  body.has-shell-layout .room-picker-grid .room-card-number {
+    min-width: 31px !important;
+    min-height: 29px !important;
+    padding: 3px 5px !important;
+    border-radius: 8px !important;
+    font-size: 0.76rem !important;
+    line-height: 1 !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-tag,
+  body.has-shell-layout .room-picker-grid .room-card-tag {
+    min-width: 0 !important;
+    min-height: 22px !important;
+    max-width: 39px !important;
+    padding: 3px 4px !important;
+    border-radius: 7px !important;
+    overflow: hidden !important;
+    font-size: 0.5rem !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-card-kicker,
+  body.has-shell-layout .room-picker-grid .room-card-kicker {
+    display: -webkit-box !important;
+    min-height: 1.25rem !important;
+    overflow: hidden !important;
+    font-size: 0.54rem !important;
+    line-height: 1.12 !important;
+    letter-spacing: 0.04em !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-total-row,
+  body.has-shell-layout .room-picker-grid .room-total-row {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-total-row strong,
+  body.has-shell-layout .room-picker-grid .room-total-row strong {
+    display: -webkit-box !important;
+    overflow: hidden !important;
+    font-size: 0.67rem !important;
+    line-height: 1.15 !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  body.has-shell-layout .availability-panel .room-maintenance-toggle,
+  body.has-shell-layout .room-picker-grid .room-maintenance-toggle {
+    width: calc(100% - 10px) !important;
+    min-height: 27px !important;
+    margin: 0 5px 5px !important;
+    padding: 3px 4px !important;
+    border-radius: 8px !important;
+    font-size: 0.52rem !important;
+    line-height: 1.05 !important;
+    white-space: normal !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-grid > .group-room-card {
+    min-width: 0 !important;
+    min-height: 124px !important;
+    height: 124px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-button,
+  body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-button {
+    min-width: 0 !important;
+    min-height: 124px !important;
+    height: 124px !important;
+    gap: 5px !important;
+    padding: 8px 7px !important;
+    border-radius: 12px !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-top {
+    display: grid !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: 4px !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-kicker {
+    display: -webkit-box !important;
+    min-height: 1.25rem !important;
+    overflow: hidden !important;
+    font-size: 0.52rem !important;
+    line-height: 1.1 !important;
+    letter-spacing: 0.03em !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-number {
+    font-size: 0.74rem !important;
+    line-height: 1.05 !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-button > strong {
+    display: -webkit-box !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    font-size: 0.66rem !important;
+    line-height: 1.15 !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-meta {
+    overflow: hidden !important;
+    font-size: 0.58rem !important;
+    line-height: 1.1 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-helper,
+  body.has-shell-layout .scanner-modal.group-modal .bed-icon-row.is-group-room {
+    display: none !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls {
+    min-height: 224px !important;
+    height: 224px !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-button {
+    min-height: 224px !important;
+    height: 224px !important;
+    padding-bottom: 98px !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-room-comp-actions {
+    right: 6px !important;
+    bottom: 6px !important;
+    left: 6px !important;
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+
+  body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-comp-toggle,
+  body.has-shell-layout .scanner-modal.group-modal .group-room-card.has-comp-controls .group-comp-toggle[data-comp-type=""] {
+    min-height: 27px !important;
+    padding: 3px 2px !important;
+    border-radius: 7px !important;
+    font-size: 0.5rem !important;
+    line-height: 1.05 !important;
+    white-space: normal !important;
+  }
+}

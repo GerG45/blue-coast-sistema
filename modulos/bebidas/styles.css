@@ -3907,3 +3907,124 @@ body.has-shell-layout .status-badge {
   cursor: default;
   box-shadow: none !important;
 }
+
+/* Habitaciones compactas: cuatro por fila solo en telefonos. */
+@media (max-width: 760px) {
+  body.has-shell-layout #rooms-section .panel {
+    padding: 12px !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card {
+    min-width: 0 !important;
+    min-height: 112px !important;
+    height: 112px !important;
+    gap: 5px !important;
+    padding: 7px 6px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-header {
+    display: grid !important;
+    min-width: 0 !important;
+    min-height: 76px !important;
+    height: 76px !important;
+    gap: 4px !important;
+    overflow: hidden !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-copy {
+    order: 2 !important;
+    min-width: 0 !important;
+    gap: 2px !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-side {
+    order: 1 !important;
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 28px !important;
+    height: 28px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 3px !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-number {
+    min-width: 29px !important;
+    min-height: 27px !important;
+    padding: 3px 5px !important;
+    border-radius: 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-kicker {
+    display: -webkit-box !important;
+    min-height: 1.15rem !important;
+    overflow: hidden !important;
+    font-size: 0.49rem !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0.035em !important;
+    -webkit-box-orient: vertical !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-group-name,
+  body.has-shell-layout #rooms-section .room-guest-name {
+    display: block !important;
+    overflow: hidden !important;
+    font-size: 0.53rem !important;
+    line-height: 1.08 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-badges {
+    display: flex !important;
+    min-width: 0 !important;
+    max-width: 35px !important;
+    gap: 2px !important;
+    overflow: hidden !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-card-badges .badge {
+    min-width: 18px !important;
+    min-height: 18px !important;
+    padding: 2px 3px !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    font-size: 0.45rem !important;
+    line-height: 1 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-total-row {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-top: auto !important;
+    gap: 2px !important;
+    align-items: center !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-total-row strong {
+    overflow: hidden !important;
+    font-size: 0.62rem !important;
+    line-height: 1 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body.has-shell-layout #rooms-section .room-flag {
+    display: none !important;
+  }
+}
