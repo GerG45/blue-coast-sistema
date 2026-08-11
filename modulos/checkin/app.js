@@ -409,6 +409,8 @@ const ui = {
   isPrivateReservationModalOpen: false,
   isStayPaymentModalOpen: false,
   stayPaymentReservationId: null,
+  isCombinedStayPaymentModalOpen: false,
+  combinedStayPaymentDraft: null,
   isRoomPickerModalOpen: false,
   roomPickerDraftNumber: "",
   roomPickerConfirmNumber: "",
@@ -3823,13 +3825,72 @@ function openStayPaymentModal(reservationId) {
   ui.isScannerModalOpen = false;
   ui.isTariffModalOpen = false;
   ui.isReservationConfirmModalOpen = false;
+  ui.isCombinedStayPaymentModalOpen = false;
+  ui.combinedStayPaymentDraft = null;
   ui.stayPaymentReservationId = reservation.id;
   ui.isStayPaymentModalOpen = true;
 }
 
+function closeCombinedStayPaymentModal() {
+  ui.isCombinedStayPaymentModalOpen = false;
+  ui.combinedStayPaymentDraft = null;
+}
+
 function closeStayPaymentModal() {
+  closeCombinedStayPaymentModal();
   ui.stayPaymentReservationId = null;
   ui.isStayPaymentModalOpen = false;
+}
+
+function getPendingStayPaymentAmount(reservation = getReservationForStayPayment()) {
+  if (!reservation) return 0;
+  const summary = getPaymentSummary(reservation);
+  return summary.pending === null ? 0 : Math.max(0, Math.round(summary.pending));
+}
+
+function openCombinedStayPaymentModal() {
+  const reservation = getReservationForStayPayment();
+  if (!reservation) return false;
+
+  const total = parseAmount(reservation.total);
+  if (total === null || total <= 0) {
+    window.alert("Primero carg\u00e1 el total de la estad\u00eda para poder registrar el cobro.");
+    return false;
+  }
+
+  const pending = getPendingStayPaymentAmount(reservation);
+  if (pending <= 0) {
+    window.alert("La estad\u00eda ya figura saldada.");
+    return false;
+  }
+
+  ui.combinedStayPaymentDraft = {
+    cash: "0",
+    transfer: String(pending),
+  };
+  ui.isCombinedStayPaymentModalOpen = true;
+  return true;
+}
+
+function updateCombinedStayPaymentDraft(field, rawValue) {
+  const pending = getPendingStayPaymentAmount();
+  const normalizedField = field === "transfer" ? "transfer" : "cash";
+  const complementaryField = normalizedField === "cash" ? "transfer" : "cash";
+  const parsedValue = parseAmount(rawValue);
+  const amount = Math.min(pending, Math.max(0, Math.round(parsedValue || 0)));
+
+  if (!ui.combinedStayPaymentDraft) {
+    ui.combinedStayPaymentDraft = { cash: "0", transfer: String(pending) };
+  }
+
+  ui.combinedStayPaymentDraft[normalizedField] = String(amount);
+  ui.combinedStayPaymentDraft[complementaryField] = String(Math.max(0, pending - amount));
+
+  return {
+    pending,
+    cash: Number(ui.combinedStayPaymentDraft.cash) || 0,
+    transfer: Number(ui.combinedStayPaymentDraft.transfer) || 0,
+  };
 }
 
 function openRoomPickerModal() {
@@ -3926,40 +3987,15 @@ function confirmRoomPickerSelection() {
   });
 }
 
-function applyStayPayment(method) {
-  method = method === "transfer" ? "transfer" : "cash";
-  const reservation = getReservationForStayPayment();
-  if (!reservation) {
-    closeStayPaymentModal();
-    render({ preserveScroll: true });
-    return;
-  }
+function completeStayPayment(reservation, cashAmount, transferAmount, paymentMode) {
+  const roundedCash = Math.max(0, Math.round(Number(cashAmount) || 0));
+  const roundedTransfer = Math.max(0, Math.round(Number(transferAmount) || 0));
+  const currentCash = parseAmount(reservation.cash) || 0;
+  const currentTransfer = parseAmount(reservation.transfer) || 0;
 
-  const total = parseAmount(reservation.total);
-  if (total === null || total <= 0) {
-    window.alert("Primero cargá el total de la estadía para poder registrar el cobro.");
-    return;
-  }
-
-  const summary = getPaymentSummary(reservation);
-  if (summary.pending === null || summary.pending <= 0) {
-    window.alert("La estad\u00eda ya figura saldada.");
-    closeStayPaymentModal();
-    render({ preserveScroll: true });
-    return;
-  }
-
-  const roundedTotal = String(Math.round(summary.pending));
-  if (method === "transfer") {
-    const currentTransfer = parseAmount(reservation.transfer) || 0;
-    reservation.transfer = String(Math.round(currentTransfer + Number(roundedTotal)));
-    reservation.stayPaymentMode = "transfer";
-  } else {
-    const currentCash = parseAmount(reservation.cash) || 0;
-    reservation.cash = String(Math.round(currentCash + Number(roundedTotal)));
-    reservation.stayPaymentMode = "cash";
-  }
-
+  reservation.cash = String(Math.round(currentCash + roundedCash));
+  reservation.transfer = String(Math.round(currentTransfer + roundedTransfer));
+  reservation.stayPaymentMode = paymentMode;
   syncReservationPaymentFields(reservation);
   reservation.stayPaymentRecordedAt = nowIso();
   touchReservation(reservation, { legal: false });
@@ -3972,6 +4008,72 @@ function applyStayPayment(method) {
     return;
   }
   render({ preserveScroll: true });
+}
+
+function applyStayPayment(method) {
+  method = method === "transfer" ? "transfer" : "cash";
+  const reservation = getReservationForStayPayment();
+  if (!reservation) {
+    closeStayPaymentModal();
+    render({ preserveScroll: true });
+    return;
+  }
+
+  const total = parseAmount(reservation.total);
+  if (total === null || total <= 0) {
+    window.alert("Primero carg\u00e1 el total de la estad\u00eda para poder registrar el cobro.");
+    return;
+  }
+
+  const pending = getPendingStayPaymentAmount(reservation);
+  if (pending <= 0) {
+    window.alert("La estad\u00eda ya figura saldada.");
+    closeStayPaymentModal();
+    render({ preserveScroll: true });
+    return;
+  }
+
+  completeStayPayment(
+    reservation,
+    method === "cash" ? pending : 0,
+    method === "transfer" ? pending : 0,
+    method
+  );
+}
+
+function applyCombinedStayPayment() {
+  const reservation = getReservationForStayPayment();
+  if (!reservation) {
+    closeStayPaymentModal();
+    render({ preserveScroll: true });
+    return;
+  }
+
+  const pending = getPendingStayPaymentAmount(reservation);
+  const draft = ui.combinedStayPaymentDraft || { cash: "0", transfer: String(pending) };
+  const cash = Math.max(0, Math.round(parseAmount(draft.cash) || 0));
+  const transfer = Math.max(0, Math.round(parseAmount(draft.transfer) || 0));
+
+  if (pending <= 0) {
+    window.alert("La estad\u00eda ya figura saldada.");
+    closeStayPaymentModal();
+    render({ preserveScroll: true });
+    return;
+  }
+
+  if (cash <= 0 || transfer <= 0) {
+    window.alert(
+      "Para registrar un pago combinado, carg\u00e1 una parte en efectivo y otra por transferencia."
+    );
+    return;
+  }
+
+  if (cash + transfer !== pending) {
+    window.alert("La suma de efectivo y transferencia debe coincidir con el saldo pendiente.");
+    return;
+  }
+
+  completeStayPayment(reservation, cash, transfer, "combined");
 }
 
 function scrollToReservationPanel() {
@@ -12862,6 +12964,91 @@ function renderStayPaymentModal() {
             <strong>Transferencia bancaria</strong>
             <span>Ingresa a caja de hotel por transferencia.</span>
           </button>
+          <button class="stay-payment-choice" type="button" data-action="open-combined-stay-payment-modal" data-method="combined">
+            <strong>Pago combinado</strong>
+            <span>Distribuye el saldo entre efectivo y transferencia.</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderCombinedStayPaymentModal() {
+  if (!ui.isCombinedStayPaymentModalOpen) {
+    return "";
+  }
+
+  const reservation = getReservationForStayPayment();
+  if (!reservation) {
+    return "";
+  }
+
+  const pending = getPendingStayPaymentAmount(reservation);
+  const draft = ui.combinedStayPaymentDraft || { cash: "0", transfer: String(pending) };
+  const cash = Math.max(0, Math.round(parseAmount(draft.cash) || 0));
+  const transfer = Math.max(0, Math.round(parseAmount(draft.transfer) || 0));
+
+  return `
+    <div class="scanner-modal-backdrop combined-stay-payment-backdrop" data-action="close-combined-stay-payment-modal"></div>
+    <section class="scanner-modal-shell combined-stay-payment-shell" aria-modal="true" role="dialog" aria-labelledby="combined-stay-payment-title">
+      <div class="scanner-modal combined-stay-payment-modal">
+        <div class="scanner-modal-toolbar">
+          <div>
+            <p class="scanner-modal-kicker">Distribuci&oacute;n del cobro</p>
+            <h2 id="combined-stay-payment-title">Pago combinado</h2>
+            <p>Al modificar un importe, el otro se calcula autom&aacute;ticamente.</p>
+          </div>
+          <button class="ghost-button is-compact" type="button" data-action="close-combined-stay-payment-modal">
+            Cerrar
+          </button>
+        </div>
+        <div class="combined-payment-total">
+          <span>Saldo pendiente a distribuir</span>
+          <strong>${escapeHtml(formatCurrency(pending))}</strong>
+        </div>
+        <div class="combined-payment-grid">
+          <label class="field">
+            <span>Efectivo</span>
+            <div class="money-field-shell required-filled">
+              <span class="money-prefix">$</span>
+              <input
+                id="combined-stay-payment-cash"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                value="${escapeHtml(formatMoneyInputDisplay(cash))}"
+                data-combined-stay-payment-field="cash"
+              />
+            </div>
+          </label>
+          <label class="field">
+            <span>Transferencia bancaria</span>
+            <div class="money-field-shell required-filled">
+              <span class="money-prefix">$</span>
+              <input
+                id="combined-stay-payment-transfer"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                value="${escapeHtml(formatMoneyInputDisplay(transfer))}"
+                data-combined-stay-payment-field="transfer"
+              />
+            </div>
+          </label>
+        </div>
+        <div class="combined-payment-balance" id="combined-payment-balance">
+          Efectivo ${escapeHtml(formatCurrency(cash))} + transferencia ${escapeHtml(
+            formatCurrency(transfer)
+          )} = ${escapeHtml(formatCurrency(cash + transfer))}
+        </div>
+        <div class="actions-row combined-payment-actions">
+          <button class="ghost-button" type="button" data-action="close-combined-stay-payment-modal">
+            Cancelar
+          </button>
+          <button class="button" type="button" data-action="apply-combined-stay-payment">
+            Confirmar pago combinado
+          </button>
         </div>
       </div>
     </section>
@@ -13499,6 +13686,7 @@ const MANAGED_MODAL_ROOT_SELECTORS = [
   ".room-shortcut-modal",
   ".room-picker-confirm-modal",
   ".room-picker-modal",
+  ".combined-stay-payment-modal",
   ".stay-payment-modal",
   ".confirm-modal",
   ".tariff-modal",
@@ -13590,10 +13778,20 @@ const MANAGED_MODAL_TAB_ORDER = [
     ],
   },
   {
+    selector: ".combined-stay-payment-modal",
+    orderedSelectors: [
+      "#combined-stay-payment-cash",
+      "#combined-stay-payment-transfer",
+      "[data-action='apply-combined-stay-payment']",
+      "[data-action='close-combined-stay-payment-modal']",
+    ],
+  },
+  {
     selector: ".stay-payment-modal",
     orderedSelectors: [
       "[data-action='apply-stay-payment'][data-method='cash']",
       "[data-action='apply-stay-payment'][data-method='transfer']",
+      "[data-action='open-combined-stay-payment-modal']",
       "[data-action='close-stay-payment-modal']",
     ],
   },
@@ -13999,6 +14197,7 @@ function render(options = {}) {
     ${renderTariffModal()}
     ${renderReservationConfirmModal()}
     ${renderStayPaymentModal()}
+    ${renderCombinedStayPaymentModal()}
     ${renderRoomPickerModal(privateModalReservation || workspaceReservation)}
     ${renderRoomPickerConfirmationModal(privateModalReservation || workspaceReservation)}
     ${renderRoomShortcutModal()}
@@ -14022,6 +14221,7 @@ function render(options = {}) {
       ui.isTariffModalOpen ||
       ui.isReservationConfirmModalOpen ||
       ui.isStayPaymentModalOpen ||
+      ui.isCombinedStayPaymentModalOpen ||
       ui.isRoomPickerModalOpen ||
       Boolean(ui.roomPickerConfirmNumber) ||
       Boolean(ui.pendingRoomShortcutNumber)
@@ -14446,6 +14646,28 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "open-combined-stay-payment-modal") {
+    if (openCombinedStayPaymentModal()) {
+      render({
+        preserveScroll: true,
+        focusId: "combined-stay-payment-cash",
+        focusModal: true,
+      });
+    }
+    return;
+  }
+
+  if (action === "close-combined-stay-payment-modal") {
+    closeCombinedStayPaymentModal();
+    render({ preserveScroll: true, focusModal: true });
+    return;
+  }
+
+  if (action === "apply-combined-stay-payment") {
+    applyCombinedStayPayment();
+    return;
+  }
+
   if (action === "archive-reservation") {
     archiveActiveReservation();
     return;
@@ -14701,6 +14923,24 @@ document.addEventListener("click", (event) => {
 document.addEventListener("input", (event) => {
   const target = event.target;
 
+  if (target.matches("[data-combined-stay-payment-field]")) {
+    const field = target.dataset.combinedStayPaymentField;
+    const split = updateCombinedStayPaymentDraft(field, target.value);
+    const otherField = field === "transfer" ? "cash" : "transfer";
+    const otherInput = document.getElementById(`combined-stay-payment-${otherField}`);
+    const balance = document.getElementById("combined-payment-balance");
+
+    if (otherInput) {
+      otherInput.value = formatMoneyInputDisplay(split[otherField]);
+    }
+    if (balance) {
+      balance.textContent = `Efectivo ${formatCurrency(split.cash)} + transferencia ${formatCurrency(
+        split.transfer
+      )} = ${formatCurrency(split.cash + split.transfer)}`;
+    }
+    return;
+  }
+
   if (target.matches("[data-tariff-field]")) {
     updateTariffDraft(target.dataset.tariffField, target.value);
     return;
@@ -14788,6 +15028,13 @@ document.addEventListener("input", (event) => {
 
 document.addEventListener("change", (event) => {
   const target = event.target;
+
+  if (target.matches("[data-combined-stay-payment-field]")) {
+    const field = target.dataset.combinedStayPaymentField;
+    const split = updateCombinedStayPaymentDraft(field, target.value);
+    target.value = formatMoneyInputDisplay(split[field]);
+    return;
+  }
 
   if (target.id === "backup-input") {
     importBackup(target.files && target.files[0]);
@@ -14913,6 +15160,12 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && ui.isReservationConfirmModalOpen) {
     closeReservationConfirmModal();
     render({ preserveScroll: true });
+    return;
+  }
+
+  if (event.key === "Escape" && ui.isCombinedStayPaymentModalOpen) {
+    closeCombinedStayPaymentModal();
+    render({ preserveScroll: true, focusModal: true });
     return;
   }
 

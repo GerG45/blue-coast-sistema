@@ -8122,3 +8122,134 @@ html.theme-light-root body.has-shell-layout .reservation-total-field {
     grid-column: 1 / -1;
   }
 }
+
+/* Pago de estadia combinado: segunda capa modal y reparto entre cajas. */
+body.has-shell-layout .stay-payment-modal {
+  width: min(820px, 100%);
+}
+
+body.has-shell-layout .stay-payment-choice-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.has-shell-layout .stay-payment-choice[data-method="combined"] {
+  border-color: rgba(192, 132, 252, 0.3) !important;
+  background: linear-gradient(180deg, rgba(51, 31, 74, 0.98), rgba(28, 20, 47, 0.98)) !important;
+}
+
+body.has-shell-layout .stay-payment-choice[data-method="combined"] strong {
+  color: #d8b4fe !important;
+}
+
+.combined-stay-payment-backdrop {
+  z-index: 92;
+  background: rgba(2, 8, 15, 0.78);
+}
+
+.combined-stay-payment-shell {
+  z-index: 93;
+  align-items: center;
+}
+
+body.has-shell-layout .combined-stay-payment-modal {
+  width: min(590px, 100%);
+  border-color: rgba(192, 132, 252, 0.28) !important;
+  background: linear-gradient(180deg, rgba(22, 33, 52, 0.99), rgba(10, 20, 34, 0.99)) !important;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.42) !important;
+}
+
+.combined-payment-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 15px 17px;
+  border: 1px solid rgba(192, 132, 252, 0.24);
+  border-radius: 16px;
+  background: rgba(50, 32, 73, 0.44);
+  color: #b9c7d8;
+}
+
+.combined-payment-total strong {
+  color: #f5edff;
+  font-size: 1.2rem;
+}
+
+.combined-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.combined-payment-balance {
+  padding: 12px 14px;
+  border: 1px solid rgba(95, 233, 211, 0.18);
+  border-radius: 14px;
+  background: rgba(15, 48, 53, 0.54);
+  color: #a7e8dc;
+  font-weight: 700;
+  text-align: center;
+}
+
+.combined-payment-actions {
+  justify-content: flex-end;
+}
+
+html.theme-light-root body.has-shell-layout .stay-payment-choice[data-method="combined"] {
+  border-color: #c8a6ee !important;
+  background: #f5edff !important;
+}
+
+html.theme-light-root body.has-shell-layout .stay-payment-choice[data-method="combined"] strong {
+  color: #67369a !important;
+}
+
+html.theme-light-root body.has-shell-layout .combined-stay-payment-modal {
+  border-color: #d4c2e7 !important;
+  background: linear-gradient(180deg, #ffffff, #f7f9fc) !important;
+  box-shadow: 0 24px 58px rgba(31, 42, 57, 0.24) !important;
+}
+
+html.theme-light-root body.has-shell-layout .combined-payment-total {
+  border-color: #d8c7ea;
+  background: #f6f0fc;
+  color: #536273;
+}
+
+html.theme-light-root body.has-shell-layout .combined-payment-total strong {
+  color: #342145;
+}
+
+html.theme-light-root body.has-shell-layout .combined-payment-balance {
+  border-color: #b9ddd5;
+  background: #eef9f6;
+  color: #175f55;
+}
+
+html.theme-light-root body.has-shell-layout .combined-payment-grid .money-field-shell.required-filled {
+  border-color: #7fcbbb !important;
+  background: #f2fbf8 !important;
+  color: #112b29 !important;
+}
+
+html.theme-light-root body.has-shell-layout .combined-payment-grid input,
+html.theme-light-root body.has-shell-layout .combined-payment-grid .money-prefix {
+  color: #112b29 !important;
+}
+
+@media (max-width: 760px) {
+  body.has-shell-layout .stay-payment-choice-grid,
+  .combined-payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .combined-stay-payment-shell {
+    align-items: flex-start;
+  }
+
+  .combined-payment-total {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
