@@ -8054,3 +8054,66 @@ html.theme-light-root body.has-shell-layout .scanner-modal.group-modal .group-ro
     align-self: start;
   }
 }
+
+/* Orden visual del bloque de estadia en reservas y carga de mostrador. */
+body.has-shell-layout .reservation-stay-grid {
+  align-items: start;
+}
+
+body.has-shell-layout .reservation-total-field {
+  align-content: start;
+  align-self: stretch;
+  padding: 16px 18px;
+  border: 1px solid rgba(95, 233, 211, 0.16);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(9, 22, 36, 0.98), rgba(7, 17, 29, 0.98));
+}
+
+body.has-shell-layout .reservation-total-field .money-field-shell {
+  width: 100%;
+}
+
+html.theme-light-root body.has-shell-layout .reservation-total-field {
+  border-color: #d8e2ec;
+  background: #f7f9fc;
+}
+
+@media (min-width: 1181px) {
+  body.has-shell-layout .reservation-color-picker {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 20px;
+    padding: 14px 18px;
+  }
+
+  body.has-shell-layout .reservation-color-picker .reservation-color-details {
+    margin-top: 0;
+  }
+
+  body.has-shell-layout .reservation-color-picker .reservation-color-details[open] {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+
+  body.has-shell-layout .reservation-total-field {
+    grid-column: span 1;
+  }
+
+  body.has-shell-layout .reservation-pricing-box {
+    grid-column: span 3;
+    align-self: stretch;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  body.has-shell-layout .reservation-total-field {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  body.has-shell-layout .reservation-total-field,
+  body.has-shell-layout .reservation-pricing-box {
+    grid-column: 1 / -1;
+  }
+}

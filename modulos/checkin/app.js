@@ -9123,7 +9123,7 @@ function renderReservationFields(reservation) {
         ? getRoomCapacitySummary(roomProfile)
         : "Elige la habitacion desde una ventana aparte, escribiendo el numero o tocandola en el mapa.";
   return `
-    <div class="field-grid">
+    <div class="field-grid reservation-stay-grid">
       <div id="rooms-section" class="field field-span-2">
         <span>Habitaci&oacute;n</span>
         <div
@@ -9245,7 +9245,7 @@ function renderReservationFields(reservation) {
         }
       </label>
       ${renderReservationColorPicker(reservation)}
-      <label class="field"${financialFieldAttribute}>
+      <label class="field reservation-total-field"${financialFieldAttribute}>
         <span>Total</span>
         <div
           class="${buildClassName(
@@ -9270,7 +9270,7 @@ function renderReservationFields(reservation) {
             : "Monto final editable o sugerido por tarifario."
         }</small>
       </label>
-      <div class="field field-span-4 pricing-box ${totalMatchesTariff ? "is-current" : ""}"${financialFieldAttribute}>
+      <div class="field field-span-4 pricing-box reservation-pricing-box ${totalMatchesTariff ? "is-current" : ""}"${financialFieldAttribute}>
         <div class="pricing-copy">
           <strong>Tarifario sugerido</strong>
           ${
