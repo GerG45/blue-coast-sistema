@@ -26,8 +26,8 @@ const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
 const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system", window.location.href).href;
 const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system", window.location.href).href;
-const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system", window.location.href).href;
-const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog", window.location.href).href;
+const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260811-6", window.location.href).href;
+const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260811-6", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
 const THEME_PREF_KEY = "bluecoast-theme-v1";
 const SIDEBAR_ICON_URLS = Object.freeze({
