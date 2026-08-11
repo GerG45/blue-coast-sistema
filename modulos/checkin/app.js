@@ -3255,10 +3255,9 @@ function isRoomUnderMaintenance(roomNumber) {
 
 function getRoomCapacitySummary(roomProfile) {
   if (!roomProfile) return "";
-  if (roomProfile.supportsExtraBed && roomProfile.maxCapacity > roomProfile.baseCapacity) {
-    return `Capacidad est\u00e1ndar ${roomProfile.baseCapacity} hu\u00e9spedes \u00b7 Excepci\u00f3n hasta ${roomProfile.maxCapacity} con cama extra.`;
-  }
-  return `Capacidad máxima ${roomProfile.baseCapacity} huéspedes.`;
+  return `Capacidad ${roomProfile.baseCapacity} hu\u00e9sped${
+    roomProfile.baseCapacity === 1 ? "" : "es"
+  }.`;
 }
 
 function getRoomCapacityHeadline(roomProfile) {
@@ -9104,6 +9103,14 @@ function renderReservationFields(reservation) {
       ["Hab. ocupada", "Mantenimiento", "Capacidad"].includes(blockingIssue.label)
   );
   const canEnableExtraBed = Boolean(roomProfile && canRoomUseExtraBed(roomProfile, guestCount));
+  const showRoomCapacityBox = Boolean(
+    roomProfile &&
+      ((blockingIssue && blockingIssue.label === "Capacidad") ||
+        reservation.allowExtraBed ||
+        canEnableExtraBed ||
+        (tariffInfo && tariffInfo.usesRoomBase) ||
+        isRoomUnderMaintenance(roomProfile.roomNumber))
+  );
   const financialFieldAttribute = showFinancialFields ? "" : " hidden";
   const groupLockedAttribute = isGroupRoom ? " disabled" : "";
   const groupLockedHint = isGroupRoom
@@ -9369,7 +9376,7 @@ function renderReservationFields(reservation) {
           : ""
       }
       ${
-        roomProfile
+        showRoomCapacityBox
           ? `
             <div class="field field-span-4 room-capacity-box ${
               blockingIssue && blockingIssue.label === "Capacidad"
@@ -9403,17 +9410,9 @@ function renderReservationFields(reservation) {
                     : ""
                 }
                 ${
-                  roomProfile.supportsExtraBed
-                    ? `
-                      <span class="chip ${
-                        reservation.allowExtraBed ? "is-highlight" : ""
-                      }">${
-                        reservation.allowExtraBed
-                          ? "Excepci&oacute;n activa"
-                          : "Cama extra posible"
-                      }</span>
-                    `
-                    : `<span class="chip">Sin cama extra</span>`
+                  reservation.allowExtraBed
+                    ? `<span class="chip is-highlight">Excepci&oacute;n activa</span>`
+                    : ""
                 }
                 ${
                   reservation.allowExtraBed || canEnableExtraBed

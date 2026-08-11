@@ -8107,7 +8107,12 @@ html.theme-light-root body.has-shell-layout .reservation-total-field {
 
 @media (min-width: 761px) and (max-width: 1180px) {
   body.has-shell-layout .reservation-total-field {
-    grid-column: span 2;
+    grid-column: span 1;
+  }
+
+  body.has-shell-layout .reservation-pricing-box {
+    grid-column: span 1;
+    align-self: stretch;
   }
 }
 
