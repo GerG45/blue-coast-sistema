@@ -3976,11 +3976,7 @@ function applyStayPayment(method) {
 }
 
 function scrollToReservationPanel() {
-  const panel = document.getElementById("reservation-active-panel");
-  if (!panel) return;
-  window.requestAnimationFrame(() => {
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+  scrollToModuleTargetAfterRender("reservation-active-panel");
 }
 
 function getReservationForConfirmation() {
@@ -5149,16 +5145,13 @@ function createNewReservation(options = {}) {
     preserveScroll: isReservationsMode(),
     focusId: isReservationsMode() ? "responsible-firstName" : null,
     focusModal: isReservationsMode(),
-    focusTop: !isReservationsMode(),
+    scrollToId: !isReservationsMode() ? "reservation-active-panel" : null,
   });
   showSuccessToast(
     shortcutRoomNumber
       ? `Se abri\u00f3 una nueva reserva para la habitaci\u00f3n ${shortcutRoomNumber}.`
       : "Se abri\u00f3 una nueva reserva."
   );
-  if (!isReservationsMode()) {
-    scrollToReservationPanel();
-  }
 }
 
 function openRoomShortcutModal(roomNumber) {
@@ -8339,7 +8332,7 @@ function setupEmbeddedCheckinModalViewportTracking() {
   }
 }
 
-function requestEmbeddedModuleFocus(reason = "top") {
+function requestEmbeddedModuleFocus(reason = "top", offsetTop = 0) {
   if (!SYSTEM_EMBEDDED || !window.parent || window.parent === window) {
     return;
   }
@@ -8349,9 +8342,25 @@ function requestEmbeddedModuleFocus(reason = "top") {
       type: "solanas:focus-embedded-module",
       module: APP_MODE,
       reason,
+      offsetTop: Number.isFinite(Number(offsetTop)) ? Number(offsetTop) : 0,
     },
     "*"
   );
+}
+
+function scrollToModuleTargetAfterRender(targetId) {
+  window.requestAnimationFrame(() => {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    if (SYSTEM_EMBEDDED) {
+      const targetTop = target.getBoundingClientRect().top + window.scrollY;
+      requestEmbeddedModuleFocus("target", targetTop);
+      return;
+    }
+
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 }
 
 function focusModuleStartAfterRender() {
@@ -14059,12 +14068,7 @@ function render(options = {}) {
   if (focusModal) {
     focusActiveModalAfterRender();
   } else if (scrollToId) {
-    window.requestAnimationFrame(() => {
-      const scrollTarget = document.getElementById(scrollToId);
-      if (scrollTarget) {
-        scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    });
+    scrollToModuleTargetAfterRender(scrollToId);
   } else if (focusTop || !preserveScroll) {
     focusModuleStartAfterRender();
   }

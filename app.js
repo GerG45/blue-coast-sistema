@@ -24,8 +24,8 @@ const FIRESTORE_MAX_CHUNKS = 450;
 const FIRESTORE_SDK_URL = "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
-const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260811-2", window.location.href).href;
-const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260811-2", window.location.href).href;
+const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260811-3", window.location.href).href;
+const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260811-3", window.location.href).href;
 const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260811-6", window.location.href).href;
 const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260811-6", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
@@ -6361,6 +6361,24 @@ function scrollAppMainToElement(element, offset = 18) {
   main.scrollTo({ top: targetTop, behavior: "smooth" });
 }
 
+function scrollAppMainToEmbeddedOffset(frame, offsetTop, offset = 18) {
+  if (!frame) return;
+  const resolvedOffsetTop = Math.max(0, Number(offsetTop) || 0);
+  const main = document.querySelector(".app-main");
+  if (!main) {
+    frame.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const mainRect = main.getBoundingClientRect();
+  const frameRect = frame.getBoundingClientRect();
+  const targetTop = Math.max(
+    0,
+    main.scrollTop + frameRect.top - mainRect.top + resolvedOffsetTop - offset
+  );
+  main.scrollTo({ top: targetTop, behavior: "smooth" });
+}
+
 window.addEventListener("message", (event) => {
   if (!event || !event.data) {
     return;
@@ -6390,6 +6408,10 @@ window.addEventListener("message", (event) => {
       getFrameForMessageSource(event.source) ||
       document.querySelector(".original-system-frame") ||
       document.querySelector(".module-frame");
+    if (frame && event.data.reason === "target") {
+      scrollAppMainToEmbeddedOffset(frame, event.data.offsetTop, 18);
+      return;
+    }
     const target = frame
       ? frame.closest(".embedded-module-shell, .module-frame-panel, .original-system-stage") || frame
       : null;
