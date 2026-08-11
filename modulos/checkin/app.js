@@ -8579,7 +8579,8 @@ function renderHero(reservation, isWorkspaceOpen = false) {
                 : !workspaceReservation
                   ? `
                     <button class="button hero-action-button is-private-reservation" type="button" data-action="new-walkin-checkin">
-                      Cargar ingreso de mostrador
+                      <span class="walkin-button-icon" aria-hidden="true"></span>
+                      <span>Cargar ingreso de mostrador</span>
                     </button>
                   `
                   : ""

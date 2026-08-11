@@ -3710,6 +3710,15 @@ h4 {
   object-fit: contain;
 }
 
+.hero-action-button.is-private-reservation .walkin-button-icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  background: currentColor;
+  -webkit-mask: url("./assets/acciones/carga-mostrador.svg") center / contain no-repeat;
+  mask: url("./assets/acciones/carga-mostrador.svg") center / contain no-repeat;
+}
+
 .summary-foot {
   display: block;
   margin-top: 8px;
