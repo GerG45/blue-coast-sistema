@@ -1333,3 +1333,219 @@ html.theme-light-root body .inventory-area-section.is-violet .source-tag,
 body.theme-light .inventory-area-section.is-violet .source-tag {
   color: #6d3fa3 !important;
 }
+
+/* Mobile system scale: shared by every operational page. */
+@media (max-width: 760px) {
+  body {
+    font-size: 15px !important;
+  }
+
+  body :where(
+    h1,
+    .page-title,
+    .hero-copy h1,
+    .bluecoast-shell-hero h1
+  ) {
+    font-size: 1.9rem !important;
+    line-height: 1.08 !important;
+  }
+
+  body :where(
+    h2,
+    .section-title,
+    .panel-title-row h2,
+    .embedded-module-shell__header h2
+  ) {
+    font-size: 1.55rem !important;
+    line-height: 1.14 !important;
+  }
+
+  body :where(
+    h3,
+    .panel-title-row h3,
+    .card-title
+  ) {
+    font-size: 1.08rem !important;
+    line-height: 1.24 !important;
+  }
+
+  body h4 {
+    font-size: 0.96rem !important;
+    line-height: 1.28 !important;
+  }
+
+  body :where(
+    p,
+    li,
+    .muted,
+    .summary-foot,
+    .stat-foot,
+    .history-meta,
+    .room-meta,
+    .field small,
+    .panel-title-row p,
+    .hero-copy p,
+    .embedded-module-shell__header p
+  ) {
+    font-size: 0.84rem !important;
+    line-height: 1.46 !important;
+  }
+
+  body :where(
+    .eyebrow,
+    .kicker,
+    .summary-label,
+    .stat-label,
+    .pill-label,
+    .scanner-modal-kicker
+  ) {
+    font-size: 0.68rem !important;
+    line-height: 1.2 !important;
+  }
+
+  body :where(
+    .bluecoast-shell-hero,
+    .embedded-module-shell__header,
+    .hero,
+    .panel,
+    .dashboard-panel,
+    .cashbox-panel,
+    .checkout-toolbar,
+    .inventory-section,
+    .inventory-overview-panel,
+    .construction-card,
+    .backup-bridge-panel,
+    .footer-note
+  ) {
+    padding: 16px !important;
+  }
+
+  body :where(
+    .stat-card,
+    .summary-card,
+    .data-card,
+    .source-card,
+    .status-panel,
+    .cashbox-card,
+    .history-card,
+    .member-card,
+    .disclosure-card,
+    .group-setup-card,
+    .report-option,
+    .checkout-card,
+    .inventory-area-card,
+    .catalog-card,
+    .room-detail-card,
+    .checkin-room-pill,
+    .empty-state,
+    .employee-card,
+    .reservation-card,
+    .guest-card
+  ) {
+    padding: 13px !important;
+  }
+
+  body :where(
+    .summary-grid,
+    .field-grid,
+    .form-grid,
+    .group-form-grid,
+    .group-form-grid-main,
+    .staff-member-form-grid,
+    .driver-group-form-grid,
+    .group-editor-form-grid,
+    .panel-title-row,
+    .hero-grid
+  ) {
+    gap: 12px !important;
+  }
+
+  body :where(
+    .button,
+    .hero-action-button,
+    .scanner-action-button,
+    .checkout-state-button,
+    .ghost-button,
+    .mini-button,
+    .unified-return-button,
+    .danger-button
+  ) {
+    min-height: 42px !important;
+    padding: 9px 13px !important;
+    font-size: 0.84rem !important;
+    line-height: 1.15 !important;
+  }
+
+  body :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+    select,
+    textarea,
+    .money-field-shell,
+    .scanner-input,
+    .timeline-date-field
+  ) {
+    min-height: 44px !important;
+    padding: 9px 11px !important;
+    font-size: 0.86rem !important;
+    line-height: 1.35 !important;
+  }
+
+  body textarea {
+    min-height: 92px !important;
+  }
+
+  body :where(
+    label,
+    .field-label,
+    .field > span,
+    .cash-audit-field > span
+  ) {
+    font-size: 0.78rem !important;
+    line-height: 1.3 !important;
+  }
+
+  body :where(
+    .chip,
+    .pill,
+    .status-badge,
+    .result-pill,
+    .app-topbar__pill,
+    .checkout-state,
+    .status-pill
+  ) {
+    min-height: 30px !important;
+    padding: 6px 9px !important;
+    font-size: 0.68rem !important;
+    line-height: 1.16 !important;
+  }
+
+  body :where(
+    .modal,
+    .modal-card,
+    .scanner-modal,
+    .payment-modal
+  ) {
+    width: min(100%, calc(100vw - 24px)) !important;
+    max-height: calc(100dvh - 24px) !important;
+    padding: 16px !important;
+  }
+
+  body :where(
+    .modal,
+    .modal-card,
+    .scanner-modal,
+    .payment-modal
+  ) :where(h1, h2) {
+    font-size: 1.4rem !important;
+    line-height: 1.16 !important;
+  }
+
+  body table:not(.timeline-table) {
+    font-size: 0.76rem !important;
+  }
+
+  body table:not(.timeline-table) :where(th, td) {
+    padding: 9px 8px !important;
+    line-height: 1.35 !important;
+  }
+}
