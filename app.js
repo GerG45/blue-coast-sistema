@@ -25,8 +25,8 @@ const FIRESTORE_SDK_URL = "https://www.gstatic.com/firebasejs/12.16.0/firebase-f
 const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
 const TIMELINE_ICON_URL = new URL("./assets/module-icons/linea-de-tiempo.svg?v=20260811-2", window.location.href).href;
-const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260811-18", window.location.href).href;
-const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260811-18", window.location.href).href;
+const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260811-19", window.location.href).href;
+const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260811-19", window.location.href).href;
 const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260811-10", window.location.href).href;
 const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260811-10", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";

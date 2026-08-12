@@ -8692,7 +8692,7 @@ html.theme-light-root body.has-shell-layout .combined-payment-grid .money-prefix
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
     width: 100% !important;
     min-width: 0 !important;
     gap: 3px !important;
@@ -8710,17 +8710,7 @@ html.theme-light-root body.has-shell-layout .combined-payment-grid .money-prefix
 
   body.has-shell-layout .availability-panel .room-card-tag,
   body.has-shell-layout .room-picker-grid .room-card-tag {
-    min-width: 0 !important;
-    min-height: 22px !important;
-    max-width: 39px !important;
-    padding: 3px 4px !important;
-    border-radius: 7px !important;
-    overflow: hidden !important;
-    font-size: 0.5rem !important;
-    line-height: 1 !important;
-    letter-spacing: 0 !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
+    display: none !important;
   }
 
   body.has-shell-layout .availability-panel .room-card-kicker,
