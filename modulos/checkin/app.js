@@ -5135,7 +5135,7 @@ function syncReservationStayDates(reservation, changedField) {
   if (!reservation) return;
 
   const checkInDate =
-    reservation.walkInToday === true
+    isCheckinMode() && reservation.walkInToday === true
       ? getTodayInputDate()
       : normalizeInputDate(reservation.checkInDate) || getTodayInputDate();
   reservation.checkInDate = checkInDate;
@@ -5226,20 +5226,23 @@ function setActiveReservation(reservationId) {
 function createNewReservation(options = {}) {
   const shortcutRoomNumber = sanitizeRoomNumber(options.roomNumber);
   const shortcutCheckInDate = normalizeInputDate(options.checkInDate);
+  const isWalkInRequest = isCheckinMode() && options.walkInToday === true;
   const existingPlaceholder =
     state.reservations.find((reservation) => isReservationPlaceholder(reservation)) || null;
   const reservation = existingPlaceholder || createEmptyReservation();
   if (!existingPlaceholder) {
     state.reservations.unshift(reservation);
   }
-  if (shortcutCheckInDate) {
-    reservation.checkInDate = shortcutCheckInDate;
+  reservation.walkInToday = isWalkInRequest;
+  if (shortcutCheckInDate || existingPlaceholder) {
+    reservation.checkInDate = isWalkInRequest
+      ? getTodayInputDate()
+      : shortcutCheckInDate || getTodayInputDate();
     reservation.nights = sanitizeIntegerInput(reservation.nights) || "1";
     syncReservationStayDates(reservation, "checkInDate");
     touchReservation(reservation);
   }
-  if (options.walkInToday === true) {
-    reservation.walkInToday = true;
+  if (isWalkInRequest) {
     reservation.checkInDate = getTodayInputDate();
     reservation.nights = sanitizeIntegerInput(reservation.nights) || "1";
     syncReservationStayDates(reservation, "checkInDate");
@@ -5280,7 +5283,7 @@ function openRoomShortcutModal(roomNumber) {
   const normalizedRoomNumber = sanitizeRoomNumber(roomNumber);
   if (!normalizedRoomNumber) return;
   ui.pendingRoomShortcutNumber = normalizedRoomNumber;
-  ui.pendingRoomShortcutDate = "";
+  ui.pendingRoomShortcutDate = normalizeInputDate(getRoomOverviewDate());
   render({ preserveScroll: true });
 }
 
@@ -5850,7 +5853,9 @@ function updateReservationField(field, value) {
     syncReservationRoomFlags(reservation);
   } else if (field === "checkInDate") {
     reservation[field] =
-      reservation.walkInToday === true ? getTodayInputDate() : normalizeInputDate(value);
+      isCheckinMode() && reservation.walkInToday === true
+        ? getTodayInputDate()
+        : normalizeInputDate(value);
     syncReservationStayDates(reservation, "checkInDate");
   } else if (field === "checkOutDate") {
     reservation[field] = normalizeInputDate(value);
@@ -9248,10 +9253,10 @@ function renderReservationFields(reservation) {
   const groupLockedHint = isGroupRoom
     ? `<small>Este dato se modifica desde Editar grupos.</small>`
     : "";
-  const checkInLockedAttribute =
-    isGroupRoom || reservation.walkInToday === true ? " disabled" : "";
+  const isWalkInTodayFlow = isCheckinMode() && reservation.walkInToday === true;
+  const checkInLockedAttribute = isGroupRoom || isWalkInTodayFlow ? " disabled" : "";
   const checkInLockedHint =
-    reservation.walkInToday === true
+    isWalkInTodayFlow
       ? `<small>Ingreso de mostrador: el Check-in queda fijado en hoy.</small>`
       : groupLockedHint;
   const roomHeadline = getReservationRoomHeadlineData(reservation);
