@@ -47,6 +47,43 @@
     background: rgba(28, 139, 128, 0.62);
     border-color: rgba(221, 232, 239, 0.9);
   }
+
+  body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap {
+    max-height: min(620px, 58vh);
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(103, 220, 203, 0.62) rgba(8, 24, 37, 0.7);
+  }
+
+  body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap::-webkit-scrollbar-track {
+    background: rgba(8, 24, 37, 0.7);
+    border-radius: 999px;
+  }
+
+  body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap::-webkit-scrollbar-thumb {
+    background: rgba(103, 220, 203, 0.62);
+    border: 2px solid rgba(8, 24, 37, 0.7);
+    border-radius: 999px;
+  }
+
+  html.theme-light-root body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap {
+    scrollbar-color: rgba(28, 139, 128, 0.62) rgba(221, 232, 239, 0.9);
+  }
+
+  html.theme-light-root body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap::-webkit-scrollbar-track {
+    background: rgba(221, 232, 239, 0.9);
+  }
+
+  html.theme-light-root body.has-shell-layout.is-reservations-mode .timeline-panel .timeline-wrap::-webkit-scrollbar-thumb {
+    background: rgba(28, 139, 128, 0.62);
+    border-color: rgba(221, 232, 239, 0.9);
+  }
 }
 
 /* Solanas Sistema - dark operational theme */

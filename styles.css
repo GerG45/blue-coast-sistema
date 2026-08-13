@@ -4959,6 +4959,46 @@ body {
   opacity: 0.54;
 }
 
+/* Dashboard: la planilla conserva sus controles visibles y recorre habitaciones internamente. */
+@media (min-width: 1101px) {
+  .menu-timeline-panel .timeline-wrap {
+    max-height: min(620px, 58vh);
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(103, 220, 203, 0.62) rgba(8, 24, 37, 0.7);
+  }
+
+  .menu-timeline-panel .timeline-wrap::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .menu-timeline-panel .timeline-wrap::-webkit-scrollbar-track {
+    background: rgba(8, 24, 37, 0.7);
+    border-radius: 999px;
+  }
+
+  .menu-timeline-panel .timeline-wrap::-webkit-scrollbar-thumb {
+    background: rgba(103, 220, 203, 0.62);
+    border: 2px solid rgba(8, 24, 37, 0.7);
+    border-radius: 999px;
+  }
+
+  html.theme-light-root .menu-timeline-panel .timeline-wrap {
+    scrollbar-color: rgba(28, 139, 128, 0.62) rgba(221, 232, 239, 0.9);
+  }
+
+  html.theme-light-root .menu-timeline-panel .timeline-wrap::-webkit-scrollbar-track {
+    background: rgba(221, 232, 239, 0.9);
+  }
+
+  html.theme-light-root .menu-timeline-panel .timeline-wrap::-webkit-scrollbar-thumb {
+    background: rgba(28, 139, 128, 0.62);
+    border-color: rgba(221, 232, 239, 0.9);
+  }
+}
+
 @media (max-width: 760px) {
   html.theme-light-root .timeline-panel .timeline-room-col {
     box-shadow: 7px 0 16px rgba(52, 72, 91, 0.14);
