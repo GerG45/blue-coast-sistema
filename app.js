@@ -2632,12 +2632,24 @@ function getRoomProfile(roomNumber) {
   return ROOM_CATALOG[normalizeRoomNumber(roomNumber)] || null;
 }
 
-function isRoomUnderMaintenance(roomNumber) {
+function getRoomMaintenancePlan(roomNumber) {
   const source = state.sources.checkin || {};
   const maintenance = source.roomMaintenance && typeof source.roomMaintenance === "object"
     ? source.roomMaintenance
     : {};
-  return Boolean(maintenance[normalizeRoomNumber(roomNumber)]);
+  const rawEntry = maintenance[normalizeRoomNumber(roomNumber)];
+  if (!rawEntry) return null;
+  if (rawEntry === true) {
+    return { effectiveFrom: getTodayInputDate() };
+  }
+  const effectiveFrom = normalizeDate(rawEntry.effectiveFrom);
+  return effectiveFrom ? { effectiveFrom } : null;
+}
+
+function isRoomUnderMaintenance(roomNumber, referenceDate = getTodayInputDate()) {
+  const plan = getRoomMaintenancePlan(roomNumber);
+  const targetDate = normalizeDate(referenceDate) || getTodayInputDate();
+  return Boolean(plan && plan.effectiveFrom <= targetDate);
 }
 
 function hasValidTimelineStay(startDate, endDate) {
@@ -2718,16 +2730,16 @@ function getRoomReservationByBoundary(roomNumber, boundaryField, date) {
 
 function getRoomTimelineDescriptor(roomNumber, referenceDate = getMenuTimelineDate()) {
   const targetDate = normalizeDate(referenceDate) || getTodayInputDate();
-  const maintenance = isRoomUnderMaintenance(roomNumber);
   const conflictReservation = getRoomOccupantForTimeline(roomNumber, targetDate);
+  const maintenance = isRoomUnderMaintenance(roomNumber, targetDate);
   const arrivalReservation = getRoomReservationByBoundary(roomNumber, "checkInDate", targetDate);
   const departureReservation = getRoomReservationByBoundary(roomNumber, "checkOutDate", targetDate);
 
   let status = "available";
-  if (maintenance) {
-    status = "maintenance";
-  } else if (conflictReservation) {
+  if (conflictReservation) {
     status = "occupied";
+  } else if (maintenance) {
+    status = "maintenance";
   }
 
   return {
@@ -3774,7 +3786,9 @@ function renderMenuTimelinePanel(referenceDate = getMenuTimelineDate()) {
   const occupiedToday = ROOM_OPTIONS.filter(
     (roomNumber) => getRoomTimelineDescriptor(roomNumber, selectedDate).status === "occupied"
   ).length;
-  const maintenanceToday = ROOM_OPTIONS.filter((roomNumber) => isRoomUnderMaintenance(roomNumber)).length;
+  const maintenanceToday = ROOM_OPTIONS.filter(
+    (roomNumber) => getRoomTimelineDescriptor(roomNumber, selectedDate).status === "maintenance"
+  ).length;
   const availableToday = ROOM_OPTIONS.length - occupiedToday - maintenanceToday;
 
   return `

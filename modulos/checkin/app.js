@@ -442,6 +442,8 @@ const ui = {
   pendingRoomShortcutDate: "",
   pendingManagedModalFocusId: "",
   showMaintenanceEditor: false,
+  maintenanceEditorDraft: null,
+  maintenanceRelocationSession: null,
   sidebarCollapsed: SHELL_LAYOUT ? getInitialSidebarCollapsed() : false,
   theme: getInitialThemePreference(),
 };
@@ -1397,8 +1399,23 @@ function normalizeRoomMaintenance(rawMaintenance) {
   const source =
     rawMaintenance && typeof rawMaintenance === "object" ? rawMaintenance : {};
   return ROOM_OPTIONS.reduce((accumulator, roomNumber) => {
-    if (source[roomNumber] === true) {
-      accumulator[roomNumber] = true;
+    const rawEntry = source[roomNumber];
+    if (rawEntry === true) {
+      accumulator[roomNumber] = {
+        effectiveFrom: getTodayInputDate(),
+        requestedAt: null,
+      };
+      return accumulator;
+    }
+    if (!rawEntry || typeof rawEntry !== "object") {
+      return accumulator;
+    }
+    const effectiveFrom = normalizeInputDate(rawEntry.effectiveFrom);
+    if (effectiveFrom) {
+      accumulator[roomNumber] = {
+        effectiveFrom,
+        requestedAt: rawEntry.requestedAt || null,
+      };
     }
     return accumulator;
   }, {});
@@ -2499,7 +2516,11 @@ function syncGroupDraftSelectedRooms(draft) {
     .filter(
       (roomNumber, index, collection) =>
         collection.indexOf(roomNumber) === index &&
-        !isRoomUnderMaintenance(roomNumber) &&
+        !doesRoomMaintenanceOverlapRange(
+          roomNumber,
+          draft.checkInDate,
+          draft.checkOutDate
+        ) &&
         !getRoomOccupantForRange(
           roomNumber,
           draft.checkInDate,
@@ -3300,9 +3321,46 @@ function getRoomProfile(roomNumber) {
   };
 }
 
-function isRoomUnderMaintenance(roomNumber) {
+function getRoomMaintenancePlan(roomNumber, options = {}) {
   const normalizedRoom = sanitizeRoomNumber(roomNumber);
-  return Boolean(normalizedRoom && state.roomMaintenance && state.roomMaintenance[normalizedRoom]);
+  if (!normalizedRoom) return null;
+  const source =
+    options.includeDraft && ui.showMaintenanceEditor && ui.maintenanceEditorDraft
+      ? ui.maintenanceEditorDraft
+      : state.roomMaintenance;
+  const rawEntry = source && source[normalizedRoom];
+  if (!rawEntry) return null;
+  if (rawEntry === true) {
+    return { effectiveFrom: getTodayInputDate(), requestedAt: null };
+  }
+  const effectiveFrom = normalizeInputDate(rawEntry.effectiveFrom);
+  return effectiveFrom
+    ? { effectiveFrom, requestedAt: rawEntry.requestedAt || null }
+    : null;
+}
+
+function hasRoomMaintenancePlan(roomNumber, options = {}) {
+  return Boolean(getRoomMaintenancePlan(roomNumber, options));
+}
+
+function isRoomUnderMaintenance(roomNumber, referenceDate = getTodayInputDate(), options = {}) {
+  const plan = getRoomMaintenancePlan(roomNumber, options);
+  const targetDate = normalizeInputDate(referenceDate) || getTodayInputDate();
+  return Boolean(plan && plan.effectiveFrom <= targetDate);
+}
+
+function doesRoomMaintenanceOverlapRange(roomNumber, startDate, endDate, options = {}) {
+  const plan = getRoomMaintenancePlan(roomNumber, options);
+  if (!plan || !hasValidStayDates(startDate, endDate)) {
+    return false;
+  }
+  return plan.effectiveFrom < normalizeInputDate(endDate);
+}
+
+function isRoomMaintenanceScheduled(roomNumber, referenceDate = getTodayInputDate(), options = {}) {
+  const plan = getRoomMaintenancePlan(roomNumber, options);
+  const targetDate = normalizeInputDate(referenceDate) || getTodayInputDate();
+  return Boolean(plan && plan.effectiveFrom > targetDate);
 }
 
 function getRoomCapacitySummary(roomProfile) {
@@ -3501,10 +3559,21 @@ function syncReservationRoomFlags(reservation) {
 
 function getRoomMaintenanceIssue(reservation) {
   if (!reservation || !reservation.roomNumber) return null;
-  if (!isRoomUnderMaintenance(reservation.roomNumber)) return null;
+  if (
+    !doesRoomMaintenanceOverlapRange(
+      reservation.roomNumber,
+      reservation.checkInDate,
+      reservation.checkOutDate
+    )
+  ) {
+    return null;
+  }
+  const plan = getRoomMaintenancePlan(reservation.roomNumber);
   return {
     label: "Mantenimiento",
-      message: `La habitación ${reservation.roomNumber} está deshabilitada por mantenimiento.`,
+    message: `La habitación ${reservation.roomNumber} queda en mantenimiento desde el ${formatDisplayDate(
+      plan && plan.effectiveFrom
+    )}.`,
   };
 }
 
@@ -4464,7 +4533,11 @@ function getGroupRoomDescriptor(roomNumber, draft = getGroupDraft()) {
   const compRoomType = sanitizeGroupCompRoomType(
     draft && draft.groupCompRooms && draft.groupCompRooms[normalizedRoom]
   );
-  const maintenance = isRoomUnderMaintenance(normalizedRoom);
+  const maintenance = doesRoomMaintenanceOverlapRange(
+    normalizedRoom,
+    checkInDate,
+    checkOutDate
+  );
   const conflictReservation = hasValidStayDates(checkInDate, checkOutDate)
     ? getRoomOccupantForRange(
         normalizedRoom,
@@ -5149,7 +5222,9 @@ function getTodayOccupiedRoomNumbers() {
 }
 
 function getRoomMaintenanceCount() {
-  return ROOM_OPTIONS.filter((roomNumber) => isRoomUnderMaintenance(roomNumber)).length;
+  return ROOM_OPTIONS.filter((roomNumber) =>
+    isRoomUnderMaintenance(roomNumber, getTodayInputDate())
+  ).length;
 }
 
 function getMealGuestCount(reservation) {
@@ -6108,35 +6183,273 @@ function toggleExtraBedForActiveReservation() {
   render({ preserveScroll: true });
 }
 
+function cloneMaintenanceMap(source = state.roomMaintenance) {
+  return ROOM_OPTIONS.reduce((accumulator, roomNumber) => {
+    const plan = getRoomMaintenancePlanFromSource(source, roomNumber);
+    if (plan) {
+      accumulator[roomNumber] = { ...plan };
+    }
+    return accumulator;
+  }, {});
+}
+
+function getRoomMaintenancePlanFromSource(source, roomNumber) {
+  const normalizedRoom = sanitizeRoomNumber(roomNumber);
+  const rawEntry = normalizedRoom && source && source[normalizedRoom];
+  if (!rawEntry) return null;
+  if (rawEntry === true) {
+    return { effectiveFrom: getTodayInputDate(), requestedAt: null };
+  }
+  const effectiveFrom = normalizeInputDate(rawEntry.effectiveFrom);
+  return effectiveFrom
+    ? { effectiveFrom, requestedAt: rawEntry.requestedAt || null }
+    : null;
+}
+
+function getCurrentRoomReservation(roomNumber, date = getTodayInputDate()) {
+  const targetDate = normalizeInputDate(date) || getTodayInputDate();
+  const reservation = getRoomOccupantForRange(
+    roomNumber,
+    targetDate,
+    addDaysToInputDate(targetDate, 1)
+  );
+  if (!reservation || !reservation.confirmedAt || !reservation.lastPrintedAt) {
+    return null;
+  }
+  const operationalKey = getReservationOperationalInfo(reservation).key;
+  return operationalKey === "today" || operationalKey === "in-house"
+    ? reservation
+    : null;
+}
+
+function getMaintenanceEffectiveDate(roomNumber) {
+  const currentReservation = getCurrentRoomReservation(roomNumber);
+  return currentReservation && normalizeInputDate(currentReservation.checkOutDate)
+    ? normalizeInputDate(currentReservation.checkOutDate)
+    : getTodayInputDate();
+}
+
+function beginMaintenanceEditor() {
+  ui.maintenanceEditorDraft = cloneMaintenanceMap();
+  ui.maintenanceRelocationSession = null;
+  ui.showMaintenanceEditor = true;
+}
+
+function cancelMaintenanceEditor() {
+  ui.showMaintenanceEditor = false;
+  ui.maintenanceEditorDraft = null;
+  ui.maintenanceRelocationSession = null;
+}
+
+function isMaintenanceMarkedInEditor(roomNumber) {
+  return hasRoomMaintenancePlan(roomNumber, { includeDraft: true });
+}
+
 function toggleRoomMaintenance(roomNumber) {
   const normalizedRoom = sanitizeRoomNumber(roomNumber);
   if (!normalizedRoom) return;
-  if (!state.roomMaintenance || typeof state.roomMaintenance !== "object") {
-    state.roomMaintenance = {};
+  if (!ui.showMaintenanceEditor || !ui.maintenanceEditorDraft) {
+    beginMaintenanceEditor();
   }
 
-  const wasUnderMaintenance = isRoomUnderMaintenance(normalizedRoom);
-  if (wasUnderMaintenance) {
-    delete state.roomMaintenance[normalizedRoom];
+  if (getRoomMaintenancePlanFromSource(ui.maintenanceEditorDraft, normalizedRoom)) {
+    delete ui.maintenanceEditorDraft[normalizedRoom];
   } else {
-    state.roomMaintenance[normalizedRoom] = true;
-    state.reservations.forEach((reservation) => {
-      if (reservation.archived || reservation.roomNumber !== normalizedRoom) {
-        return;
-      }
-      if (reservation.id === state.activeReservationId) {
-        reservation.roomNumber = "";
-        reservation.allowExtraBed = false;
-        touchReservation(reservation);
-      }
-    });
+    ui.maintenanceEditorDraft[normalizedRoom] = {
+      effectiveFrom: getMaintenanceEffectiveDate(normalizedRoom),
+      requestedAt: nowIso(),
+    };
   }
 
-  persistState({
-    toast: isRoomUnderMaintenance(normalizedRoom)
-      ? `La habitación ${normalizedRoom} quedó en mantenimiento y se deshabilitó.`
-      : `La habitación ${normalizedRoom} volvió a quedar habilitada.`,
+  render({ preserveScroll: true });
+}
+
+function getMaintenanceDraftChanges() {
+  const draft = ui.maintenanceEditorDraft || cloneMaintenanceMap();
+  const additions = ROOM_OPTIONS.filter(
+    (roomNumber) =>
+      Boolean(getRoomMaintenancePlanFromSource(draft, roomNumber)) &&
+      !hasRoomMaintenancePlan(roomNumber)
+  ).map((roomNumber) => ({
+    roomNumber,
+    plan: getRoomMaintenancePlanFromSource(draft, roomNumber),
+  }));
+  const removals = ROOM_OPTIONS.filter(
+    (roomNumber) =>
+      hasRoomMaintenancePlan(roomNumber) &&
+      !getRoomMaintenancePlanFromSource(draft, roomNumber)
+  );
+  return { draft, additions, removals };
+}
+
+function getReservationsAffectedByMaintenance(roomNumber, effectiveFrom) {
+  const currentReservation = getCurrentRoomReservation(roomNumber);
+  return state.reservations
+    .filter((reservation) => {
+      if (
+        !reservation ||
+        reservation.archived === true ||
+        sanitizeRoomNumber(reservation.roomNumber) !== roomNumber ||
+        reservation.id === (currentReservation && currentReservation.id)
+      ) {
+        return false;
+      }
+      const checkOutDate = normalizeInputDate(reservation.checkOutDate);
+      return Boolean(checkOutDate && checkOutDate > effectiveFrom);
+    })
+    .sort((left, right) =>
+      String(left.checkInDate || "").localeCompare(String(right.checkInDate || ""))
+    );
+}
+
+function buildMaintenanceRelocationSession(changes) {
+  const affectedReservations = changes.additions.flatMap(({ roomNumber, plan }) =>
+    getReservationsAffectedByMaintenance(roomNumber, plan.effectiveFrom).map((reservation) => ({
+      reservationId: reservation.id,
+      sourceRoom: roomNumber,
+      targetRoom: "",
+      maintenanceEffectiveFrom: plan.effectiveFrom,
+    }))
+  );
+  return {
+    draft: cloneMaintenanceMap(changes.draft),
+    additions: changes.additions.map((item) => ({
+      roomNumber: item.roomNumber,
+      plan: { ...item.plan },
+    })),
+    removals: [...changes.removals],
+    affectedReservations,
+  };
+}
+
+function isMaintenanceTargetAvailable(entry, candidateRoomNumber, session) {
+  const candidateRoom = sanitizeRoomNumber(candidateRoomNumber);
+  const reservation = state.reservations.find((item) => item.id === entry.reservationId);
+  const roomProfile = getRoomProfile(candidateRoom);
+  if (!candidateRoom || !reservation || !roomProfile || candidateRoom === entry.sourceRoom) {
+    return false;
+  }
+  if (
+    doesRoomMaintenanceOverlapRange(
+      candidateRoom,
+      reservation.checkInDate,
+      reservation.checkOutDate,
+      { includeDraft: true }
+    )
+  ) {
+    return false;
+  }
+  if (
+    getRoomOccupantForRange(
+      candidateRoom,
+      reservation.checkInDate,
+      reservation.checkOutDate,
+      reservation.id
+    )
+  ) {
+    return false;
+  }
+  const guestCount = getReservationGuestCount(reservation);
+  const compMeta = getReservationGroupCompRoomMeta(reservation);
+  if (guestCount > roomProfile.maxCapacity || (compMeta && guestCount > compMeta.maxGuests)) {
+    return false;
+  }
+  return !session.affectedReservations.some((otherEntry) => {
+    if (
+      otherEntry === entry ||
+      sanitizeRoomNumber(otherEntry.targetRoom) !== candidateRoom
+    ) {
+      return false;
+    }
+    const otherReservation = state.reservations.find(
+      (item) => item.id === otherEntry.reservationId
+    );
+    return Boolean(
+      otherReservation &&
+        rangesOverlap(
+          reservation.checkInDate,
+          reservation.checkOutDate,
+          otherReservation.checkInDate,
+          otherReservation.checkOutDate
+        )
+    );
   });
+}
+
+function getMaintenanceRelocationOptions(entry, session = ui.maintenanceRelocationSession) {
+  if (!session) return [];
+  return ROOM_OPTIONS.filter((roomNumber) =>
+    isMaintenanceTargetAvailable(entry, roomNumber, session)
+  );
+}
+
+function applyMaintenanceChanges(session, options = {}) {
+  const { toast = "Se guardaron los cambios de mantenimiento." } = options;
+  state.roomMaintenance = cloneMaintenanceMap(session.draft);
+  session.affectedReservations.forEach((entry) => {
+    const reservation = state.reservations.find((item) => item.id === entry.reservationId);
+    const targetRoom = sanitizeRoomNumber(entry.targetRoom);
+    if (!reservation || !targetRoom) return;
+    reservation.roomNumber = targetRoom;
+    const targetProfile = getRoomProfile(targetRoom);
+    reservation.allowExtraBed = Boolean(
+      targetProfile && canRoomUseExtraBed(targetProfile, getReservationGuestCount(reservation))
+    );
+    touchReservation(reservation);
+  });
+  cancelMaintenanceEditor();
+  persistState({ toast });
+  render({ preserveScroll: true });
+}
+
+function finishMaintenanceEditor() {
+  const changes = getMaintenanceDraftChanges();
+  if (!changes.additions.length && !changes.removals.length) {
+    cancelMaintenanceEditor();
+    render({ preserveScroll: true });
+    return;
+  }
+  const session = buildMaintenanceRelocationSession(changes);
+  if (!session.affectedReservations.length) {
+    applyMaintenanceChanges(session);
+    return;
+  }
+  ui.maintenanceRelocationSession = session;
+  render({ preserveScroll: true, focusModal: true });
+}
+
+function updateMaintenanceRelocation(reservationId, targetRoom) {
+  const session = ui.maintenanceRelocationSession;
+  const entry =
+    session && session.affectedReservations.find((item) => item.reservationId === reservationId);
+  if (!entry) return;
+  const normalizedTarget = sanitizeRoomNumber(targetRoom);
+  entry.targetRoom =
+    normalizedTarget && isMaintenanceTargetAvailable(entry, normalizedTarget, session)
+      ? normalizedTarget
+      : "";
+}
+
+function confirmMaintenanceRelocations() {
+  const session = ui.maintenanceRelocationSession;
+  if (!session) return;
+  const unresolved = session.affectedReservations.find(
+    (entry) => !isMaintenanceTargetAvailable(entry, entry.targetRoom, session)
+  );
+  if (unresolved) {
+    window.alert("Elegí una habitación disponible para cada reserva antes de continuar.");
+    return;
+  }
+  const movedCount = session.affectedReservations.length;
+  applyMaintenanceChanges(session, {
+    toast: `Mantenimiento guardado. Se trasladaron ${movedCount} reserva${
+      movedCount === 1 ? "" : "s"
+    } sin perder datos.`,
+  });
+}
+
+function closeMaintenanceRelocationModal() {
+  ui.maintenanceRelocationSession = null;
   render({ preserveScroll: true });
 }
 
@@ -9418,7 +9731,11 @@ function renderReservationFields(reservation) {
         reservation.allowExtraBed ||
         canEnableExtraBed ||
         (tariffInfo && tariffInfo.usesRoomBase) ||
-        isRoomUnderMaintenance(roomProfile.roomNumber))
+        doesRoomMaintenanceOverlapRange(
+          roomProfile.roomNumber,
+          reservation.checkInDate,
+          reservation.checkOutDate
+        ))
   );
   const financialFieldAttribute = showFinancialFields ? "" : " hidden";
   const groupLockedAttribute = isGroupRoom ? " disabled" : "";
@@ -9701,8 +10018,12 @@ function renderReservationFields(reservation) {
                 <p>${escapeHtml(getRoomCapacitySummary(roomProfile))}</p>
                 <p>
                   Reserva actual: ${guestCount} pasajero${guestCount === 1 ? "" : "s"}.${
-                    isRoomUnderMaintenance(roomProfile.roomNumber)
-                      ? " Esta habitaci&oacute;n est&aacute; deshabilitada por mantenimiento."
+                    doesRoomMaintenanceOverlapRange(
+                      roomProfile.roomNumber,
+                      reservation.checkInDate,
+                      reservation.checkOutDate
+                    )
+                      ? " Esta habitaci&oacute;n coincide con un mantenimiento programado."
                       : ""
                   }
                 </p>
@@ -10703,7 +11024,11 @@ function getRoomAvailabilityDescriptor(reservation, roomNumber, scope) {
   const roomProfile = getRoomProfile(roomNumber);
   const guestCount = getReservationGuestCount(reservation);
   const isSelected = reservation.roomNumber === roomNumber;
-  const maintenance = isRoomUnderMaintenance(roomNumber);
+  const maintenance = doesRoomMaintenanceOverlapRange(
+    roomNumber,
+    scope.startDate,
+    scope.endDate
+  );
   const conflictReservation = getRoomOccupantForRange(
     roomNumber,
     scope.startDate,
@@ -10726,11 +11051,11 @@ function getRoomAvailabilityDescriptor(reservation, roomNumber, scope) {
   let status = "available";
   let selectable = scope.mode === "request" && !scope.fallback;
 
-  if (maintenance) {
-    status = "maintenance";
-    selectable = false;
-  } else if (conflictReservation) {
+  if (conflictReservation) {
     status = "occupied";
+    selectable = false;
+  } else if (maintenance) {
+    status = "maintenance";
     selectable = false;
   } else if (exceedsCapacity) {
     status = "capacity";
@@ -10761,9 +11086,6 @@ function getRoomAvailabilitySelectionWarning(reservation, descriptor, scope) {
   if (!descriptor) {
     return "Selecciona una habitacion del 1 al 32.";
   }
-  if (descriptor.maintenance) {
-    return `La habitacion ${descriptor.roomNumber} esta en mantenimiento.`;
-  }
   if (descriptor.conflictReservation) {
     return getRoomConflictMessage(
       reservation,
@@ -10771,6 +11093,9 @@ function getRoomAvailabilitySelectionWarning(reservation, descriptor, scope) {
       scope.startDate,
       scope.endDate
     );
+  }
+  if (descriptor.maintenance) {
+    return `La habitacion ${descriptor.roomNumber} coincide con un mantenimiento programado.`;
   }
   if (descriptor.status === "capacity") {
     return `La habitacion ${descriptor.roomNumber} no tiene capacidad para ${descriptor.guestCount} pasajeros.`;
@@ -10800,12 +11125,16 @@ function renderRoomAvailabilityCard(reservation, scope, descriptor, options = {}
       ? options.showMaintenanceToggle
       : ui.showMaintenanceEditor
   );
+  const maintenanceMarked = isMaintenanceMarkedInEditor(roomNumber);
+  const maintenancePersisted = hasRoomMaintenancePlan(roomNumber);
+  const maintenanceDraftChanged = maintenanceMarked !== maintenancePersisted;
   const classes = [
     "room-card",
     isSelected ? "is-selected" : "",
     selectable ? "is-clickable" : "is-readonly",
     status === "occupied" ? "is-unavailable" : "",
     status === "maintenance" ? "is-maintenance" : "",
+    maintenanceDraftChanged ? "is-maintenance-pending" : "",
     status === "capacity" ? "is-capacity" : "",
     status === "exception" || status === "exception-active" ? "is-exception" : "",
     status === "commercial-base" ? "is-commercial-base" : "",
@@ -10887,7 +11216,7 @@ function renderRoomAvailabilityCard(reservation, scope, descriptor, options = {}
             <span class="room-card-tag">${escapeHtml(tag)}</span>
           </span>
         </span>
-        ${renderRoomBedIcons(roomProfile, "room-card", maintenance)}
+        ${renderRoomBedIcons(roomProfile, "room-card", status === "maintenance")}
         <span class="room-total-row">
           <strong>${escapeHtml(roomProfile ? roomProfile.label : "Habitación")}</strong>
           <span class="room-meta">${escapeHtml(detailText)}</span>
@@ -10897,12 +11226,20 @@ function renderRoomAvailabilityCard(reservation, scope, descriptor, options = {}
         showMaintenanceToggle
           ? `
             <button
-              class="room-maintenance-toggle ${maintenance ? "is-active" : ""}"
+              class="room-maintenance-toggle ${maintenanceMarked ? "is-active" : ""}"
               type="button"
               data-action="toggle-room-maintenance"
               data-room-number="${roomNumber}"
             >
-              ${maintenance ? "Quitar mant." : "Poner mant."}
+              ${
+                maintenanceDraftChanged
+                  ? maintenanceMarked
+                    ? "Desmarcar"
+                    : "Conservar mant."
+                  : maintenanceMarked
+                    ? "Quitar mant."
+                    : "Poner mant."
+              }
             </button>
           `
           : ""
@@ -10915,16 +11252,17 @@ function getRoomOverviewDescriptor(roomNumber, referenceDate = getRoomOverviewDa
   const roomProfile = getRoomProfile(roomNumber);
   const targetDate = normalizeInputDate(referenceDate) || getTodayInputDate();
   const nextDate = addDaysToInputDate(targetDate, 1);
-  const maintenance = isRoomUnderMaintenance(roomNumber);
   const conflictReservation = getRoomOccupantForRange(roomNumber, targetDate, nextDate);
+  const maintenance = isRoomUnderMaintenance(roomNumber, targetDate);
+  const maintenancePlan = getRoomMaintenancePlan(roomNumber);
   const arrivalReservation = getRoomReservationStartingOnDate(roomNumber, targetDate);
   const departureReservation = getRoomReservationEndingOnDate(roomNumber, targetDate);
 
   let status = "available";
-  if (maintenance) {
-    status = "maintenance";
-  } else if (conflictReservation) {
+  if (conflictReservation) {
     status = "occupied";
+  } else if (maintenance) {
+    status = "maintenance";
   }
 
   return {
@@ -10932,6 +11270,8 @@ function getRoomOverviewDescriptor(roomNumber, referenceDate = getRoomOverviewDa
     roomProfile,
     referenceDate: targetDate,
     maintenance,
+    maintenancePlan,
+    maintenanceScheduled: Boolean(maintenancePlan && maintenancePlan.effectiveFrom > targetDate),
     conflictReservation,
     arrivalReservation,
     departureReservation,
@@ -10952,14 +11292,28 @@ function getRoomOverviewSummary(referenceDate = getRoomOverviewDate()) {
 }
 
 function renderRoomOverviewCard(descriptor) {
-  const { roomNumber, roomProfile, referenceDate, maintenance, conflictReservation, status } =
+  const {
+    roomNumber,
+    roomProfile,
+    referenceDate,
+    maintenance,
+    maintenancePlan,
+    maintenanceScheduled,
+    conflictReservation,
+    status,
+  } =
     descriptor;
+  const maintenanceMarked = isMaintenanceMarkedInEditor(roomNumber);
+  const maintenancePersisted = hasRoomMaintenancePlan(roomNumber);
+  const maintenanceDraftChanged = maintenanceMarked !== maintenancePersisted;
   const classes = [
     "room-card",
     "is-dashboard",
     "is-clickable",
     status === "occupied" ? "is-unavailable" : "",
     status === "maintenance" ? "is-maintenance" : "",
+    maintenanceScheduled ? "is-maintenance-scheduled" : "",
+    maintenanceDraftChanged ? "is-maintenance-pending" : "",
     status === "available" ? "is-available" : "",
   ]
     .filter(Boolean)
@@ -10991,6 +11345,12 @@ function renderRoomOverviewCard(descriptor) {
     tag = isToday ? "En uso" : "Reservada";
   }
 
+  if (maintenanceScheduled && status !== "maintenance") {
+    detailText += ` Mantenimiento programado desde ${formatDisplayDate(
+      maintenancePlan.effectiveFrom
+    )}.`;
+  }
+
   if (status === "occupied") {
     detailText = `${buildReservationTitle(conflictReservation)} · ${detailText}`;
   }
@@ -11015,7 +11375,7 @@ function renderRoomOverviewCard(descriptor) {
             <span class="room-card-tag">${escapeHtml(tag)}</span>
           </span>
         </span>
-        ${renderRoomBedIcons(roomProfile, "room-card", maintenance)}
+        ${renderRoomBedIcons(roomProfile, "room-card", status === "maintenance")}
         <span class="room-total-row">
           <strong>${escapeHtml(roomProfile ? roomProfile.label : "Habitación")}</strong>
           <span class="room-meta">${escapeHtml(detailText)}</span>
@@ -11025,12 +11385,20 @@ function renderRoomOverviewCard(descriptor) {
         ui.showMaintenanceEditor
           ? `
             <button
-              class="room-maintenance-toggle ${maintenance ? "is-active" : ""}"
+              class="room-maintenance-toggle ${maintenanceMarked ? "is-active" : ""}"
               type="button"
               data-action="toggle-room-maintenance"
               data-room-number="${roomNumber}"
             >
-              ${maintenance ? "Quitar mant." : "Poner mant."}
+              ${
+                maintenanceDraftChanged
+                  ? maintenanceMarked
+                    ? "Desmarcar"
+                    : "Conservar mant."
+                  : maintenanceMarked
+                    ? "Quitar mant."
+                    : "Poner mant."
+              }
             </button>
           `
           : ""
@@ -11191,7 +11559,7 @@ function renderRoomOverviewPanel() {
               type="button"
               data-action="toggle-maintenance-editor"
             >
-              ${ui.showMaintenanceEditor ? "Cerrar editor" : "Mantenimiento por hab."}
+              ${ui.showMaintenanceEditor ? "Revisar y guardar" : "Mantenimiento por hab."}
             </button>
             <button
               class="ghost-button is-compact"
@@ -11220,11 +11588,16 @@ function renderRoomOverviewPanel() {
           ui.showMaintenanceEditor
             ? `
               <div class="tip-box" style="margin-top: 14px;">
-                <strong>Edici&oacute;n de mantenimiento activa</strong>
+                <strong>Cambios preparados, todav&iacute;a sin guardar</strong>
                 <p>
-                  Dentro de cada habitaci&oacute;n aparecer&aacute; el bot&oacute;n para ponerla o quitarla
-                  de mantenimiento sin salir de este mapa.
+                  Marca las habitaciones necesarias. Al pulsar <strong>Revisar y guardar</strong>,
+                  el sistema comprobar&aacute; ocupaciones y pedir&aacute; reubicar cualquier reserva futura.
+                  Si una habitaci&oacute;n ya est&aacute; en uso, el mantenimiento comenzar&aacute; al finalizar
+                  esa estad&iacute;a.
                 </p>
+                <button class="ghost-button is-compact" type="button" data-action="cancel-maintenance-editor">
+                  Descartar cambios
+                </button>
               </div>
             `
             : ""
@@ -11927,7 +12300,7 @@ function renderRoomSettingsPanel() {
             type="button"
             data-action="toggle-maintenance-editor"
           >
-            ${ui.showMaintenanceEditor ? "Cerrar editor" : "Mantenimiento por hab."}
+            ${ui.showMaintenanceEditor ? "Revisar y guardar" : "Mantenimiento por hab."}
           </button>
         </div>
       </div>
@@ -11938,8 +12311,11 @@ function renderRoomSettingsPanel() {
               <strong>Edici&oacute;n activa</strong>
               <p>
                 Ahora ver&aacute;s <strong>Poner mant.</strong> o <strong>Quitar mant.</strong> dentro de
-                cada habitaci&oacute;n para marcarla una por una.
+                cada habitaci&oacute;n. Los cambios se validar&aacute;n antes de guardarse.
               </p>
+              <button class="ghost-button is-compact" type="button" data-action="cancel-maintenance-editor">
+                Descartar cambios
+              </button>
             </div>
           `
           : `
@@ -12273,15 +12649,15 @@ function renderGroupRoomSelectionCard(descriptor) {
   if (compRoomMeta) {
     kicker = `${compRoomMeta.label} $0`;
     helperText = compRoomMeta.helper;
-  } else if (maintenance) {
-    kicker = "Mantenimiento";
-    helperText = "Deshabilitada manualmente.";
   } else if (conflictReservation) {
     kicker = "No disponible";
     helperText = `${buildReservationTitle(conflictReservation)} \u00b7 ${formatStayRange(
       conflictReservation.checkInDate,
       conflictReservation.checkOutDate
     )}`;
+  } else if (maintenance) {
+    kicker = "Mantenimiento";
+    helperText = "Deshabilitada durante estas fechas.";
   } else if (isSelected) {
     kicker = "Elegida";
   }
@@ -13184,6 +13560,152 @@ function renderReservationConfirmModal() {
   `;
 }
 
+function renderMaintenanceRelocationModal() {
+  const session = ui.maintenanceRelocationSession;
+  if (!session) {
+    return "";
+  }
+
+  const unresolvedCount = session.affectedReservations.filter(
+    (entry) => !isMaintenanceTargetAvailable(entry, entry.targetRoom, session)
+  ).length;
+  const additionsMarkup = session.additions
+    .map(({ roomNumber, plan }) => {
+      const currentReservation = getCurrentRoomReservation(roomNumber);
+      return `
+        <span class="maintenance-plan-chip">
+          <strong>Hab. ${escapeHtml(roomNumber)}</strong>
+          <span>
+            ${
+              currentReservation
+                ? `Ocupada hasta ${escapeHtml(formatDisplayDate(currentReservation.checkOutDate))}; luego entra en mantenimiento.`
+                : `Mantenimiento desde ${escapeHtml(formatDisplayDate(plan.effectiveFrom))}.`
+            }
+          </span>
+        </span>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="scanner-modal-backdrop maintenance-relocation-backdrop" data-action="close-maintenance-relocation-modal"></div>
+    <section
+      class="scanner-modal-shell maintenance-relocation-shell"
+      aria-modal="true"
+      role="dialog"
+      aria-labelledby="maintenance-relocation-title"
+    >
+      <div class="scanner-modal maintenance-relocation-modal">
+        <div class="scanner-modal-toolbar">
+          <div>
+            <p class="scanner-modal-kicker">Control antes de guardar</p>
+            <h2 id="maintenance-relocation-title">Reubicar reservas futuras</h2>
+            <p>
+              Estas reservas coinciden con el mantenimiento preparado. Ninguna se eliminar&aacute;:
+              eleg&iacute; una nueva habitaci&oacute;n para cada una.
+            </p>
+          </div>
+          <button class="ghost-button is-compact" type="button" data-action="close-maintenance-relocation-modal">
+            Volver al editor
+          </button>
+        </div>
+
+        <div class="maintenance-plan-summary">${additionsMarkup}</div>
+
+        <div class="maintenance-relocation-list">
+          ${session.affectedReservations
+            .map((entry) => {
+              const reservation = state.reservations.find(
+                (item) => item.id === entry.reservationId
+              );
+              if (!reservation) return "";
+              const options = getMaintenanceRelocationOptions(entry, session);
+              const selectedTarget = sanitizeRoomNumber(entry.targetRoom);
+              const groupCompany = getReservationCompanyLabel(reservation);
+              const guestCount = getReservationGuestCount(reservation);
+              return `
+                <article class="maintenance-relocation-card">
+                  <div class="maintenance-relocation-copy">
+                    <span class="status-badge ${groupCompany ? "is-info" : "is-ready"}">
+                      ${groupCompany ? `Grupo ${escapeHtml(groupCompany)}` : "Reserva particular"}
+                    </span>
+                    <h3>Hab. ${escapeHtml(entry.sourceRoom)} &middot; ${escapeHtml(
+                      getReservationDisplayResponsibleName(reservation)
+                    )}</h3>
+                    <p>
+                      ${escapeHtml(formatStayRange(reservation.checkInDate, reservation.checkOutDate))}
+                      &middot; ${guestCount} hu&eacute;sped${guestCount === 1 ? "" : "es"}
+                      ${
+                        getReservationGroupCompRoomMeta(reservation)
+                          ? ` &middot; ${escapeHtml(getReservationGroupCompRoomMeta(reservation).label)}`
+                          : ""
+                      }
+                    </p>
+                  </div>
+                  <label class="field maintenance-relocation-field">
+                    <span>Nueva habitaci&oacute;n</span>
+                    <select
+                      id="maintenance-relocation-${escapeHtml(reservation.id)}"
+                      data-maintenance-relocation-field
+                      data-reservation-id="${escapeHtml(reservation.id)}"
+                      class="${selectedTarget ? "required-filled" : "required-empty"}"
+                    >
+                      <option value="">Elegir habitaci&oacute;n disponible</option>
+                      ${options
+                        .map((roomNumber) => {
+                          const profile = getRoomProfile(roomNumber);
+                          return `<option value="${escapeHtml(roomNumber)}" ${
+                            roomNumber === selectedTarget ? "selected" : ""
+                          }>Hab. ${escapeHtml(roomNumber)} &middot; ${escapeHtml(
+                            profile ? profile.label : "Habitaci&oacute;n"
+                          )} &middot; M&aacute;x. ${escapeHtml(
+                            String(profile ? profile.maxCapacity : "-")
+                          )}</option>`;
+                        })
+                        .join("")}
+                    </select>
+                    <small>
+                      ${
+                        options.length
+                          ? "Solo aparecen habitaciones libres durante toda la estad&iacute;a y con capacidad suficiente."
+                          : "No hay una habitaci&oacute;n compatible. Volv&eacute; al editor y cancel&aacute; este mantenimiento."
+                      }
+                    </small>
+                  </label>
+                </article>
+              `;
+            })
+            .join("")}
+        </div>
+
+        <div class="maintenance-relocation-footer">
+          <div>
+            <strong>${
+              unresolvedCount
+                ? `Faltan ${unresolvedCount} traslado${unresolvedCount === 1 ? "" : "s"}`
+                : "Todos los traslados est&aacute;n resueltos"
+            }</strong>
+            <p>Se mantienen intactos hu&eacute;spedes, pagos, legajos y pertenencia al grupo.</p>
+          </div>
+          <div class="actions-row">
+            <button class="ghost-button" type="button" data-action="close-maintenance-relocation-modal">
+              Revisar marcas
+            </button>
+            <button
+              class="button"
+              type="button"
+              data-action="confirm-maintenance-relocations"
+              ${unresolvedCount ? "disabled" : ""}
+            >
+              Guardar mantenimiento y traslados
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function renderStayPaymentModal() {
   if (!ui.isStayPaymentModalOpen) {
     return "";
@@ -13953,6 +14475,7 @@ const MODAL_FOCUSABLE_SELECTOR = [
 ].join(", ");
 
 const MANAGED_MODAL_ROOT_SELECTORS = [
+  ".maintenance-relocation-modal",
   ".reservation-discard-modal",
   ".room-shortcut-modal",
   ".room-picker-confirm-modal",
@@ -13968,6 +14491,14 @@ const MANAGED_MODAL_ROOT_SELECTORS = [
 ];
 
 const MANAGED_MODAL_TAB_ORDER = [
+  {
+    selector: ".maintenance-relocation-modal",
+    orderedSelectors: [
+      "[data-maintenance-relocation-field]",
+      "[data-action='confirm-maintenance-relocations']",
+      "[data-action='close-maintenance-relocation-modal']",
+    ],
+  },
   {
     selector: ".reservation-discard-modal",
     orderedSelectors: [
@@ -14263,6 +14794,13 @@ function consumePendingManagedModalFocusId() {
 }
 
 function getActiveModalScrollSnapshots() {
+  if (ui.maintenanceRelocationSession) {
+    return [
+      getElementScrollSnapshot(".maintenance-relocation-shell"),
+      getElementScrollSnapshot(".maintenance-relocation-modal"),
+    ].filter(Boolean);
+  }
+
   if (ui.isGroupLoadModalOpen) {
     return getGroupModalScrollSnapshot();
   }
@@ -14480,6 +15018,7 @@ function render(options = {}) {
     ${renderRoomPickerModal(privateModalReservation || workspaceReservation)}
     ${renderRoomPickerConfirmationModal(privateModalReservation || workspaceReservation)}
     ${renderRoomShortcutModal()}
+    ${renderMaintenanceRelocationModal()}
     ${renderFloatingModuleNav(isWorkspaceOpen)}
     ${!SYSTEM_EMBEDDED ? renderThemeToggleButton("theme-toggle-floating") : ""}
   `;
@@ -14495,7 +15034,8 @@ function render(options = {}) {
 
   document.body.classList.toggle(
     "has-modal",
-    ui.isScannerModalOpen ||
+    Boolean(ui.maintenanceRelocationSession) ||
+      ui.isScannerModalOpen ||
       ui.isGroupPickerModalOpen ||
       ui.isGroupLoadModalOpen ||
       ui.isPrivateReservationModalOpen ||
@@ -15034,8 +15574,28 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "toggle-maintenance-editor") {
-    ui.showMaintenanceEditor = !ui.showMaintenanceEditor;
+    if (ui.showMaintenanceEditor) {
+      finishMaintenanceEditor();
+      return;
+    }
+    beginMaintenanceEditor();
     render({ preserveScroll: true });
+    return;
+  }
+
+  if (action === "close-maintenance-relocation-modal") {
+    closeMaintenanceRelocationModal();
+    return;
+  }
+
+  if (action === "cancel-maintenance-editor") {
+    cancelMaintenanceEditor();
+    render({ preserveScroll: true });
+    return;
+  }
+
+  if (action === "confirm-maintenance-relocations") {
+    confirmMaintenanceRelocations();
     return;
   }
 
@@ -15319,6 +15879,17 @@ document.addEventListener("input", (event) => {
 document.addEventListener("change", (event) => {
   const target = event.target;
 
+  if (target.matches("[data-maintenance-relocation-field]")) {
+    const snapshots = getActiveModalScrollSnapshots();
+    updateMaintenanceRelocation(target.dataset.reservationId, target.value);
+    render({
+      preserveScroll: true,
+      focusId: target.id || null,
+      elementScrollSnapshots: snapshots,
+    });
+    return;
+  }
+
   if (target.matches("[data-combined-stay-payment-field]")) {
     const field = target.dataset.combinedStayPaymentField;
     const split = updateCombinedStayPaymentDraft(field, target.value);
@@ -15416,6 +15987,12 @@ document.addEventListener("keydown", (event) => {
       ui.pendingManagedModalFocusId = "";
       return;
     }
+  }
+
+  if (event.key === "Escape" && ui.maintenanceRelocationSession) {
+    event.preventDefault();
+    closeMaintenanceRelocationModal();
+    return;
   }
 
   if (event.key === "Escape" && ui.reservationDiscardTarget) {
