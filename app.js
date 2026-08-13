@@ -21,6 +21,7 @@ const FIRESTORE_STATE_CHUNK_SIZE = Math.min(
 );
 const FIRESTORE_STATE_FORMAT = "blue-coast-unified-json-v1";
 const FIRESTORE_MAX_CHUNKS = 450;
+const CASH_MOVEMENT_VISIBLE_DAYS = 6;
 const FIRESTORE_SDK_URL = "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
@@ -321,6 +322,7 @@ const ui = {
     hotel: "",
     beverages: "",
   },
+  cashReportMonth: getCurrentMonthKey(),
   menuTimelineDate: getTodayInputDate(),
   menuTimelineScrollByKey: {},
   sidebarCollapsed: getInitialSidebarCollapsed(),
@@ -349,6 +351,7 @@ function createUnifiedState() {
     settlements: {},
     cashTransfers: [],
     cashWithdrawals: [],
+    cashLedger: [],
     employees: [],
     employeeDirectoryManagedAt: "",
     selectedMonth: getCurrentMonthKey(),
@@ -378,6 +381,7 @@ function loadUnifiedState() {
         : {},
       cashTransfers: normalizeCashTransfers(parsed.cashTransfers),
       cashWithdrawals: normalizeCashWithdrawals(parsed.cashWithdrawals),
+      cashLedger: normalizeCashLedger(parsed.cashLedger),
       employees: normalizeEmployees(
         parsed.employees,
         parsed.employeeDirectoryManagedAt ? null : parsed.sources && parsed.sources.beverages
@@ -410,6 +414,7 @@ function normalizeUnifiedStatePayload(payload) {
       : {},
     cashTransfers: normalizeCashTransfers(candidate.cashTransfers),
     cashWithdrawals: normalizeCashWithdrawals(candidate.cashWithdrawals),
+    cashLedger: normalizeCashLedger(candidate.cashLedger),
     employees: normalizeEmployees(
       candidate.employees,
       candidate.employeeDirectoryManagedAt ? null : candidate.sources && candidate.sources.beverages
@@ -455,6 +460,7 @@ function writeLocalStateMirrors() {
 }
 
 function persistState(message = "") {
+  syncCashLedgerFromOperationalState();
   state.lastSavedAt = new Date().toISOString();
   writeLocalStateMirrors();
   if (!isApplyingCentralState) {
@@ -802,9 +808,10 @@ function applyUnifiedPayloadLocally(payload, meta = {}) {
     };
     hydrateEmployeesFromBeverageSource();
   }
+  const cashLedgerChanged = syncCashLedgerFromOperationalState();
   writeLocalStateMirrors();
   isApplyingCentralState = false;
-  if (beverageNormalization.changed || preservedNewerLocalState) {
+  if (beverageNormalization.changed || preservedNewerLocalState || cashLedgerChanged) {
     scheduleCentralStateWrite();
   }
   return true;
@@ -940,6 +947,48 @@ function normalizeCashWithdrawals(value) {
       note: String((withdrawal && withdrawal.note) || "").trim(),
     }))
     .filter((withdrawal) => withdrawal.box && withdrawal.amount > 0);
+}
+
+function normalizeCashLedger(value) {
+  if (!Array.isArray(value)) return [];
+  const seenIds = new Set();
+  return value
+    .map((movement, index) => {
+      const type = ["income", "expense", "transfer"].includes(movement && movement.type)
+        ? movement.type
+        : "";
+      const id = String((movement && movement.id) || `cash-ledger-${index + 1}`);
+      const box = normalizeCashboxKey(movement && movement.box);
+      const counterpartBox = normalizeCashboxKey(movement && movement.counterpartBox);
+      const method = normalizePaymentMethod(movement && movement.method);
+      return {
+        id,
+        type,
+        box,
+        counterpartBox,
+        method:
+          type === "transfer"
+            ? "internal"
+            : method === "cash" || method === "transfer"
+              ? method
+              : "unknown",
+        amount: parseAmount(movement && movement.amount),
+        occurredAt: String((movement && (movement.occurredAt || movement.createdAt)) || ""),
+        origin: String((movement && movement.origin) || "Sin origen detallado").trim(),
+        description: String((movement && (movement.description || movement.note)) || "").trim(),
+        sourceId: String((movement && movement.sourceId) || "").trim(),
+      };
+    })
+    .filter((movement) => {
+      if (!movement.id || seenIds.has(movement.id) || !movement.type || !movement.box || movement.amount <= 0) {
+        return false;
+      }
+      if (movement.type === "transfer" && (!movement.counterpartBox || movement.counterpartBox === movement.box)) {
+        return false;
+      }
+      seenIds.add(movement.id);
+      return true;
+    });
 }
 
 function normalizeEmployeeAdvance(advance, index = 0) {
@@ -1382,6 +1431,8 @@ function setSourceState(source, payload, meta = {}) {
     return false;
   }
 
+  // Preserve the current source-derived movements before a module replaces its snapshot.
+  syncCashLedgerFromOperationalState();
   state.sources[source] = normalizedPayload;
   state.sourceMeta[source] = {
     importedAt: new Date().toISOString(),
@@ -2008,6 +2059,339 @@ function getCashboxLabel(box) {
   return box === "hotel" ? "Hotel" : "Estaci\u00f3n de bebidas";
 }
 
+function getCashMovementTimestamp(...values) {
+  return values.find((value) => value && Number.isFinite(Date.parse(value))) || "";
+}
+
+function createCashLedgerMovement({
+  id,
+  type,
+  box,
+  counterpartBox = "",
+  method = "unknown",
+  amount,
+  occurredAt,
+  origin,
+  description = "",
+  sourceId = "",
+}) {
+  return {
+    id: String(id || ""),
+    type,
+    box: normalizeCashboxKey(box),
+    counterpartBox: normalizeCashboxKey(counterpartBox),
+    method: type === "transfer" ? "internal" : normalizePaymentMethod(method),
+    amount: parseAmount(amount),
+    occurredAt: String(occurredAt || ""),
+    origin: String(origin || "Sin origen detallado").trim(),
+    description: String(description || "").trim(),
+    sourceId: String(sourceId || "").trim(),
+  };
+}
+
+function collectReservationCashLedgerMovements() {
+  const reservations =
+    state.sources.checkin && Array.isArray(state.sources.checkin.reservations)
+      ? state.sources.checkin.reservations
+      : [];
+  const movements = [];
+  reservations.forEach((reservation, index) => {
+    if (!reservation) return;
+    const reservationId = String(reservation.id || `reservation-${index + 1}`);
+    const roomNumber = String(reservation.roomNumber || "-");
+    const company = String(reservation.groupCompany || "").trim();
+    const responsible = reservation.responsible || {};
+    const guest = Array.isArray(reservation.guests) ? reservation.guests[0] || {} : {};
+    const guestName = [
+      guest.firstName || responsible.firstName,
+      guest.lastName || responsible.lastName,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+    const description = [
+      `Hab ${roomNumber}`,
+      company ? `Grupo ${company}` : guestName || "Reserva individual",
+    ].join(" \u00b7 ");
+    const stayPaidAt = getCashMovementTimestamp(
+      reservation.stayPaymentRecordedAt,
+      reservation.updatedAt,
+      reservation.confirmedAt,
+      reservation.createdAt
+    );
+    [
+      ["cash", reservation.cash],
+      ["transfer", reservation.transfer],
+    ].forEach(([method, amount]) => {
+      if (parseAmount(amount) <= 0) return;
+      movements.push(
+        createCashLedgerMovement({
+          id: `reservation:${reservationId}:stay:${method}`,
+          type: "income",
+          box: "hotel",
+          method,
+          amount,
+          occurredAt: stayPaidAt,
+          origin: "Pago de estad\u00eda",
+          description,
+          sourceId: reservationId,
+        })
+      );
+    });
+    const depositMethod = normalizePaymentMethod(reservation.depositPaymentMethod);
+    if (
+      (depositMethod === "cash" || depositMethod === "transfer") &&
+      parseAmount(reservation.depositAmount) > 0
+    ) {
+      movements.push(
+        createCashLedgerMovement({
+          id: `reservation:${reservationId}:deposit:${depositMethod}`,
+          type: "income",
+          box: "hotel",
+          method: depositMethod,
+          amount: reservation.depositAmount,
+          occurredAt: getCashMovementTimestamp(
+            reservation.depositRecordedAt,
+            reservation.confirmedAt,
+            reservation.updatedAt,
+            reservation.createdAt
+          ),
+          origin: "Se\u00f1a de reserva",
+          description,
+          sourceId: reservationId,
+        })
+      );
+    }
+  });
+  return movements;
+}
+
+function collectBeverageShiftCashLedgerMovements(shift, fallbackId = "shift") {
+  if (!shift) return [];
+  const shiftId = String(shift.id || shift.sourceShiftId || fallbackId);
+  const serviceLabel = String(shift.serviceLabel || "Turno").trim();
+  const shiftDate = getCashMovementTimestamp(shift.closedAt, shift.openedAt);
+  const movements = [];
+  (Array.isArray(shift.closedRooms) ? shift.closedRooms : []).forEach((room, index) => {
+    const method = normalizePaymentMethod(room && room.paymentMethod);
+    const amount = getClosedRoomTotal(room);
+    if ((method !== "cash" && method !== "transfer") || amount <= 0) return;
+    const roomId = String((room && room.id) || `${shiftId}-room-${index + 1}`);
+    movements.push(
+      createCashLedgerMovement({
+        id: `beverage:${shiftId}:room:${roomId}`,
+        type: "income",
+        box: "beverages",
+        method,
+        amount,
+        occurredAt: getCashMovementTimestamp(room && room.closedAt, shiftDate),
+        origin: "Venta de bebidas en habitaci\u00f3n",
+        description: `${String((room && room.roomLabel) || "Habitaci\u00f3n")} \u00b7 ${serviceLabel}`,
+        sourceId: roomId,
+      })
+    );
+  });
+  (Array.isArray(shift.cashierSales) ? shift.cashierSales : []).forEach((item) => {
+    const method = normalizePaymentMethod(item && item.paymentMethod);
+    const amount = getCollectionTotal([item]);
+    if ((method !== "cash" && method !== "transfer") || amount <= 0) return;
+    const itemKey = [
+      (item && item.productId) || slugify(item && item.name),
+      method,
+    ].join(":");
+    movements.push(
+      createCashLedgerMovement({
+        id: `beverage:${shiftId}:cashier:${itemKey}`,
+        type: "income",
+        box: "beverages",
+        method,
+        amount,
+        occurredAt: getCashMovementTimestamp(
+          item && item.createdAt,
+          item && item.updatedAt,
+          shiftDate
+        ),
+        origin: "Venta de bebidas en caja directa",
+        description: `${String((item && item.name) || "Producto")} \u00b7 ${serviceLabel}`,
+        sourceId: `${shiftId}:${itemKey}`,
+      })
+    );
+  });
+  return movements;
+}
+
+function collectBeverageCashLedgerMovements() {
+  const beverages = getBeverageState();
+  if (!beverages) return [];
+  const movements = [
+    ...collectBeverageShiftCashLedgerMovements(beverages.activeShift, "active-shift"),
+  ];
+  (Array.isArray(beverages.shiftHistory) ? beverages.shiftHistory : []).forEach((shift, index) => {
+    movements.push(...collectBeverageShiftCashLedgerMovements(shift, `historic-shift-${index + 1}`));
+  });
+  (Array.isArray(beverages.driverCoordinatorGroupHistory)
+    ? beverages.driverCoordinatorGroupHistory
+    : []
+  ).forEach((entry, index) => {
+    const method = normalizePaymentMethod(entry && entry.paymentMethod);
+    const amount = Number(entry && entry.total) || getCollectionTotal((entry && entry.items) || []);
+    if ((method !== "cash" && method !== "transfer") || amount <= 0) return;
+    const entryId = String((entry && entry.id) || `driver-group-${index + 1}`);
+    movements.push(
+      createCashLedgerMovement({
+        id: `beverage:driver-group:${entryId}`,
+        type: "income",
+        box: "beverages",
+        method,
+        amount,
+        occurredAt: getCashMovementTimestamp(entry && entry.closedAt, entry && entry.createdAt),
+        origin: "Consumo de choferes y coordinadores",
+        description: String((entry && (entry.groupName || entry.name)) || "Grupo"),
+        sourceId: entryId,
+      })
+    );
+  });
+  return movements;
+}
+
+function collectSettlementCashLedgerMovements() {
+  const movements = [];
+  Object.entries(state.settlements || {}).forEach(([key, settlement]) => {
+    const method = normalizePaymentMethod(settlement && (settlement.paymentMethod || settlement.method));
+    if (method !== "cash" && method !== "transfer") return;
+    [
+      ["hotel", settlement && settlement.lodgingAmount, "Cobro de alojamiento en Check-out"],
+      ["beverages", settlement && settlement.beverageAmount, "Cobro de bebidas en Check-out"],
+    ].forEach(([box, amount, origin]) => {
+      if (parseAmount(amount) <= 0) return;
+      movements.push(
+        createCashLedgerMovement({
+          id: `settlement:${key}:${box}`,
+          type: "income",
+          box,
+          method,
+          amount,
+          occurredAt: settlement.paidAt,
+          origin,
+          description: `Cierre ${key}`,
+          sourceId: key,
+        })
+      );
+    });
+  });
+  return movements;
+}
+
+function collectManualCashLedgerMovements() {
+  return [
+    ...normalizeCashTransfers(state.cashTransfers).map((transfer) =>
+      createCashLedgerMovement({
+        id: `transfer:${transfer.id}`,
+        type: "transfer",
+        box: transfer.from,
+        counterpartBox: transfer.to,
+        method: "internal",
+        amount: transfer.amount,
+        occurredAt: transfer.createdAt,
+        origin: "Transferencia interna entre cajas",
+        description: transfer.note || `${getCashboxLabel(transfer.from)} a ${getCashboxLabel(transfer.to)}`,
+        sourceId: transfer.id,
+      })
+    ),
+    ...normalizeCashWithdrawals(state.cashWithdrawals).map((withdrawal) =>
+      createCashLedgerMovement({
+        id: `withdrawal:${withdrawal.id}`,
+        type: "expense",
+        box: withdrawal.box,
+        method: "cash",
+        amount: withdrawal.amount,
+        occurredAt: withdrawal.createdAt,
+        origin: "Retiro de efectivo",
+        description: withdrawal.note || "Retiro sin detalle adicional",
+        sourceId: withdrawal.id,
+      })
+    ),
+  ];
+}
+
+function collectDerivedCashLedgerMovements() {
+  return [
+    ...collectReservationCashLedgerMovements(),
+    ...collectBeverageCashLedgerMovements(),
+    ...collectSettlementCashLedgerMovements(),
+    ...collectManualCashLedgerMovements(),
+  ].filter(
+    (movement) =>
+      movement.id && movement.type && movement.box && movement.amount > 0 && movement.occurredAt
+  );
+}
+
+function syncCashLedgerFromOperationalState() {
+  if (!state) return false;
+  const previous = normalizeCashLedger(state.cashLedger);
+  const derived = collectDerivedCashLedgerMovements();
+  const derivedIds = new Set(derived.map((movement) => movement.id));
+  const currentReservationIds = new Set(
+    (state.sources.checkin && Array.isArray(state.sources.checkin.reservations)
+      ? state.sources.checkin.reservations
+      : []
+    ).map((reservation) => String((reservation && reservation.id) || ""))
+  );
+  const currentSettlementIds = new Set(Object.keys(state.settlements || {}));
+  const beverageState = getBeverageState();
+  const currentShiftIds = new Set(
+    [
+      beverageState && beverageState.activeShift,
+      ...(beverageState && Array.isArray(beverageState.shiftHistory)
+        ? beverageState.shiftHistory
+        : []),
+    ]
+      .filter(Boolean)
+      .map((shift) => String(shift.id || shift.sourceShiftId || ""))
+      .filter(Boolean)
+  );
+  const shouldKeepPrevious = (movement) => {
+    if (derivedIds.has(movement.id)) return true;
+    const reservationMatch = movement.id.match(/^reservation:([^:]+):/);
+    if (reservationMatch && currentReservationIds.has(reservationMatch[1])) return false;
+    const settlementMatch = movement.id.match(/^settlement:([^:]+):/);
+    if (settlementMatch && currentSettlementIds.has(settlementMatch[1])) return false;
+    const beverageMatch = movement.id.match(/^beverage:([^:]+):/);
+    if (beverageMatch && currentShiftIds.has(beverageMatch[1])) return false;
+    return true;
+  };
+  const byId = new Map(
+    previous.filter(shouldKeepPrevious).map((movement) => [movement.id, movement])
+  );
+  derived.forEach((movement) => {
+    byId.set(movement.id, { ...(byId.get(movement.id) || {}), ...movement });
+  });
+  const next = normalizeCashLedger(Array.from(byId.values())).sort(
+    (left, right) => (Date.parse(right.occurredAt) || 0) - (Date.parse(left.occurredAt) || 0)
+  );
+  const changed = JSON.stringify(previous) !== JSON.stringify(next);
+  state.cashLedger = next;
+  return changed;
+}
+
+function getCashLedgerMovements(monthKey = "") {
+  syncCashLedgerFromOperationalState();
+  const normalizedMonth = /^\d{4}-\d{2}$/.test(String(monthKey || "")) ? String(monthKey) : "";
+  return normalizeCashLedger(state.cashLedger)
+    .filter((movement) => {
+      if (!normalizedMonth) return true;
+      return normalizeDate(movement.occurredAt).startsWith(normalizedMonth);
+    })
+    .sort((left, right) => (Date.parse(right.occurredAt) || 0) - (Date.parse(left.occurredAt) || 0));
+}
+
+function isCashMovementRecent(value, days = CASH_MOVEMENT_VISIBLE_DAYS) {
+  const movementDate = normalizeDate(value);
+  if (!movementDate) return false;
+  const earliestDate = addDaysToInputDate(getTodayInputDate(), -(Math.max(1, days) - 1));
+  return movementDate >= earliestDate && movementDate <= getTodayInputDate();
+}
+
 function hasOpenModal() {
   return ui.reportModalOpen || Boolean(ui.settlementModal) || Boolean(ui.cashWithdrawalModal);
 }
@@ -2043,6 +2427,7 @@ function openCashWithdrawalModal(box) {
   ui.cashWithdrawalModal = {
     box: source,
     amount: "",
+    note: "",
     available: cashboxes[source].adjustedCash,
     error: "",
   };
@@ -2060,7 +2445,9 @@ function confirmCashWithdrawal() {
   const source = normalizeCashboxKey(modal.box);
   if (!source) return;
   const input = document.querySelector("[data-action-input='cash-withdrawal-amount']");
+  const noteInput = document.querySelector("[data-action-input='cash-withdrawal-note']");
   const typedAmount = input ? input.value : modal.amount;
+  const typedNote = noteInput ? noteInput.value : modal.note;
   const amount = parseAmount(typedAmount);
   const cashboxes = getCashboxTotals();
   const available = cashboxes[source].adjustedCash;
@@ -2068,6 +2455,7 @@ function confirmCashWithdrawal() {
     ...modal,
     box: source,
     amount: typedAmount,
+    note: typedNote,
     available,
     error: "",
   };
@@ -2087,7 +2475,7 @@ function confirmCashWithdrawal() {
     box: source,
     amount,
     createdAt: new Date().toISOString(),
-    note: "Retiro de efectivo",
+    note: String(typedNote || "").trim() || "Retiro sin motivo detallado",
   });
   ui.cashWithdrawalModal = null;
   persistState(`Retiro registrado en ${getCashboxLabel(source)}.`);
@@ -3713,6 +4101,23 @@ function renderCashboxPage() {
           </div>
         </div>
       </div>
+      <div class="cash-report-toolbar">
+        <div>
+          <strong>Informe de cajas</strong>
+          <span>Ingresos, egresos y movimientos internos, conservados por per&iacute;odo.</span>
+        </div>
+        <label class="cash-report-month-field">
+          <span>Per&iacute;odo</span>
+          <input
+            type="month"
+            value="${escapeHtml(ui.cashReportMonth)}"
+            data-action-input="cash-report-month"
+          />
+        </label>
+        <button class="button" type="button" data-action="generate-cash-report">
+          Emitir informe HTML
+        </button>
+      </div>
     </section>
     <section class="panel cashbox-page-panel">
       ${renderCashboxDashboard(cashboxes)}
@@ -3740,7 +4145,7 @@ function renderCashboxDashboard(cashboxes) {
         ${renderCashboxCard("Bebidas efectivo", cashboxes.beverages.adjustedCash, "Compras de estaci&oacute;n", cashboxes.beverages.cash)}
         ${renderCashboxCard("Bebidas transferencia", cashboxes.beverages.transfer, "Compras de estaci&oacute;n")}
       </div>
-      ${renderCashTransferList(cashboxes.transfers, cashboxes.withdrawals)}
+      ${renderCashTransferList()}
     </div>
   `;
 }
@@ -3845,40 +4250,305 @@ function renderCashboxCard(title, amount, copy, originalCash = null) {
   `;
 }
 
-function renderCashTransferList(transfers, withdrawals = []) {
-  const movements = [
-    ...transfers.map((transfer) => ({
-      createdAt: transfer.createdAt,
-      html: `
-        <span>
-          ${escapeHtml(getCashboxLabel(transfer.from))} &rarr; ${escapeHtml(getCashboxLabel(transfer.to))}
-          <strong>${formatMoney(transfer.amount)}</strong>
-          <small>${escapeHtml(formatDateTime(transfer.createdAt))}</small>
-        </span>
-      `,
-    })),
-    ...withdrawals.map((withdrawal) => ({
-      createdAt: withdrawal.createdAt,
-      html: `
-        <span>
-          Retiro ${escapeHtml(getCashboxLabel(withdrawal.box))}
-          <strong>${formatMoney(withdrawal.amount)}</strong>
-          <small>${escapeHtml(formatDateTime(withdrawal.createdAt))}</small>
-        </span>
-      `,
-    })),
-  ].sort((left, right) => (Date.parse(right.createdAt) || 0) - (Date.parse(left.createdAt) || 0));
-  if (!movements.length) {
-    return `<div class="cashbox-note">Los pr&eacute;stamos internos y retiros de efectivo quedan registrados sin mezclar ingresos ni modificar transferencias.</div>`;
+function renderCashTransferList() {
+  const manualMovements = getCashLedgerMovements().filter(
+    (movement) => movement.type === "transfer" || movement.type === "expense"
+  );
+  const recentMovements = manualMovements.filter((movement) =>
+    isCashMovementRecent(movement.occurredAt)
+  );
+  if (!recentMovements.length) {
+    return `
+      <div class="cashbox-note">
+        <strong>Sin movimientos manuales en los &uacute;ltimos ${CASH_MOVEMENT_VISIBLE_DAYS} d&iacute;as.</strong>
+        <span>${manualMovements.length ? "El historial anterior sigue resguardado en el informe de cajas." : "Los pr&eacute;stamos internos y retiros quedar&aacute;n registrados aqu&iacute;."}</span>
+      </div>
+    `;
   }
   return `
-    <div class="cashbox-transfer-list">
-      ${movements
-        .slice(0, 6)
-        .map((movement) => movement.html)
-        .join("")}
+    <div class="cashbox-recent-movements">
+      <div class="cashbox-recent-head">
+        <strong>Movimientos recientes</strong>
+        <span>&Uacute;ltimos ${CASH_MOVEMENT_VISIBLE_DAYS} d&iacute;as</span>
+      </div>
+      <div class="cashbox-transfer-list">
+        ${recentMovements
+          .map((movement) => {
+            const isTransfer = movement.type === "transfer";
+            const label = isTransfer
+              ? `${getCashboxLabel(movement.box)} \u2192 ${getCashboxLabel(movement.counterpartBox)}`
+              : `Retiro ${getCashboxLabel(movement.box)}`;
+            return `
+              <article class="cashbox-movement ${isTransfer ? "is-transfer" : "is-expense"}">
+                <div>
+                  <strong>${escapeHtml(label)}</strong>
+                  <span>${escapeHtml(movement.description || movement.origin)}</span>
+                </div>
+                <div class="cashbox-movement-amount">
+                  <strong>${formatMoney(movement.amount)}</strong>
+                  <small>${escapeHtml(formatDateTime(movement.occurredAt))}</small>
+                </div>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
     </div>
   `;
+}
+
+function getCashLedgerBoxLabel(box, method) {
+  return `${getCashboxLabel(box)} ${method === "transfer" ? "transferencia" : "efectivo"}`;
+}
+
+function getCashReportOriginLabel(movement) {
+  if (movement.type === "expense" && movement.description) return movement.description;
+  return movement.origin || movement.description || "Sin origen detallado";
+}
+
+function summarizeCashMovementsByOrigin(movements) {
+  const byKey = new Map();
+  movements.forEach((movement) => {
+    const origin = getCashReportOriginLabel(movement);
+    const key = [movement.box, movement.method, origin].join("|");
+    const current = byKey.get(key) || {
+      box: movement.box,
+      method: movement.method,
+      origin,
+      count: 0,
+      amount: 0,
+    };
+    current.count += 1;
+    current.amount += movement.amount;
+    byKey.set(key, current);
+  });
+  return Array.from(byKey.values()).sort((left, right) => right.amount - left.amount);
+}
+
+function renderCashReportOriginRows(rows, emptyCopy) {
+  if (!rows.length) {
+    return `<tr><td colspan="4" class="muted">${escapeHtml(emptyCopy)}</td></tr>`;
+  }
+  return rows
+    .map(
+      (row) => `
+        <tr>
+          <td>${escapeHtml(row.origin)}</td>
+          <td>${escapeHtml(getCashLedgerBoxLabel(row.box, row.method))}</td>
+          <td>${row.count}</td>
+          <td class="money">${formatMoney(row.amount)}</td>
+        </tr>
+      `
+    )
+    .join("");
+}
+
+function buildCashboxReportHtml(monthKey = ui.cashReportMonth) {
+  const normalizedMonth = /^\d{4}-\d{2}$/.test(String(monthKey || ""))
+    ? String(monthKey)
+    : getCurrentMonthKey();
+  const movements = getCashLedgerMovements(normalizedMonth).sort(
+    (left, right) => (Date.parse(left.occurredAt) || 0) - (Date.parse(right.occurredAt) || 0)
+  );
+  const incomes = movements.filter((movement) => movement.type === "income");
+  const expenses = movements.filter((movement) => movement.type === "expense");
+  const transfers = movements.filter((movement) => movement.type === "transfer");
+  const incomeTotal = incomes.reduce((sum, movement) => sum + movement.amount, 0);
+  const expenseTotal = expenses.reduce((sum, movement) => sum + movement.amount, 0);
+  const transferTotal = transfers.reduce((sum, movement) => sum + movement.amount, 0);
+  const generatedAt = new Date().toISOString();
+  const range = getMonthRange(normalizedMonth);
+  const reportFileName = `blue-coast-informe-cajas-${normalizedMonth}.html`;
+  const boxDefinitions = [
+    { box: "hotel", method: "cash" },
+    { box: "hotel", method: "transfer" },
+    { box: "beverages", method: "cash" },
+    { box: "beverages", method: "transfer" },
+  ];
+  const boxRows = boxDefinitions.map(({ box, method }) => {
+    const income = incomes
+      .filter((movement) => movement.box === box && movement.method === method)
+      .reduce((sum, movement) => sum + movement.amount, 0);
+    const expense = expenses
+      .filter((movement) => movement.box === box && movement.method === method)
+      .reduce((sum, movement) => sum + movement.amount, 0);
+    const sent =
+      method === "cash"
+        ? transfers
+            .filter((movement) => movement.box === box)
+            .reduce((sum, movement) => sum + movement.amount, 0)
+        : 0;
+    const received =
+      method === "cash"
+        ? transfers
+            .filter((movement) => movement.counterpartBox === box)
+            .reduce((sum, movement) => sum + movement.amount, 0)
+        : 0;
+    return { box, method, income, expense, sent, received, net: income - expense - sent + received };
+  });
+  const movementRows = movements.length
+    ? movements
+        .map((movement) => {
+          const isTransfer = movement.type === "transfer";
+          const typeLabel =
+            movement.type === "income"
+              ? "Ingreso"
+              : movement.type === "expense"
+                ? "Egreso"
+                : "Transferencia interna";
+          const boxLabel = isTransfer
+            ? `${getCashboxLabel(movement.box)} \u2192 ${getCashboxLabel(movement.counterpartBox)}`
+            : getCashLedgerBoxLabel(movement.box, movement.method);
+          return `
+            <tr>
+              <td>${escapeHtml(formatDateTime(movement.occurredAt))}</td>
+              <td><span class="movement-type is-${escapeHtml(movement.type)}">${escapeHtml(typeLabel)}</span></td>
+              <td>${escapeHtml(boxLabel)}</td>
+              <td>${escapeHtml(getCashReportOriginLabel(movement))}</td>
+              <td>${escapeHtml(movement.description || "-")}</td>
+              <td class="money">${formatMoney(movement.amount)}</td>
+            </tr>
+          `;
+        })
+        .join("")
+    : `<tr><td colspan="6" class="muted">No hay movimientos registrados en este per&iacute;odo.</td></tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blue Coast - Informe de cajas - ${escapeHtml(normalizedMonth)}</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; color: #101b2f; background: #eef3f7; font-family: Inter, Arial, sans-serif; }
+      .page { width: min(1180px, calc(100vw - 28px)); margin: 24px auto; display: grid; gap: 16px; }
+      header, section { border: 1px solid #ced9e5; border-radius: 12px; background: #fff; padding: 18px; }
+      header { display: flex; justify-content: space-between; gap: 20px; align-items: center; color: #fff; background: #10243a; }
+      h1, h2 { margin: 0; font-family: Manrope, Inter, Arial, sans-serif; }
+      h1 { font-size: 1.8rem; } h2 { margin-bottom: 12px; font-size: 1.15rem; }
+      p { margin: 5px 0 0; line-height: 1.45; } header p { color: #c9d8e7; }
+      .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+      button { border: 0; border-radius: 8px; padding: 10px 13px; color: #fff; background: #2f6ee9; font: inherit; font-weight: 800; cursor: pointer; }
+      .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+      .card { padding: 13px; border: 1px solid #d6e0ea; border-radius: 9px; background: #f6f9fc; }
+      .card span { display: block; color: #53677c; font-size: .76rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+      .card strong { display: block; margin-top: 7px; font-size: 1.35rem; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 9px 8px; border-bottom: 1px solid #dde5ed; text-align: left; vertical-align: top; }
+      th { color: #526579; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+      .money { white-space: nowrap; font-weight: 800; text-align: right; }
+      .muted { color: #687b8e; }
+      .movement-type { display: inline-block; padding: 4px 7px; border-radius: 999px; font-size: .72rem; font-weight: 800; }
+      .movement-type.is-income { color: #075d4e; background: #d9f4ec; }
+      .movement-type.is-expense { color: #9b302d; background: #ffe3e0; }
+      .movement-type.is-transfer { color: #245996; background: #e0ecff; }
+      .two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .table-wrap { overflow-x: auto; }
+      footer { color: #53677c; text-align: center; font-size: .8rem; }
+      @media (max-width: 760px) { header, .two-columns { display: grid; grid-template-columns: 1fr; } .summary { grid-template-columns: 1fr 1fr; } }
+      @media print { body { background: #fff; } .page { width: auto; margin: 0; } header, section { break-inside: avoid; } button { display: none; } }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div>
+          <h1>Informe de cajas</h1>
+          <p>Blue Coast Sistema Hotelero</p>
+          <p>Per&iacute;odo: ${formatDate(range.start)} al ${formatDate(range.end)} &middot; Emitido: ${escapeHtml(formatDateTime(generatedAt))}</p>
+        </div>
+        <div class="toolbar">
+          <button onclick="window.print()">Imprimir / guardar PDF</button>
+          <button onclick="downloadCashReportHtml()">Guardar HTML</button>
+        </div>
+      </header>
+      <section class="summary">
+        <article class="card"><span>Ingresos operativos</span><strong>${formatMoney(incomeTotal)}</strong></article>
+        <article class="card"><span>Egresos</span><strong>${formatMoney(expenseTotal)}</strong></article>
+        <article class="card"><span>Resultado operativo</span><strong>${formatMoney(incomeTotal - expenseTotal)}</strong></article>
+        <article class="card"><span>Transferencias internas</span><strong>${formatMoney(transferTotal)}</strong></article>
+      </section>
+      <section>
+        <h2>Resumen por caja y medio de pago</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Caja</th><th>Ingresos</th><th>Egresos</th><th>Recibido interno</th><th>Enviado interno</th><th>Variaci&oacute;n</th></tr></thead>
+          <tbody>${boxRows
+            .map(
+              (row) => `<tr>
+                <td>${escapeHtml(getCashLedgerBoxLabel(row.box, row.method))}</td>
+                <td class="money">${formatMoney(row.income)}</td>
+                <td class="money">${formatMoney(row.expense)}</td>
+                <td class="money">${formatMoney(row.received)}</td>
+                <td class="money">${formatMoney(row.sent)}</td>
+                <td class="money">${formatMoney(row.net)}</td>
+              </tr>`
+            )
+            .join("")}</tbody>
+        </table></div>
+      </section>
+      <div class="two-columns">
+        <section>
+          <h2>Origen de los ingresos</h2>
+          <table><thead><tr><th>Origen</th><th>Caja</th><th>Operaciones</th><th>Total</th></tr></thead>
+          <tbody>${renderCashReportOriginRows(summarizeCashMovementsByOrigin(incomes), "Sin ingresos registrados.")}</tbody></table>
+        </section>
+        <section>
+          <h2>Origen de los egresos</h2>
+          <table><thead><tr><th>Destino / motivo</th><th>Caja</th><th>Operaciones</th><th>Total</th></tr></thead>
+          <tbody>${renderCashReportOriginRows(summarizeCashMovementsByOrigin(expenses), "Sin egresos registrados.")}</tbody></table>
+        </section>
+      </div>
+      <section>
+        <h2>Transferencias internas entre cajas</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Fecha</th><th>Origen</th><th>Destino</th><th>Detalle</th><th>Monto</th></tr></thead>
+          <tbody>${
+            transfers.length
+              ? transfers
+                  .map(
+                    (movement) => `<tr>
+                      <td>${escapeHtml(formatDateTime(movement.occurredAt))}</td>
+                      <td>${escapeHtml(getCashboxLabel(movement.box))}</td>
+                      <td>${escapeHtml(getCashboxLabel(movement.counterpartBox))}</td>
+                      <td>${escapeHtml(movement.description || movement.origin)}</td>
+                      <td class="money">${formatMoney(movement.amount)}</td>
+                    </tr>`
+                  )
+                  .join("")
+              : `<tr><td colspan="5" class="muted">Sin transferencias internas registradas.</td></tr>`
+          }</tbody>
+        </table></div>
+      </section>
+      <section>
+        <h2>Libro completo de movimientos</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Caja / recorrido</th><th>Origen</th><th>Detalle</th><th>Monto</th></tr></thead>
+          <tbody>${movementRows}</tbody>
+        </table></div>
+      </section>
+      <footer>Los movimientos internos no se suman como ingresos ni egresos: solo trasladan efectivo entre cajas.</footer>
+    </div>
+    <script>
+      function downloadCashReportHtml() {
+        const blob = new Blob([document.documentElement.outerHTML], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = ${JSON.stringify(reportFileName)};
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+    <\/script>
+  </body>
+</html>`;
+}
+
+function openCashboxReport() {
+  const html = buildCashboxReportHtml(ui.cashReportMonth);
+  openDocumentWindow(html, `Blue Coast - Informe de cajas - ${ui.cashReportMonth}`);
 }
 
 function renderDepartureAlertList(rows, departureTotal) {
@@ -5470,6 +6140,7 @@ function renderCashWithdrawalModal() {
   const cashboxes = getCashboxTotals();
   const available = box ? cashboxes[box].adjustedCash : 0;
   const amount = String(modal.amount || "");
+  const note = String(modal.note || "");
   const parsedAmount = parseAmount(amount);
   const remaining = parsedAmount > 0 ? available - parsedAmount : available;
   const hasError = Boolean(modal.error);
@@ -5515,6 +6186,18 @@ function renderCashWithdrawalModal() {
           <small class="${hasError ? "cash-withdrawal-error" : ""}">
             ${hasError ? escapeHtml(modal.error) : "El retiro quedar&aacute; guardado como movimiento de caja."}
           </small>
+        </label>
+        <label class="field cash-withdrawal-field">
+          <span>Motivo o destino del retiro</span>
+          <input
+            type="text"
+            value="${escapeHtml(note)}"
+            data-action-input="cash-withdrawal-note"
+            placeholder="Ej.: pago a proveedor, dep&oacute;sito bancario..."
+            maxlength="120"
+            autocomplete="off"
+          />
+          <small>Este detalle quedar&aacute; como origen explicativo del egreso en el informe.</small>
         </label>
         <div class="actions-row cash-withdrawal-modal-actions">
           <button class="button" data-action="confirm-cash-withdrawal">Registrar retiro</button>
@@ -6076,6 +6759,7 @@ function getLiveSourceState(source) {
 }
 
 function buildUnifiedBackupPayload() {
+  syncCashLedgerFromOperationalState();
   const exportedAt = new Date().toISOString();
   const checkinSource = getLiveSourceState("checkin");
   const beverageSource = getLiveSourceState("beverages");
@@ -6388,6 +7072,11 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "generate-cash-report") {
+    openCashboxReport();
+    return;
+  }
+
   if (action === "clear-cash-audit") {
     ui.cashAudit.hotel = "";
     ui.cashAudit.beverages = "";
@@ -6466,6 +7155,14 @@ document.addEventListener("change", (event) => {
     state.selectedMonth = target.value || getCurrentMonthKey();
     persistState();
     render();
+    return;
+  }
+
+  if (target.matches("[data-action-input='cash-report-month']")) {
+    ui.cashReportMonth = /^\d{4}-\d{2}$/.test(target.value)
+      ? target.value
+      : getCurrentMonthKey();
+    render({ preserveScroll: true });
     return;
   }
 
