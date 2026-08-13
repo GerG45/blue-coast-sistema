@@ -27,10 +27,10 @@ const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
 const TIMELINE_ICON_URL = new URL("./assets/module-icons/linea-de-tiempo.svg?v=20260813-1", window.location.href).href;
 const TIMELINE_ICON_LIGHT_URL = new URL("./assets/module-icons/light/linea-de-tiempo.svg?v=20260813-1", window.location.href).href;
-const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260813-6", window.location.href).href;
-const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260813-6", window.location.href).href;
-const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260811-10", window.location.href).href;
-const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260811-10", window.location.href).href;
+const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260813-7", window.location.href).href;
+const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260813-7", window.location.href).href;
+const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260813-1", window.location.href).href;
+const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260813-1", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
 const THEME_PREF_KEY = "bluecoast-theme-v1";
 const SIDEBAR_ICON_URLS = Object.freeze({

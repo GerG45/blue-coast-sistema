@@ -2107,10 +2107,9 @@ function loadState() {
       return createInitialState();
     }
 
-    const cleanSlateState = applyCleanSlateResetIfNeeded(parsed);
-    if (cleanSlateState) {
-      return cleanSlateState;
-    }
+    // La limpieza inicial ya fue consolidada en el estado central. Mantener esta
+    // migracion activa por navegador podria borrar reservas al abrir una PC nueva.
+    markCleanSlateResetApplied();
 
     const reservations = parsed.reservations.map(normalizeReservation).filter(Boolean);
     if (!reservations.length) {

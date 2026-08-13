@@ -477,14 +477,8 @@ let heroVisibilityObserver = null;
 let successToastHideTimeoutId = null;
 let successToastRemoveTimeoutId = null;
 
-clearLegacyStoredState();
 let state = loadState();
 let bridgedCheckinState = null;
-applyTestCleanup();
-applyDriverCoordinatorPilotReset();
-applyDriverCoordinatorCourtesyRebalance();
-applyMovementCleanupPreservingStock();
-applySeedStockSync();
 ui.catalogDraft = createCatalogDraft();
 
 function deepClone(value) {
@@ -1103,20 +1097,18 @@ function sanitizeState(candidate) {
     normalizedDriverCoordinatorGroups.find((group) => !group.archived) ||
     normalizedDriverCoordinatorGroups[0] ||
     null;
-  const normalizedStaffMembers =
-    Array.isArray(candidate.staffMembers) && candidate.staffMembers.length
-      ? candidate.staffMembers.map(normalizeStaffMember).filter(Boolean)
-      : buildSeedStaffMembers();
-  const normalizedDriverCoordinatorMembers =
-    Array.isArray(candidate.driverCoordinatorMembers) && candidate.driverCoordinatorMembers.length
-      ? candidate.driverCoordinatorMembers
+  const normalizedStaffMembers = Array.isArray(candidate.staffMembers)
+    ? candidate.staffMembers.map(normalizeStaffMember).filter(Boolean)
+    : buildSeedStaffMembers();
+  const normalizedDriverCoordinatorMembers = Array.isArray(candidate.driverCoordinatorMembers)
+    ? candidate.driverCoordinatorMembers
           .map((member) =>
             normalizeDriverCoordinatorMember(member, {
               defaultGroup: defaultDriverCoordinatorGroup,
             })
           )
           .filter(Boolean)
-      : buildSeedDriverCoordinatorMembers();
+    : buildSeedDriverCoordinatorMembers();
   const catalogMap = new Map(normalizedCatalog.map((product) => [product.id, product]));
   const staffMemberMap = new Map(
     normalizedStaffMembers.map((member) => [member.id, member])
