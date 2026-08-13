@@ -10,6 +10,42 @@
 @media (min-width: 1101px) {
   body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    max-height: min(620px, 58vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(103, 220, 203, 0.62) rgba(8, 24, 37, 0.7);
+    align-content: start;
+    padding-right: 8px;
+  }
+
+  body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid::-webkit-scrollbar-track {
+    background: rgba(8, 24, 37, 0.7);
+    border-radius: 999px;
+  }
+
+  body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid::-webkit-scrollbar-thumb {
+    background: rgba(103, 220, 203, 0.62);
+    border: 2px solid rgba(8, 24, 37, 0.7);
+    border-radius: 999px;
+  }
+
+  html.theme-light-root body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid {
+    scrollbar-color: rgba(28, 139, 128, 0.62) rgba(221, 232, 239, 0.9);
+  }
+
+  html.theme-light-root body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid::-webkit-scrollbar-track {
+    background: rgba(221, 232, 239, 0.9);
+  }
+
+  html.theme-light-root body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid::-webkit-scrollbar-thumb {
+    background: rgba(28, 139, 128, 0.62);
+    border-color: rgba(221, 232, 239, 0.9);
   }
 }
 
