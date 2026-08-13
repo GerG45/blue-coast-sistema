@@ -25,8 +25,8 @@ const FIRESTORE_SDK_URL = "https://www.gstatic.com/firebasejs/12.16.0/firebase-f
 const LOGO_URL = new URL("../logo-solanas.png", window.location.href).href;
 const BLUE_COAST_LOGO_URL = new URL("./assets/blue-coast-logo.svg", window.location.href).href;
 const TIMELINE_ICON_URL = new URL("./assets/module-icons/linea-de-tiempo.svg?v=20260811-2", window.location.href).href;
-const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260813-1", window.location.href).href;
-const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260813-1", window.location.href).href;
+const RESERVATIONS_APP_URL = new URL("./modulos/checkin/index.html?mode=reservas&embed=system&build=20260813-2", window.location.href).href;
+const CHECKIN_APP_URL = new URL("./modulos/checkin/index.html?mode=checkin&embed=system&build=20260813-2", window.location.href).href;
 const BEVERAGE_APP_URL = new URL("./modulos/bebidas/index.html?embed=system&build=20260811-10", window.location.href).href;
 const BEVERAGE_CATALOG_APP_URL = new URL("./modulos/bebidas/index.html?view=catalog&build=20260811-10", window.location.href).href;
 const SIDEBAR_PREF_KEY = "bluecoast-sidebar-collapsed-v1";
@@ -2272,11 +2272,26 @@ function dateRangesOverlap(startA, endA, startB, endB) {
 }
 
 function getTimelineReservations() {
-  return getReservations().filter(
-    (reservation) =>
-      normalizeRoomNumber(reservation.roomNumber) &&
-      hasValidTimelineStay(reservation.checkInDate, reservation.checkOutDate)
-  );
+  const reservations =
+    state.sources.checkin && Array.isArray(state.sources.checkin.reservations)
+      ? state.sources.checkin.reservations
+      : [];
+
+  return reservations
+    .filter((reservation) => reservation && reservation.archived !== true)
+    .map(normalizeReservationForCheckout)
+    .filter(
+      (reservation) =>
+        normalizeRoomNumber(reservation.roomNumber) &&
+        hasValidTimelineStay(reservation.checkInDate, reservation.checkOutDate)
+    )
+    .sort((left, right) => {
+      const dateCompare = String(left.checkInDate || "").localeCompare(
+        String(right.checkInDate || "")
+      );
+      if (dateCompare !== 0) return dateCompare;
+      return Number(left.roomNumber || 0) - Number(right.roomNumber || 0);
+    });
 }
 
 function getRoomOccupantForTimeline(roomNumber, date) {
@@ -2354,6 +2369,23 @@ function getDefaultGroupColor(seed = "") {
   const saturation = [62, 72, 68, 78, 58][index % 5];
   const lightness = [46, 54, 42, 60, 50][Math.floor(index / 5) % 5];
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
+}
+
+function getDefaultReservationColor(seed = "") {
+  const index = (hashText(seed || "Reserva particular") + 73) % 200;
+  const hue = Math.round((index * 137.508) % 360);
+  const saturation = [62, 72, 68, 78, 58][index % 5];
+  const lightness = [46, 54, 42, 60, 50][Math.floor(index / 5) % 5];
+  return `hsl(${hue} ${saturation}% ${lightness}%)`;
+}
+
+function getReservationColorSeed(reservation) {
+  if (!reservation) return "Reserva particular";
+  return (
+    [reservation.id, reservation.checkInDate, reservation.checkOutDate, reservation.roomNumber]
+      .filter(Boolean)
+      .join("|") || "Reserva particular"
+  );
 }
 
 function getRgbChannelsFromColor(color) {
@@ -2463,7 +2495,9 @@ function getReservationGroupInitial(reservation) {
 
 function getReservationIndividualColor(reservation) {
   const rawColor = String((reservation && reservation.raw && reservation.raw.reservationColor) || "").trim();
-  return isHslColor(rawColor) ? rawColor : TIMELINE_INDIVIDUAL_COLOR;
+  return isHslColor(rawColor)
+    ? rawColor
+    : getDefaultReservationColor(getReservationColorSeed(reservation));
 }
 
 function getTimelineReservationPaint(reservation) {

@@ -6,6 +6,13 @@
   font-display: swap;
 }
 
+/* Reservas aprovecha cuatro columnas en escritorio sin alterar Check-in ni la vista móvil. */
+@media (min-width: 1101px) {
+  body.has-shell-layout.is-reservations-mode .availability-panel > .room-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
 /* Solanas Sistema - dark operational theme */
 :root {
   --bg: #06101a;

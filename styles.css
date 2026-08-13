@@ -4953,6 +4953,12 @@ body {
   }
 }
 
+/* La vista de muestra conserva el mismo tratamiento histórico que Reservas. */
+.menu-timeline-panel .timeline-status.is-past {
+  filter: saturate(0.45);
+  opacity: 0.54;
+}
+
 @media (max-width: 760px) {
   html.theme-light-root .timeline-panel .timeline-room-col {
     box-shadow: 7px 0 16px rgba(52, 72, 91, 0.14);

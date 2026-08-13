@@ -14240,6 +14240,8 @@ function render(options = {}) {
 
   document.body.classList.toggle("has-shell-layout", SYSTEM_CHROME);
   document.body.classList.toggle("is-system-embedded", SYSTEM_EMBEDDED);
+  document.body.classList.toggle("is-reservations-mode", isReservationsMode());
+  document.body.classList.toggle("is-checkin-mode", isCheckinMode());
 
   setupEmbeddedCheckinModalViewportTracking();
   syncEmbeddedCheckinModalViewport();
