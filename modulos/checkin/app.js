@@ -421,6 +421,8 @@ const ui = {
   isReservationConfirmModalOpen: false,
   confirmReservationId: null,
   isPrivateReservationModalOpen: false,
+  privateReservationSession: null,
+  reservationDiscardTarget: "",
   isStayPaymentModalOpen: false,
   stayPaymentReservationId: null,
   isCombinedStayPaymentModalOpen: false,
@@ -2159,6 +2161,9 @@ function removeDemoReservationsFromState() {
 
 function persistState(options = {}) {
   const { toast = "" } = options;
+  if (ui.privateReservationSession && ui.isPrivateReservationModalOpen) {
+    return;
+  }
   syncGroupMemoryFromReservations();
   state.lastSavedAt = nowIso();
   try {
@@ -2176,11 +2181,37 @@ function postCheckinStateToParent() {
   if (!window.parent || window.parent === window) {
     return;
   }
+  let payload = state;
+  const session = ui.privateReservationSession;
+  if (session && ui.isPrivateReservationModalOpen) {
+    payload = JSON.parse(JSON.stringify(state));
+    if (session.isNew) {
+      payload.reservations = payload.reservations.filter(
+        (reservation) => reservation.id !== session.reservationId
+      );
+      const nextActiveReservation =
+        payload.reservations.find((reservation) => reservation.archived !== true) ||
+        payload.reservations[0] ||
+        null;
+      payload.activeReservationId = nextActiveReservation ? nextActiveReservation.id : "";
+    } else if (session.original) {
+      const reservationIndex = payload.reservations.findIndex(
+        (reservation) => reservation.id === session.reservationId
+      );
+      if (reservationIndex >= 0) {
+        payload.reservations.splice(
+          reservationIndex,
+          1,
+          cloneReservationSessionValue(session.original)
+        );
+      }
+    }
+  }
   try {
     window.parent.postMessage(
       {
         type: "solanas:checkin-state",
-        payload: state,
+        payload,
         emittedAt: nowIso(),
       },
       "*"
@@ -2535,6 +2566,7 @@ function openGroupLoadModal() {
   closeGroupPickerModal();
   ui.groupDraft = createEmptyGroupDraft();
   ui.isGroupLoadModalOpen = true;
+  ui.reservationDiscardTarget = "";
 }
 
 function closeGroupLoadModal(options = {}) {
@@ -2542,6 +2574,9 @@ function closeGroupLoadModal(options = {}) {
   ui.isGroupLoadModalOpen = false;
   if (discardDraft) {
     ui.groupDraft = null;
+  }
+  if (ui.reservationDiscardTarget === "group") {
+    ui.reservationDiscardTarget = "";
   }
 }
 
@@ -2715,6 +2750,7 @@ function openGroupEditModal(groupId) {
   closeGroupPickerModal();
   ui.groupDraft = draft;
   ui.isGroupLoadModalOpen = true;
+  ui.reservationDiscardTarget = "";
   return true;
 }
 
@@ -4123,6 +4159,9 @@ function confirmReservation(reservationId = state.activeReservationId) {
     return false;
   }
 
+  const hasPrivateReservationSession = Boolean(
+    ui.privateReservationSession && ui.privateReservationSession.reservationId === reservation.id
+  );
   if (isReservationsMode() && !isGroupReservation(reservation)) {
     reservation.depositRecordedAt = nowIso();
   }
@@ -4131,10 +4170,17 @@ function confirmReservation(reservationId = state.activeReservationId) {
   closeReservationConfirmModal();
   ui.isReservationWorkspaceOpen = false;
   ui.isPrivateReservationModalOpen = false;
+  ui.privateReservationSession = null;
+  ui.reservationDiscardTarget = "";
   ui.roomAvailabilityMode = "today";
-  persistState({
-    toast: "La reserva qued\u00f3 confirmada.",
-  });
+  if (hasPrivateReservationSession) {
+    persistPrivateReservationSession();
+    showSuccessToast("La reserva qued\u00f3 confirmada.");
+  } else {
+    persistState({
+      toast: "La reserva qued\u00f3 confirmada.",
+    });
+  }
   maybePrintLegalPacketAfterCheckinReady(reservation);
   return true;
 }
@@ -5171,12 +5217,85 @@ function closeReservationWorkspace(options = {}) {
   render({ preserveScroll });
 }
 
+function cloneReservationSessionValue(reservation) {
+  return reservation ? JSON.parse(JSON.stringify(reservation)) : null;
+}
+
+function beginPrivateReservationSession(reservation, options = {}) {
+  if (!isReservationsMode() || !reservation) {
+    ui.privateReservationSession = null;
+    return;
+  }
+  ui.privateReservationSession = {
+    reservationId: reservation.id,
+    isNew: options.isNew === true,
+    original: options.isNew === true ? null : cloneReservationSessionValue(reservation),
+  };
+  ui.reservationDiscardTarget = "";
+}
+
+function restorePrivateReservationSession() {
+  const session = ui.privateReservationSession;
+  if (!session) return;
+
+  const reservationIndex = state.reservations.findIndex(
+    (reservation) => reservation.id === session.reservationId
+  );
+  if (session.isNew) {
+    state.reservations = state.reservations.filter(
+      (reservation) => reservation.id !== session.reservationId
+    );
+  } else if (session.original) {
+    const restoredReservation = cloneReservationSessionValue(session.original);
+    if (reservationIndex >= 0) {
+      state.reservations.splice(reservationIndex, 1, restoredReservation);
+    } else {
+      state.reservations.unshift(restoredReservation);
+    }
+  }
+
+  const nextReservation =
+    state.reservations.find(
+      (reservation) => reservation.id === session.reservationId && reservation.archived !== true
+    ) ||
+    state.reservations.find((reservation) => reservation.archived !== true) ||
+    state.reservations[0] ||
+    null;
+  if (nextReservation) {
+    state.activeReservationId = nextReservation.id;
+    ui.activeGuestId = nextReservation.guests?.[0]?.id || null;
+  } else {
+    const placeholder = createEmptyReservation();
+    state.reservations = [placeholder];
+    state.activeReservationId = placeholder.id;
+    ui.activeGuestId = placeholder.guests[0].id;
+  }
+}
+
+function persistPrivateReservationSession() {
+  ui.isPrivateReservationModalOpen = false;
+  ui.privateReservationSession = null;
+  ui.reservationDiscardTarget = "";
+  syncGroupMemoryFromReservations();
+  state.lastSavedAt = nowIso();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error("No se pudo guardar el estado del check in.", error);
+  }
+  postCheckinStateToParent();
+}
+
 function closePrivateReservationModal(options = {}) {
   const { preserveScroll = true } = options;
+  restorePrivateReservationSession();
   ui.isPrivateReservationModalOpen = false;
+  ui.privateReservationSession = null;
+  ui.reservationDiscardTarget = "";
   resetScannerUi();
   closeReservationConfirmModal();
   closeRoomPickerModal();
+  persistState();
   render({ preserveScroll });
 }
 
@@ -5185,6 +5304,7 @@ function openPrivateReservationModal(reservationId = state.activeReservationId) 
     (item) => item.id === reservationId && item.archived !== true
   );
   if (!reservation) return false;
+  beginPrivateReservationSession(reservation);
   const primaryGuest = ensureReservationHasGuest(reservation);
   state.activeReservationId = reservation.id;
   ui.activeGuestId = primaryGuest.id;
@@ -5260,6 +5380,9 @@ function createNewReservation(options = {}) {
     syncReservationRoomFlags(reservation);
     touchReservation(reservation);
   }
+  if (isReservationsMode()) {
+    beginPrivateReservationSession(reservation, { isNew: true });
+  }
   const primaryGuest = ensureReservationHasGuest(reservation);
   state.activeReservationId = reservation.id;
   ui.activeGuestId = primaryGuest.id;
@@ -5317,6 +5440,36 @@ function confirmRoomShortcutReservation() {
   ui.pendingRoomShortcutNumber = "";
   ui.pendingRoomShortcutDate = "";
   createNewReservation({ roomNumber, checkInDate });
+}
+
+function requestReservationDiscard(target) {
+  if (target === "private" && ui.isPrivateReservationModalOpen) {
+    ui.reservationDiscardTarget = "private";
+  } else if (target === "group" && ui.isGroupLoadModalOpen) {
+    ui.reservationDiscardTarget = "group";
+  } else {
+    return false;
+  }
+  render({ preserveScroll: true, focusModal: true });
+  return true;
+}
+
+function cancelReservationDiscard() {
+  ui.reservationDiscardTarget = "";
+  render({ preserveScroll: true, focusModal: true });
+}
+
+function confirmReservationDiscard() {
+  const target = ui.reservationDiscardTarget;
+  ui.reservationDiscardTarget = "";
+  if (target === "group") {
+    closeGroupLoadModal();
+    render({ preserveScroll: true });
+    return;
+  }
+  if (target === "private") {
+    closePrivateReservationModal();
+  }
 }
 
 function distributeGroupGuestsAcrossRooms(roomNumbers, totalGuests) {
@@ -9871,7 +10024,10 @@ function renderPrivateReservationModal(reservation = getActiveReservation()) {
     return "";
   }
 
-  const isNewReservation = isReservationPlaceholder(reservation);
+  const isNewReservation = Boolean(
+    ui.privateReservationSession && ui.privateReservationSession.isNew
+  );
+  const closeLabel = isNewReservation ? "Cerrar sin confirmar" : "Cerrar sin guardar";
   return `
     <div class="scanner-modal-backdrop" data-action="close-private-reservation-modal"></div>
     <section
@@ -9897,11 +10053,63 @@ function renderPrivateReservationModal(reservation = getActiveReservation()) {
             type="button"
             data-action="close-private-reservation-modal"
           >
-            Cerrar
+            ${closeLabel}
           </button>
         </div>
         <div class="private-reservation-modal-body">
           ${renderReservationPanel(reservation)}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderReservationDiscardModal() {
+  const target = ui.reservationDiscardTarget;
+  if (!target) return "";
+
+  const privateSession = target === "private" ? ui.privateReservationSession : null;
+  const isExistingEdit =
+    target === "group"
+      ? Boolean(ui.groupDraft && ui.groupDraft.editingGroupId)
+      : Boolean(privateSession && !privateSession.isNew);
+  const title = isExistingEdit ? "\u00bfDescartar los cambios?" : "\u00bfSeguro que quer\u00e9s cerrar?";
+  const copy = isExistingEdit
+    ? "Si cerr\u00e1s ahora, perder\u00e1s los cambios escritos en esta edici\u00f3n. La reserva que ya exist\u00eda seguir\u00e1 guardada como estaba antes de abrirla."
+    : target === "group"
+      ? "Si cerr\u00e1s ahora, perder\u00e1s todo lo escrito y no se crear\u00e1 ninguna reserva ni se bloquear\u00e1 ninguna habitaci\u00f3n."
+      : "Si cerr\u00e1s ahora, perder\u00e1s todo lo escrito y no se crear\u00e1 ni se reservar\u00e1 nada.";
+
+  return `
+    <div class="scanner-modal-backdrop reservation-discard-backdrop" data-action="cancel-reservation-discard"></div>
+    <section
+      class="scanner-modal-shell reservation-discard-shell"
+      aria-modal="true"
+      role="alertdialog"
+      aria-labelledby="reservation-discard-title"
+      aria-describedby="reservation-discard-copy"
+    >
+      <div class="scanner-modal reservation-discard-modal">
+        <div>
+          <p class="scanner-modal-kicker">Salida sin guardar</p>
+          <h2 id="reservation-discard-title">${title}</h2>
+          <p id="reservation-discard-copy" class="scanner-helper">${copy}</p>
+        </div>
+        <div class="actions-row reservation-discard-actions">
+          <button
+            class="ghost-button"
+            type="button"
+            data-action="cancel-reservation-discard"
+          >
+            Seguir editando
+          </button>
+          <button
+            class="danger-button"
+            type="button"
+            data-action="confirm-reservation-discard"
+          >
+            S\u00ed, cerrar y descartar
+          </button>
         </div>
       </div>
     </section>
@@ -12425,7 +12633,9 @@ function renderGroupLoadModal() {
               }
             </p>
           </div>
-          <button class="ghost-button" type="button" data-action="close-group-load-modal">Cerrar</button>
+          <button class="ghost-button" type="button" data-action="close-group-load-modal">
+            ${isEditingGroup ? "Cerrar sin guardar" : "Cerrar sin confirmar"}
+          </button>
         </div>
 
         <div class="group-form-layout">
@@ -12757,7 +12967,7 @@ function renderGroupLoadModal() {
               data-action="create-group-reservations"
               ${canCreate ? "" : "disabled"}
             >
-              ${isEditingGroup ? "Guardar cambios del grupo" : "Crear reservas del grupo"}
+              ${isEditingGroup ? "Confirmar cambios del grupo" : "Confirmar reserva grupal"}
             </button>
           </div>
         </div>
@@ -13743,6 +13953,7 @@ const MODAL_FOCUSABLE_SELECTOR = [
 ].join(", ");
 
 const MANAGED_MODAL_ROOT_SELECTORS = [
+  ".reservation-discard-modal",
   ".room-shortcut-modal",
   ".room-picker-confirm-modal",
   ".room-picker-modal",
@@ -13757,6 +13968,13 @@ const MANAGED_MODAL_ROOT_SELECTORS = [
 ];
 
 const MANAGED_MODAL_TAB_ORDER = [
+  {
+    selector: ".reservation-discard-modal",
+    orderedSelectors: [
+      "[data-action='cancel-reservation-discard']",
+      "[data-action='confirm-reservation-discard']",
+    ],
+  },
   {
     selector: ".private-reservation-modal",
     orderedSelectors: [
@@ -14254,6 +14472,7 @@ function render(options = {}) {
     ${renderGroupPickerModal()}
     ${renderGroupLoadModal()}
     ${renderPrivateReservationModal(privateModalReservation)}
+    ${renderReservationDiscardModal()}
     ${renderTariffModal()}
     ${renderReservationConfirmModal()}
     ${renderStayPaymentModal()}
@@ -14527,13 +14746,22 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "close-group-load-modal") {
-    closeGroupLoadModal();
-    render({ preserveScroll: true });
+    requestReservationDiscard("group");
     return;
   }
 
   if (action === "close-private-reservation-modal") {
-    closePrivateReservationModal();
+    requestReservationDiscard("private");
+    return;
+  }
+
+  if (action === "cancel-reservation-discard") {
+    cancelReservationDiscard();
+    return;
+  }
+
+  if (action === "confirm-reservation-discard") {
+    confirmReservationDiscard();
     return;
   }
 
@@ -15190,6 +15418,12 @@ document.addEventListener("keydown", (event) => {
     }
   }
 
+  if (event.key === "Escape" && ui.reservationDiscardTarget) {
+    event.preventDefault();
+    cancelReservationDiscard();
+    return;
+  }
+
   if (event.key === "Escape" && ui.pendingRoomShortcutNumber) {
     closeRoomShortcutModal();
     return;
@@ -15214,8 +15448,8 @@ document.addEventListener("keydown", (event) => {
   }
 
   if (event.key === "Escape" && ui.isGroupLoadModalOpen) {
-    closeGroupLoadModal();
-    render({ preserveScroll: true });
+    event.preventDefault();
+    requestReservationDiscard("group");
     return;
   }
 
@@ -15250,7 +15484,8 @@ document.addEventListener("keydown", (event) => {
   }
 
   if (event.key === "Escape" && ui.isPrivateReservationModalOpen) {
-    closePrivateReservationModal();
+    event.preventDefault();
+    requestReservationDiscard("private");
     return;
   }
 

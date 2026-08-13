@@ -6878,6 +6878,66 @@ body.is-system-embedded
   }
 }
 
+/* Confirmacion de salida: una segunda capa clara antes de descartar una carga. */
+.reservation-discard-backdrop {
+  z-index: 102;
+  background: rgba(2, 8, 15, 0.78);
+}
+
+.reservation-discard-shell {
+  z-index: 103;
+  align-items: center;
+}
+
+body.has-shell-layout .reservation-discard-modal {
+  width: min(560px, 100%);
+  gap: 22px;
+  border-color: rgba(248, 113, 113, 0.3) !important;
+  background: linear-gradient(180deg, rgba(24, 37, 56, 0.99), rgba(12, 24, 38, 0.99)) !important;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.42) !important;
+}
+
+body.has-shell-layout .reservation-discard-modal h2 {
+  margin: 5px 0 10px;
+  color: #f7fbff !important;
+}
+
+body.has-shell-layout .reservation-discard-modal .scanner-helper {
+  max-width: 48ch;
+  color: #c4d0de !important;
+  line-height: 1.55;
+}
+
+.reservation-discard-actions {
+  justify-content: flex-end;
+}
+
+html.theme-light-root body.has-shell-layout .reservation-discard-modal {
+  border-color: #f0b7b1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 24px 58px rgba(25, 42, 62, 0.2) !important;
+}
+
+html.theme-light-root body.has-shell-layout .reservation-discard-modal h2 {
+  color: #122036 !important;
+}
+
+html.theme-light-root body.has-shell-layout .reservation-discard-modal .scanner-helper {
+  color: #526178 !important;
+}
+
+@media (max-width: 640px) {
+  .reservation-discard-shell {
+    padding: 14px;
+  }
+
+  .reservation-discard-actions,
+  .reservation-discard-actions .ghost-button,
+  .reservation-discard-actions .danger-button {
+    width: 100%;
+  }
+}
+
 /* Resumen operativo de Reservas: contraste especifico para el tema claro. */
 html.theme-light-root body.has-shell-layout .summary-grid .summary-card {
   border-color: #cbd9e6 !important;
