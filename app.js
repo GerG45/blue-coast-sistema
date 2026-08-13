@@ -3191,6 +3191,7 @@ function renderUnifiedMenu() {
   return `
     ${renderGeneralDashboard(summary)}
     ${renderMenuTimelinePanel()}
+    ${renderDashboardMiniRoomMap()}
   `;
   return `
     ${renderGeneralDashboard(summary)}
@@ -3506,6 +3507,71 @@ function renderMenuTimelinePanel(referenceDate = getMenuTimelineDate()) {
         Verde: disponible. Rojo/color sin inicial: reserva particular. Color con inicial: grupo o empresa.
         Medio cuadrado derecho: ingreso. Medio cuadrado izquierdo: egreso. Gris: mantenimiento.
       </p>
+    </section>
+  `;
+}
+
+function renderDashboardMiniRoomMap(referenceDate = getMenuTimelineDate()) {
+  const selectedDate = normalizeDate(referenceDate) || getTodayInputDate();
+  const today = getTodayInputDate();
+  const rooms = ROOM_OPTIONS.map((roomNumber) => getRoomTimelineDescriptor(roomNumber, selectedDate));
+  const summary = rooms.reduce(
+    (result, descriptor) => {
+      result[descriptor.status] += 1;
+      return result;
+    },
+    { available: 0, occupied: 0, maintenance: 0 }
+  );
+
+  return `
+    <section class="panel panel-strong dashboard-mini-room-map" aria-labelledby="dashboard-mini-room-map-title">
+      <div class="dashboard-mini-room-map-head">
+        <div>
+          <span class="source-tag">Mapa r&aacute;pido</span>
+          <h2 id="dashboard-mini-room-map-title">Habitaciones del d&iacute;a</h2>
+          <p>Vista compacta de disponibilidad para ${escapeHtml(formatDate(selectedDate))}.</p>
+        </div>
+        <div class="dashboard-mini-room-summary" aria-label="Resumen de habitaciones">
+          <span class="status-badge is-ready">${summary.available} disponibles</span>
+          <span class="status-badge is-blocked">${summary.occupied} ocupadas</span>
+          <span class="chip is-slate">${summary.maintenance} mantenimiento</span>
+        </div>
+      </div>
+      <div class="dashboard-mini-room-grid" role="list" aria-label="Estado de las habitaciones">
+        ${rooms
+          .map((descriptor) => {
+            const reservation = descriptor.conflictReservation;
+            const profileLabel = descriptor.roomProfile ? descriptor.roomProfile.label : "Habitaci&oacute;n";
+            const stateLabel =
+              descriptor.status === "maintenance"
+                ? "Mant."
+                : descriptor.status === "occupied"
+                  ? selectedDate === today
+                    ? "En uso"
+                    : selectedDate > today
+                      ? "Reservada"
+                      : "Ocupada"
+                  : "Libre";
+            const detail = reservation
+              ? `${stateLabel}: ${buildTimelineReservationTitle(reservation)}`
+              : descriptor.status === "maintenance"
+                ? "Habitaci&oacute;n en mantenimiento"
+                : `Habitaci&oacute;n disponible (${profileLabel})`;
+
+            return `
+              <article
+                class="dashboard-mini-room is-${descriptor.status}"
+                role="listitem"
+                title="${escapeHtml(detail)}"
+                aria-label="Habitaci&oacute;n ${escapeHtml(descriptor.roomNumber)}: ${escapeHtml(detail)}"
+              >
+                <strong>${escapeHtml(descriptor.roomNumber)}</strong>
+                <span>${escapeHtml(stateLabel)}</span>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
     </section>
   `;
 }

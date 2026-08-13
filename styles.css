@@ -5015,3 +5015,190 @@ body {
       inset -1px 0 rgba(30, 125, 206, 0.42);
   }
 }
+
+/* Dashboard: espejo compacto del mapa de habitaciones para la fecha seleccionada. */
+.dashboard-mini-room-map {
+  display: grid;
+  gap: 18px;
+  border-color: rgba(95, 233, 211, 0.16);
+  background: linear-gradient(180deg, rgba(10, 22, 34, 0.98), rgba(7, 17, 27, 0.98));
+}
+
+.dashboard-mini-room-map-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dashboard-mini-room-map-head h2 {
+  margin: 6px 0 4px;
+  color: #f7fbff;
+}
+
+.dashboard-mini-room-map-head p {
+  margin: 0;
+  color: #aebfd0;
+}
+
+.dashboard-mini-room-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.dashboard-mini-room-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.dashboard-mini-room {
+  display: grid;
+  min-width: 0;
+  min-height: 76px;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  padding: 10px 6px;
+  border: 1px solid rgba(109, 140, 163, 0.26);
+  border-radius: 13px;
+  background: #162638;
+  color: #dbe7f1;
+  text-align: center;
+}
+
+.dashboard-mini-room strong {
+  display: grid;
+  min-width: 38px;
+  min-height: 32px;
+  padding: 4px 8px;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 1.04rem;
+  line-height: 1;
+  background: rgba(133, 157, 177, 0.18);
+}
+
+.dashboard-mini-room span {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dashboard-mini-room.is-available {
+  border-color: rgba(66, 218, 190, 0.42);
+  background: #123a3b;
+  color: #8ff2df;
+}
+
+.dashboard-mini-room.is-available strong {
+  background: #55cdb8;
+  color: #061822;
+}
+
+.dashboard-mini-room.is-occupied {
+  border-color: rgba(255, 111, 130, 0.48);
+  background: #48212d;
+  color: #ffadb8;
+}
+
+.dashboard-mini-room.is-occupied strong {
+  background: #df5b70;
+  color: #fff;
+}
+
+.dashboard-mini-room.is-maintenance {
+  border-color: rgba(178, 198, 218, 0.36);
+  background: #273747;
+  color: #c4d0dc;
+}
+
+.dashboard-mini-room.is-maintenance strong {
+  background: #687d90;
+  color: #fff;
+}
+
+html.theme-light-root .dashboard-mini-room-map {
+  border-color: #d7e2ea;
+  background: #fff;
+}
+
+html.theme-light-root .dashboard-mini-room-map-head h2 {
+  color: #10243b;
+}
+
+html.theme-light-root .dashboard-mini-room-map-head p {
+  color: #5d7082;
+}
+
+html.theme-light-root .dashboard-mini-room.is-available {
+  border-color: #74c9ba;
+  background: #e9f7f3;
+  color: #176b61;
+}
+
+html.theme-light-root .dashboard-mini-room.is-occupied {
+  border-color: #e99ba6;
+  background: #fcecef;
+  color: #9d3243;
+}
+
+html.theme-light-root .dashboard-mini-room.is-maintenance {
+  border-color: #aebdca;
+  background: #edf2f5;
+  color: #506274;
+}
+
+@media (max-width: 760px) {
+  .dashboard-mini-room-map {
+    gap: 14px;
+    padding: 16px 12px 18px;
+  }
+
+  .dashboard-mini-room-map-head {
+    display: grid;
+    align-items: start;
+  }
+
+  .dashboard-mini-room-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .dashboard-mini-room-summary > * {
+    min-width: 0;
+    padding-inline: 5px;
+    font-size: 0.62rem;
+    text-align: center;
+  }
+
+  .dashboard-mini-room-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .dashboard-mini-room {
+    min-height: 68px;
+    padding: 8px 3px;
+    border-radius: 11px;
+  }
+
+  .dashboard-mini-room strong {
+    min-width: 34px;
+    min-height: 29px;
+    font-size: 0.9rem;
+  }
+
+  .dashboard-mini-room span {
+    font-size: 0.57rem;
+  }
+}
