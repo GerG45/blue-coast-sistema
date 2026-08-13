@@ -1090,6 +1090,24 @@ body.theme-light .timeline-panel .timeline-status {
   background: #edf8f2 !important;
 }
 
+html.theme-light-root body .timeline-panel .timeline-day-col.is-past:not(.is-selected-day):not(.is-today),
+body.theme-light .timeline-panel .timeline-day-col.is-past:not(.is-selected-day):not(.is-today) {
+  border-color: #c3cdd4 !important;
+  background: #d5dde2 !important;
+}
+
+html.theme-light-root body .timeline-panel .timeline-cell.is-past:not(.is-selected-day):not(.is-today),
+body.theme-light .timeline-panel .timeline-cell.is-past:not(.is-selected-day):not(.is-today) {
+  border-color: #cbd4d9 !important;
+  background: #dfe5e8 !important;
+}
+
+html.theme-light-root body .timeline-panel .timeline-day-button.is-past:not(.is-selected):not(.is-today),
+body.theme-light .timeline-panel .timeline-day-button.is-past:not(.is-selected):not(.is-today) {
+  background: #d5dde2 !important;
+  color: #405368 !important;
+}
+
 html.theme-light-root body .timeline-panel .timeline-day-col.is-today,
 body.theme-light .timeline-panel .timeline-day-col.is-today,
 html.theme-light-root body .timeline-panel .timeline-cell.is-today,
