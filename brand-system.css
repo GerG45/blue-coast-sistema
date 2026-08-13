@@ -1549,3 +1549,14 @@ body.theme-light .inventory-area-section.is-violet .source-tag {
     line-height: 1.35 !important;
   }
 }
+.theme-svg-icon.is-light-theme {
+  display: none !important;
+}
+
+html.theme-light-root .theme-svg-icon.is-dark-theme {
+  display: none !important;
+}
+
+html.theme-light-root .theme-svg-icon.is-light-theme {
+  display: block !important;
+}

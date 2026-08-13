@@ -93,12 +93,19 @@ const THEME_PREF_KEY = "bluecoast-theme-v1";
 const TITLE_FONT_URL = new URL("./fonts/libre-baskerville-bold.ttf", window.location.href).href;
 const ROOM_ICON_SINGLE_URL = new URL("./assets/cama-single.svg", window.location.href).href;
 const ROOM_ICON_DOUBLE_URL = new URL("./assets/cama-doble.svg", window.location.href).href;
-const TIMELINE_ICON_URL = new URL("../../assets/module-icons/linea-de-tiempo.svg?v=20260811-2", window.location.href).href;
+const TIMELINE_ICON_URL = new URL("../../assets/module-icons/linea-de-tiempo.svg?v=20260813-1", window.location.href).href;
+const TIMELINE_ICON_LIGHT_URL = new URL("../../assets/module-icons/light/linea-de-tiempo.svg?v=20260813-1", window.location.href).href;
 const SUMMARY_ICON_URLS = Object.freeze({
   openReservations: new URL("./assets/resumen/reservas-abiertas.svg", window.location.href).href,
   confirmedReservations: new URL("./assets/resumen/reservas-confirmadas.svg", window.location.href).href,
   occupiedRooms: new URL("./assets/resumen/habitaciones-en-uso.svg", window.location.href).href,
   meals: new URL("./assets/resumen/comidas-de-hoy.svg", window.location.href).href,
+});
+const SUMMARY_ICON_LIGHT_URLS = Object.freeze({
+  openReservations: new URL("./assets/resumen/light/reservas-abiertas.svg", window.location.href).href,
+  confirmedReservations: new URL("./assets/resumen/light/reservas-confirmadas.svg", window.location.href).href,
+  occupiedRooms: new URL("./assets/resumen/light/habitaciones-en-uso.svg", window.location.href).href,
+  meals: new URL("./assets/resumen/light/comidas-de-hoy.svg", window.location.href).href,
 });
 const APP_QUERY = new URLSearchParams(window.location.search);
 const APP_MODE = normalizeAppMode(APP_QUERY.get("mode"));
@@ -8764,7 +8771,10 @@ function renderSummaryCards() {
       <article class="summary-card is-open">
         <div class="summary-card-header">
           <div class="summary-label">Reservas abiertas</div>
-          <span class="summary-card-icon is-open" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.openReservations}" alt="" /></span>
+          <span class="summary-card-icon is-open" aria-hidden="true">
+            <img class="theme-svg-icon is-dark-theme" src="${SUMMARY_ICON_URLS.openReservations}" alt="" />
+            <img class="theme-svg-icon is-light-theme" src="${SUMMARY_ICON_LIGHT_URLS.openReservations}" alt="" />
+          </span>
         </div>
         <span class="summary-value">${getOpenVisibleReservationsCount()}</span>
         <span class="summary-foot">Solo cuenta las reservas visibles del sistema.</span>
@@ -8772,7 +8782,10 @@ function renderSummaryCards() {
       <article class="summary-card is-confirmed">
         <div class="summary-card-header">
           <div class="summary-label">Reservas confirmadas</div>
-          <span class="summary-card-icon is-confirmed" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.confirmedReservations}" alt="" /></span>
+          <span class="summary-card-icon is-confirmed" aria-hidden="true">
+            <img class="theme-svg-icon is-dark-theme" src="${SUMMARY_ICON_URLS.confirmedReservations}" alt="" />
+            <img class="theme-svg-icon is-light-theme" src="${SUMMARY_ICON_LIGHT_URLS.confirmedReservations}" alt="" />
+          </span>
         </div>
         <span class="summary-value">${getReadyReservationsCount()}</span>
         <span class="summary-foot">Incluye confirmaciones individuales y reservas creadas desde carga grupal.</span>
@@ -8780,7 +8793,10 @@ function renderSummaryCards() {
       <article class="summary-card is-occupied">
         <div class="summary-card-header">
           <div class="summary-label">Habitaciones en uso hoy</div>
-          <span class="summary-card-icon is-occupied" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.occupiedRooms}" alt="" /></span>
+          <span class="summary-card-icon is-occupied" aria-hidden="true">
+            <img class="theme-svg-icon is-dark-theme" src="${SUMMARY_ICON_URLS.occupiedRooms}" alt="" />
+            <img class="theme-svg-icon is-light-theme" src="${SUMMARY_ICON_LIGHT_URLS.occupiedRooms}" alt="" />
+          </span>
         </div>
         <span class="summary-value">${todayOccupiedCount}</span>
         <span class="summary-foot">Control del d&iacute;a ${escapeHtml(formatDisplayDate(getTodayInputDate()))}.</span>
@@ -8788,7 +8804,10 @@ function renderSummaryCards() {
       <article class="summary-card is-meals">
         <div class="summary-card-header">
           <div class="summary-label">Comidas de hoy</div>
-          <span class="summary-card-icon is-meals" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.meals}" alt="" /></span>
+          <span class="summary-card-icon is-meals" aria-hidden="true">
+            <img class="theme-svg-icon is-dark-theme" src="${SUMMARY_ICON_URLS.meals}" alt="" />
+            <img class="theme-svg-icon is-light-theme" src="${SUMMARY_ICON_LIGHT_URLS.meals}" alt="" />
+          </span>
         </div>
         <div class="summary-split">
           <span>
@@ -11269,7 +11288,10 @@ function renderRoomTimelinePanel(referenceDate = getRoomOverviewDate()) {
         <div>
           <div class="eyebrow" style="margin-bottom: 8px; color: var(--accent); opacity: 1;">Planificaci&oacute;n</div>
           <div class="timeline-title-heading">
-            <span class="timeline-title-icon" aria-hidden="true"><img src="${TIMELINE_ICON_URL}" alt="" /></span>
+            <span class="timeline-title-icon" aria-hidden="true">
+              <img class="theme-svg-icon is-dark-theme" src="${TIMELINE_ICON_URL}" alt="" />
+              <img class="theme-svg-icon is-light-theme" src="${TIMELINE_ICON_LIGHT_URL}" alt="" />
+            </span>
             <h2>L&iacute;nea del tiempo</h2>
           </div>
           <p>
