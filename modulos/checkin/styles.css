@@ -6798,6 +6798,80 @@ body.is-system-embedded
   }
 }
 
+/* Resumen operativo de Reservas: contraste especifico para el tema claro. */
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card {
+  border-color: #cbd9e6 !important;
+  background: #ffffff !important;
+  color: #10233b !important;
+  box-shadow: 0 8px 22px rgba(35, 61, 84, 0.07) !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card.is-open {
+  border-color: #b9cfe5 !important;
+  background: #f7fbff !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card.is-confirmed {
+  border-color: #b8d9c4 !important;
+  background: #f6fcf8 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card.is-occupied {
+  border-color: #b9d8e4 !important;
+  background: #f5fbfd !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card.is-meals {
+  border-color: #e2cf9f !important;
+  background: #fffaf0 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-label {
+  color: #294862 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-value {
+  color: #0e2037 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-foot {
+  color: #51677b !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card-icon {
+  border-color: #9fbddd !important;
+  background: #e8f2fd !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card-icon.is-confirmed {
+  border-color: #8bc59e !important;
+  background: #e4f5e9 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card-icon.is-occupied {
+  border-color: #86bdd7 !important;
+  background: #e2f3f8 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-card-icon.is-meals {
+  border-color: #d8ae54 !important;
+  background: #fff0c8 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-split > span {
+  border-color: #d6e0e9 !important;
+  background: #f1f5f9 !important;
+  color: #10233b !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-split small {
+  color: #3d5b73 !important;
+}
+
+html.theme-light-root body.has-shell-layout .summary-grid .summary-split strong {
+  color: #10233b !important;
+}
+
 /* Solanas Sistema - final dark theme overrides */
 :root {
   --bg: #06101a;

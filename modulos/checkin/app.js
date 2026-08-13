@@ -8756,7 +8756,7 @@ function renderSummaryCards() {
   const mealSummary = getMealCoverageSummary();
   return `
     <section class="summary-grid">
-      <article class="summary-card">
+      <article class="summary-card is-open">
         <div class="summary-card-header">
           <div class="summary-label">Reservas abiertas</div>
           <span class="summary-card-icon is-open" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.openReservations}" alt="" /></span>
@@ -8764,7 +8764,7 @@ function renderSummaryCards() {
         <span class="summary-value">${getOpenVisibleReservationsCount()}</span>
         <span class="summary-foot">Solo cuenta las reservas visibles del sistema.</span>
       </article>
-      <article class="summary-card">
+      <article class="summary-card is-confirmed">
         <div class="summary-card-header">
           <div class="summary-label">Reservas confirmadas</div>
           <span class="summary-card-icon is-confirmed" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.confirmedReservations}" alt="" /></span>
@@ -8772,7 +8772,7 @@ function renderSummaryCards() {
         <span class="summary-value">${getReadyReservationsCount()}</span>
         <span class="summary-foot">Incluye confirmaciones individuales y reservas creadas desde carga grupal.</span>
       </article>
-      <article class="summary-card">
+      <article class="summary-card is-occupied">
         <div class="summary-card-header">
           <div class="summary-label">Habitaciones en uso hoy</div>
           <span class="summary-card-icon is-occupied" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.occupiedRooms}" alt="" /></span>
@@ -8780,7 +8780,7 @@ function renderSummaryCards() {
         <span class="summary-value">${todayOccupiedCount}</span>
         <span class="summary-foot">Control del d&iacute;a ${escapeHtml(formatDisplayDate(getTodayInputDate()))}.</span>
       </article>
-      <article class="summary-card">
+      <article class="summary-card is-meals">
         <div class="summary-card-header">
           <div class="summary-label">Comidas de hoy</div>
           <span class="summary-card-icon is-meals" aria-hidden="true"><img src="${SUMMARY_ICON_URLS.meals}" alt="" /></span>
@@ -14177,7 +14177,7 @@ function render(options = {}) {
   const mainMarkup = `
     <main class="app-shell">
       ${renderHero(reservation, isWorkspaceOpen)}
-      ${renderSummaryCards()}
+      ${isReservationsMode() ? renderSummaryCards() : ""}
       ${
         isWorkspaceOpen
           ? `
